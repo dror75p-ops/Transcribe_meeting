@@ -6,6 +6,7 @@
 <title>DoryAngel — תמלול ישיבות</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -603,7 +604,7 @@ function onDrop(e) { e.preventDefault(); onDragLeave(e); if (e.dataTransfer.file
 
 /* ---- File type analysis ---- */
 const WHISPER_NATIVE = ["mp3","wav","webm","mpga","mpeg"]; // sent as-is even when large
-const CONTAINER_FORMATS = ["mp4","m4a","ogg","flac"]; // need proper chunking via Web Audio
+const CONTAINER_FORMATS = ["mp4","m4a","ogg","flac"]; // need FFmpeg conversion before chunking
 
 function analyzeFileType(file) {
   const ext = file.name.split(".").pop().toLowerCase();
@@ -624,12 +625,13 @@ function onFileSelect(file) {
   document.getElementById("fileSize").textContent = info.sizeMB.toFixed(1) + " MB";
 
   const badge = document.getElementById("fileTypeBadge");
-  if (info.needsConversion && info.sizeMB > 120) {
-    badge.innerHTML = `<span class="file-type-badge convert">🚫 ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — גדול מדי. המר ל-MP3 ב-cloudconvert.com</span>`;
-  } else if (info.needsConversion && info.sizeMB > 45) {
-    badge.innerHTML = `<span class="file-type-badge convert">⚠ ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — ממיר ל-WAV (עדיף ממחשב)</span>`;
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (info.needsConversion && info.sizeMB > 200) {
+    badge.innerHTML = `<span class="file-type-badge convert">🚫 ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — גדול מדי אפילו עם ממיר</span>`;
+  } else if (info.needsConversion && isMobile) {
+    badge.innerHTML = `<span class="file-type-badge convert">📱 ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — יומר אוטומטית (נייד: עשוי לקחת כמה דקות)</span>`;
   } else if (info.needsConversion) {
-    badge.innerHTML = `<span class="file-type-badge convert">⚠ ${info.ext.toUpperCase()} — יומר ל-WAV לפני שליחה</span>`;
+    badge.innerHTML = `<span class="file-type-badge convert">⚙ ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — יומר אוטומטית ל-WAV</span>`;
   } else if (info.needsChunking) {
     badge.innerHTML = `<span class="file-type-badge convert">✂ קובץ גדול — יפוצל לחלקים</span>`;
   } else {
@@ -740,92 +742,99 @@ async function transcribeLarge(apiKey) {
   finish();
 }
 
-/* transcribeWithConversion: for M4A/MP4/OGG/FLAC — decode via Web Audio API,
-   resample to 16kHz mono, split at clean time boundaries, send as WAV chunks.
-   Memory note: decoding a compressed file to PCM can use 10-20x the file size in RAM.
-   A 50MB M4A ≈ 700MB decoded. Guard and warn before attempting. */
+/* ---- FFmpeg.wasm loader ---- */
+let _ffmpeg = null;
+
+async function ensureFFmpeg() {
+  if (_ffmpeg) return _ffmpeg;
+  if (typeof FFmpegWASM === "undefined") {
+    throw new Error("ספריית הממיר לא נטענה. רענן את הדף ונסה שנית.");
+  }
+  const { FFmpeg } = FFmpegWASM;
+  const ff = new FFmpeg();
+  setProgress(8, "מוריד ממיר (בפעם הראשונה ~25MB)...");
+  ff.on("progress", ({ progress }) => {
+    if (progress > 0) setProgress(Math.round(20 + progress * 40), `ממיר קובץ... ${Math.round(progress * 100)}%`);
+  });
+  await ff.load({
+    coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js",
+    wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm",
+  });
+  _ffmpeg = ff;
+  return ff;
+}
+
+/* transcribeWithConversion: FFmpeg converts M4A/MP4/OGG/FLAC → 16kHz mono PCM,
+   we wrap each 10-min chunk in a WAV header and send to Whisper.
+   Memory peak: ~2-3× file size in WASM pool — much safer than Web Audio API. */
 async function transcribeWithConversion(apiKey) {
   const sizeMB = currentFile.size / 1024 / 1024;
-
-  // Hard limit — beyond this, decoding will OOM any browser tab
-  if (sizeMB > 120) {
-    throw new Error(
-      `הקובץ (${sizeMB.toFixed(0)}MB) גדול מדי לעיבוד ישיר בדפדפן. ` +
-      `המר ל-MP3 תחילה ב-cloudconvert.com ואז העלה מחדש.`
-    );
+  if (sizeMB > 200) {
+    throw new Error(`הקובץ (${sizeMB.toFixed(0)}MB) גדול מדי. פצל אותו לחלקים קטנים יותר לפני ההעלאה.`);
   }
 
-  // Soft warning for mobile — let user decide
-  if (sizeMB > 45 && !window._conversionConfirmed) {
-    const ok = confirm(
-      `הקובץ גדול (${sizeMB.toFixed(0)}MB) — עיבוד בדפדפן נייד עלול לקרוס.\n\n` +
-      `מומלץ: המר ל-MP3 תחילה ב-cloudconvert.com\n\n` +
-      `לחץ אישור כדי לנסות בכל זאת (עדיף ממחשב שולחן)`
-    );
-    if (!ok) {
-      throw new Error("בוטל. המר את הקובץ ל-MP3 ב-cloudconvert.com ואז העלה מחדש.");
-    }
-    window._conversionConfirmed = true;
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile) {
+    setProgress(5, "📱 נייד זוהה — מאתחל ממיר (עשוי לקחת כמה דקות)...");
+  } else {
+    setProgress(5, "מאתחל ממיר...");
   }
 
-  setProgress(12, "טוען קובץ לזיכרון...");
-  let arrayBuffer;
+  let ff;
   try {
-    arrayBuffer = await currentFile.arrayBuffer();
+    ff = await ensureFFmpeg();
   } catch (e) {
-    throw new Error("הזיכרון אזל בטעינת הקובץ. סגור לשוניות אחרות ונסה שנית.");
+    throw new Error("שגיאה בטעינת ממיר: " + e.message);
   }
 
-  setProgress(18, "מפענח אודיו (עשוי לקחת מספר שניות)...");
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  if (!AudioCtx) throw new Error("הדפדפן אינו תומך ב-Web Audio API. נסה Chrome.");
+  const ext = currentFile.name.split(".").pop().toLowerCase();
+  const inputName = `input.${ext}`;
 
-  // 22050Hz halves memory vs 44100Hz default — still high quality for speech
-  const audioCtx = new AudioCtx({ sampleRate: 22050 });
+  setProgress(18, "טוען קובץ לממיר...");
+  const fileData = new Uint8Array(await currentFile.arrayBuffer());
+  await ff.writeFile(inputName, fileData);
 
-  let audioBuffer;
+  setProgress(20, "ממיר לפורמט WAV 16kHz...");
+  let exitCode;
   try {
-    // Callback form is more widely supported than promise form for decodeAudioData
-    audioBuffer = await new Promise((resolve, reject) => {
-      audioCtx.decodeAudioData(arrayBuffer, resolve, (err) => {
-        reject(new Error(err ? err.message : "decode failed"));
-      });
-    });
+    exitCode = await ff.exec([
+      "-i", inputName,
+      "-vn",           // skip video if present
+      "-ar", "16000",  // 16kHz — optimal for speech recognition
+      "-ac", "1",      // mono
+      "-f", "s16le",   // raw signed 16-bit PCM (no WAV header — we add per-chunk below)
+      "output.pcm"
+    ]);
   } catch (e) {
-    audioCtx.close();
-    if (e.message && e.message.includes("decode")) {
-      throw new Error("לא ניתן לפענח את הקובץ. ייתכן שהוא פגום. נסה להמיר ל-MP3 ידנית.");
-    }
-    throw new Error(
-      "הזיכרון אזל בפיענוח. סגור לשוניות אחרות, או המר ל-MP3 ב-cloudconvert.com"
-    );
+    await ff.deleteFile(inputName).catch(() => {});
+    throw new Error("שגיאה בהמרה: " + (e.message || "FFmpeg error"));
   }
-  audioCtx.close();
 
-  audioDuration = audioBuffer.duration;
-  const TARGET_RATE = 16000;
-  const CHUNK_SECS = 10 * 60; // 10-minute chunks → ~19MB WAV each
-  const numChunks = Math.ceil(audioDuration / CHUNK_SECS);
+  if (exitCode !== 0) {
+    await ff.deleteFile(inputName).catch(() => {});
+    throw new Error("ההמרה נכשלה (exit " + exitCode + "). הקובץ עשוי להיות פגום.");
+  }
+
+  await ff.deleteFile(inputName).catch(() => {});
+
+  setProgress(62, "קורא נתוני אודיו...");
+  const pcmData = await ff.readFile("output.pcm"); // Uint8Array of 16-bit samples
+  await ff.deleteFile("output.pcm").catch(() => {});
+
+  // Estimate duration from PCM size: bytes / (2 bytes/sample × 16000 samples/sec)
+  audioDuration = pcmData.length / (2 * 16000);
+
+  const BYTES_PER_CHUNK = 10 * 60 * 16000 * 2; // 10 min × 16kHz × 16-bit = ~19.2MB
+  const numChunks = Math.ceil(pcmData.length / BYTES_PER_CHUNK);
   const parts = [];
   const prompt = buildPrompt();
 
   for (let i = 0; i < numChunks; i++) {
-    const startSec = i * CHUNK_SECS;
-    const chunkSecs = Math.min(CHUNK_SECS, audioDuration - startSec);
-    const numSamples = Math.max(1, Math.ceil(chunkSecs * TARGET_RATE));
+    const start = i * BYTES_PER_CHUNK;
+    const chunkPCM = pcmData.slice(start, start + BYTES_PER_CHUNK);
+    setProgress(Math.round(65 + (i / numChunks) * 30), `שולח ל-Whisper חלק ${i + 1} / ${numChunks}...`);
 
-    setProgress(Math.round(22 + (i / numChunks) * 65), `ממיר ומתמלל חלק ${i + 1} / ${numChunks}...`);
-
-    // Resample to 16kHz mono via OfflineAudioContext
-    const offCtx = new OfflineAudioContext(1, numSamples, TARGET_RATE);
-    const src = offCtx.createBufferSource();
-    src.buffer = audioBuffer;
-    src.connect(offCtx.destination);
-    src.start(0, startSec, chunkSecs);
-    const rendered = await offCtx.startRendering();
-
-    const wavBlob = encodeWav(rendered);
-
+    const wavBlob = pcmToWav(chunkPCM, 16000);
     const fd = new FormData();
     fd.append("file", new File([wavBlob], `chunk_${i}.wav`, { type: "audio/wav" }), `chunk_${i}.wav`);
     fd.append("model", "whisper-1");
@@ -840,38 +849,23 @@ async function transcribeWithConversion(apiKey) {
     parts.push((await res.text()).trim());
   }
 
-  window._conversionConfirmed = false;
   transcriptText = parts.join("\n\n");
   finish();
 }
 
-/* Encode an AudioBuffer (mono, any sample rate) to a 16-bit PCM WAV Blob */
-function encodeWav(buffer) {
-  const pcm = buffer.getChannelData(0);
-  const numSamples = pcm.length;
-  const sampleRate = buffer.sampleRate;
-  const dataSize = numSamples * 2; // 16-bit = 2 bytes/sample
+/* Wrap raw signed 16-bit LE PCM bytes in a WAV header */
+function pcmToWav(pcmBytes, sampleRate) {
+  const dataSize = pcmBytes.length;
   const ab = new ArrayBuffer(44 + dataSize);
   const v = new DataView(ab);
-  const str = (off, s) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
-
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
   str(0, "RIFF"); v.setUint32(4, 36 + dataSize, true);
   str(8, "WAVE"); str(12, "fmt ");
-  v.setUint32(16, 16, true);   // chunk size
-  v.setUint16(20, 1, true);    // PCM
-  v.setUint16(22, 1, true);    // mono
-  v.setUint32(24, sampleRate, true);
-  v.setUint32(28, sampleRate * 2, true); // byte rate
-  v.setUint16(32, 2, true);    // block align
-  v.setUint16(34, 16, true);   // bits per sample
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true);
   str(36, "data"); v.setUint32(40, dataSize, true);
-
-  let off = 44;
-  for (let i = 0; i < numSamples; i++) {
-    const s = Math.max(-1, Math.min(1, pcm[i]));
-    v.setInt16(off, s < 0 ? s * 32768 : s * 32767, true);
-    off += 2;
-  }
+  new Uint8Array(ab, 44).set(pcmBytes);
   return new Blob([ab], { type: "audio/wav" });
 }
 
