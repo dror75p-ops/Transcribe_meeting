@@ -525,14 +525,14 @@
       <div class="stat"><div class="stat-val" id="s3">—</div><div class="stat-lbl">עלות</div></div>
     </div>
 
-    <!-- EMAIL -->
+    <!-- EMAIL / SHARE -->
     <div class="email-section">
       <div class="card-title">✉️ שלח תמלול למייל</div>
-      <div class="email-row">
+      <div class="email-row" id="emailRow">
         <input type="email" id="emailTo" placeholder="name@example.com" />
         <button class="btn-email" onclick="sendEmail()">📨 שלח</button>
       </div>
-      <div class="email-hint">יפתח את תוכנת המייל שלך עם התמלול המוכן לשליחה</div>
+      <div class="email-hint" id="emailHint">יפתח את תוכנת המייל שלך עם התמלול המוכן לשליחה</div>
     </div>
   </div>
 
@@ -1030,27 +1030,50 @@ ${participantLine}
   setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
-/* ---- Email ---- */
-function sendEmail() {
+/* ---- Email / Share ---- */
+async function sendEmail() {
+  if (!transcriptText) { showToast("אין תמלול לשליחה", "error"); return; }
+
+  const title = "תמלול ישיבה — " + stem();
+  const txtFile = new File([transcriptText], stem() + ".txt", { type: "text/plain" });
+
+  /* On mobile: use Web Share API — opens native share sheet (Gmail, WhatsApp, etc.)
+     with the full transcript as an attached file, no URL length limit. */
+  if (navigator.canShare && navigator.canShare({ files: [txtFile] })) {
+    try {
+      await navigator.share({ title, files: [txtFile] });
+      return;
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        /* share failed — fall through to mailto */
+      } else {
+        return; /* user cancelled */
+      }
+    }
+  }
+
+  /* Desktop fallback: mailto link with full text (browsers handle up to ~64KB) */
   const email = document.getElementById("emailTo").value.trim();
   if (!email || !email.includes("@")) {
     showToast("נא להזין כתובת מייל תקינה", "error");
     return;
   }
-  if (!transcriptText) {
-    showToast("אין תמלול לשליחה", "error");
-    return;
-  }
-  const subject = encodeURIComponent("תמלול ישיבה — " + stem());
-  const body = encodeURIComponent(transcriptText.slice(0, 4000));
-  const truncated = transcriptText.length > 4000;
+  const subject = encodeURIComponent(title);
+  const body = encodeURIComponent(transcriptText);
   window.open(`mailto:${email}?subject=${subject}&body=${body}`);
-  if (truncated) {
-    showToast("התמלול ארוך — מומלץ לצרף קובץ Word", "");
-  } else {
-    showToast("✓ פותח תוכנת המייל...", "success");
-  }
+  showToast("✓ פותח תוכנת המייל...", "success");
 }
+
+/* Hide email input row on mobile where Web Share API is available — not needed there */
+(function() {
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile && navigator.share) {
+    const row = document.getElementById("emailRow");
+    const hint = document.getElementById("emailHint");
+    if (row) row.style.display = "none";
+    if (hint) hint.textContent = "ישתף קובץ טקסט דרך Gmail, WhatsApp, ואפליקציות אחרות";
+  }
+})();
 
 /* ---- History ---- */
 function saveToHistory(name, words, dur) {
