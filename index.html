@@ -745,6 +745,23 @@ async function transcribeLarge(apiKey) {
 /* ---- FFmpeg.wasm loader ---- */
 let _ffmpeg = null;
 
+async function fetchToBlobURL(url, mimeType, onProgress) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} בעת הורדת ${url}`);
+  const total = parseInt(res.headers.get("content-length") || "0");
+  const reader = res.body.getReader();
+  const chunks = [];
+  let received = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.length;
+    if (total && onProgress) onProgress(received / total);
+  }
+  return URL.createObjectURL(new Blob(chunks, { type: mimeType }));
+}
+
 async function ensureFFmpeg() {
   if (_ffmpeg) return _ffmpeg;
   if (typeof FFmpegWASM === "undefined") {
@@ -752,14 +769,28 @@ async function ensureFFmpeg() {
   }
   const { FFmpeg } = FFmpegWASM;
   const ff = new FFmpeg();
-  setProgress(8, "מוריד ממיר (בפעם הראשונה ~25MB)...");
+  const BASE = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+
+  // Fetch to blob:// URLs — required because GitHub Pages blocks cross-origin Workers
+  setProgress(8, "מוריד ממיר (JS)...");
+  let coreURL, wasmURL;
+  try {
+    coreURL = await fetchToBlobURL(`${BASE}/ffmpeg-core.js`, "text/javascript");
+    setProgress(10, "מוריד ממיר (WASM ~25MB)...");
+    wasmURL = await fetchToBlobURL(
+      `${BASE}/ffmpeg-core.wasm`, "application/wasm",
+      (p) => setProgress(Math.round(10 + p * 8), `מוריד ממיר... ${Math.round(p * 100)}%`)
+    );
+  } catch (e) {
+    throw new Error("שגיאה בהורדת הממיר. בדוק חיבור לאינטרנט ונסה שנית.");
+  }
+
+  setProgress(18, "מאתחל ממיר...");
   ff.on("progress", ({ progress }) => {
-    if (progress > 0) setProgress(Math.round(20 + progress * 40), `ממיר קובץ... ${Math.round(progress * 100)}%`);
+    if (progress > 0) setProgress(Math.round(20 + progress * 42), `ממיר קובץ... ${Math.round(progress * 100)}%`);
   });
-  await ff.load({
-    coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js",
-    wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm",
-  });
+
+  await ff.load({ coreURL, wasmURL });
   _ffmpeg = ff;
   return ff;
 }
