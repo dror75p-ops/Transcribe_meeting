@@ -624,7 +624,11 @@ function onFileSelect(file) {
   document.getElementById("fileSize").textContent = info.sizeMB.toFixed(1) + " MB";
 
   const badge = document.getElementById("fileTypeBadge");
-  if (info.needsConversion) {
+  if (info.needsConversion && info.sizeMB > 120) {
+    badge.innerHTML = `<span class="file-type-badge convert">🚫 ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — גדול מדי. המר ל-MP3 ב-cloudconvert.com</span>`;
+  } else if (info.needsConversion && info.sizeMB > 45) {
+    badge.innerHTML = `<span class="file-type-badge convert">⚠ ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — ממיר ל-WAV (עדיף ממחשב)</span>`;
+  } else if (info.needsConversion) {
     badge.innerHTML = `<span class="file-type-badge convert">⚠ ${info.ext.toUpperCase()} — יומר ל-WAV לפני שליחה</span>`;
   } else if (info.needsChunking) {
     badge.innerHTML = `<span class="file-type-badge convert">✂ קובץ גדול — יפוצל לחלקים</span>`;
@@ -737,27 +741,64 @@ async function transcribeLarge(apiKey) {
 }
 
 /* transcribeWithConversion: for M4A/MP4/OGG/FLAC — decode via Web Audio API,
-   resample to 16kHz mono, split at clean time boundaries, send as WAV chunks. */
+   resample to 16kHz mono, split at clean time boundaries, send as WAV chunks.
+   Memory note: decoding a compressed file to PCM can use 10-20x the file size in RAM.
+   A 50MB M4A ≈ 700MB decoded. Guard and warn before attempting. */
 async function transcribeWithConversion(apiKey) {
+  const sizeMB = currentFile.size / 1024 / 1024;
+
+  // Hard limit — beyond this, decoding will OOM any browser tab
+  if (sizeMB > 120) {
+    throw new Error(
+      `הקובץ (${sizeMB.toFixed(0)}MB) גדול מדי לעיבוד ישיר בדפדפן. ` +
+      `המר ל-MP3 תחילה ב-cloudconvert.com ואז העלה מחדש.`
+    );
+  }
+
+  // Soft warning for mobile — let user decide
+  if (sizeMB > 45 && !window._conversionConfirmed) {
+    const ok = confirm(
+      `הקובץ גדול (${sizeMB.toFixed(0)}MB) — עיבוד בדפדפן נייד עלול לקרוס.\n\n` +
+      `מומלץ: המר ל-MP3 תחילה ב-cloudconvert.com\n\n` +
+      `לחץ אישור כדי לנסות בכל זאת (עדיף ממחשב שולחן)`
+    );
+    if (!ok) {
+      throw new Error("בוטל. המר את הקובץ ל-MP3 ב-cloudconvert.com ואז העלה מחדש.");
+    }
+    window._conversionConfirmed = true;
+  }
+
   setProgress(12, "טוען קובץ לזיכרון...");
   let arrayBuffer;
   try {
     arrayBuffer = await currentFile.arrayBuffer();
   } catch (e) {
-    throw new Error("הקובץ גדול מדי לעיבוד בדפדפן. נסה קובץ קטן מ-300MB.");
+    throw new Error("הזיכרון אזל בטעינת הקובץ. סגור לשוניות אחרות ונסה שנית.");
   }
 
-  setProgress(18, "מפענח אודיו...");
+  setProgress(18, "מפענח אודיו (עשוי לקחת מספר שניות)...");
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  if (!AudioCtx) throw new Error("הדפדפן אינו תומך ב-Web Audio API. נסה Chrome או Firefox.");
-  const audioCtx = new AudioCtx();
+  if (!AudioCtx) throw new Error("הדפדפן אינו תומך ב-Web Audio API. נסה Chrome.");
+
+  // 22050Hz halves memory vs 44100Hz default — still high quality for speech
+  const audioCtx = new AudioCtx({ sampleRate: 22050 });
 
   let audioBuffer;
   try {
-    audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    // Callback form is more widely supported than promise form for decodeAudioData
+    audioBuffer = await new Promise((resolve, reject) => {
+      audioCtx.decodeAudioData(arrayBuffer, resolve, (err) => {
+        reject(new Error(err ? err.message : "decode failed"));
+      });
+    });
   } catch (e) {
     audioCtx.close();
-    throw new Error("לא ניתן לפענח את הקובץ. ייתכן שהוא פגום. נסה להמיר ל-MP3 ידנית.");
+    if (e.message && e.message.includes("decode")) {
+      throw new Error("לא ניתן לפענח את הקובץ. ייתכן שהוא פגום. נסה להמיר ל-MP3 ידנית.");
+    }
+    throw new Error(
+      "הזיכרון אזל בפיענוח. סגור לשוניות אחרות, או המר ל-MP3 ב-cloudconvert.com"
+    );
   }
   audioCtx.close();
 
@@ -771,7 +812,7 @@ async function transcribeWithConversion(apiKey) {
   for (let i = 0; i < numChunks; i++) {
     const startSec = i * CHUNK_SECS;
     const chunkSecs = Math.min(CHUNK_SECS, audioDuration - startSec);
-    const numSamples = Math.ceil(chunkSecs * TARGET_RATE);
+    const numSamples = Math.max(1, Math.ceil(chunkSecs * TARGET_RATE));
 
     setProgress(Math.round(22 + (i / numChunks) * 65), `ממיר ומתמלל חלק ${i + 1} / ${numChunks}...`);
 
@@ -799,6 +840,7 @@ async function transcribeWithConversion(apiKey) {
     parts.push((await res.text()).trim());
   }
 
+  window._conversionConfirmed = false;
   transcriptText = parts.join("\n\n");
   finish();
 }
