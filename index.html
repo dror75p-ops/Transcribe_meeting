@@ -839,6 +839,99 @@ async function whisperFetch(fd, apiKey, onAttempt, asText = false) {
   throw lastErr;
 }
 
+/* Find the best silence-based split point near targetByte in raw PCM data.
+   Scans ±20 sec around the target; returns byte offset of silence midpoint.
+   Falls back to exact targetByte if no suitable silence is found. */
+function findSilenceSplit(pcmData, targetByte) {
+  const WINDOW   = 20 * 16000 * 2; // ±20 seconds in bytes
+  const THRESH   = 400;             // silence amplitude (out of 32767)
+  const MIN_SAMP = 1600;            // 100ms minimum silence run
+
+  const samples    = new Int16Array(pcmData.buffer, pcmData.byteOffset, pcmData.byteLength / 2);
+  const targetSamp = Math.floor(targetByte / 2);
+  const lo         = Math.max(0, targetSamp - Math.floor(WINDOW / 2));
+  const hi         = Math.min(samples.length, targetSamp + Math.floor(WINDOW / 2));
+
+  let bestSamp = targetSamp, bestScore = -1;
+  let silStart = -1, silLen = 0;
+
+  for (let i = lo; i <= hi; i++) {
+    if (i < samples.length && Math.abs(samples[i]) < THRESH) {
+      if (silStart === -1) silStart = i;
+      silLen++;
+    } else {
+      if (silLen >= MIN_SAMP) {
+        const mid   = silStart + Math.floor(silLen / 2);
+        const dist  = 1 - Math.abs(mid - targetSamp) / (WINDOW / 2);
+        const score = dist * 0.8 + Math.min(silLen / (16000 * 2), 1) * 0.2;
+        if (score > bestScore) { bestScore = score; bestSamp = mid; }
+      }
+      silStart = -1; silLen = 0;
+    }
+  }
+  return bestSamp * 2; // convert sample index back to byte offset
+}
+
+/* Split PCM into WAV blobs at silence points near every CHUNK_BYTES boundary */
+function buildSilenceChunks(pcmData) {
+  const CHUNK_BYTES = 5 * 60 * 16000 * 2; // 5-min target size
+  const numChunks   = Math.ceil(pcmData.length / CHUNK_BYTES);
+  const blobs = [];
+  let start = 0;
+  for (let i = 0; i < numChunks; i++) {
+    const rawEnd  = Math.min((i + 1) * CHUNK_BYTES, pcmData.length);
+    const splitAt = (i < numChunks - 1) ? findSilenceSplit(pcmData, rawEnd) : pcmData.length;
+    blobs.push(pcmToWav(pcmData.slice(start, splitAt), 16000));
+    start = splitAt;
+  }
+  return blobs;
+}
+
+/* Send WAV blobs to Whisper in parallel batches of CONCURRENCY.
+   Between batches, the last 30 words of the previous batch become the
+   prompt for the next batch (prompt chaining for boundary accuracy). */
+async function sendChunksWithBatchChaining(chunkBlobs, apiKey, basePrompt, fromPct, toPct) {
+  const CONCURRENCY = 3;
+  const total    = chunkBlobs.length;
+  const results  = new Array(total);
+  let completed  = 0;
+  let chainTail  = ""; // last 30 words of previous batch's final chunk
+
+  const getTail = (text) =>
+    text ? text.trim().split(/\s+/).slice(-30).join(" ") : "";
+
+  const makeFd = (i, tail) => {
+    const fd     = new FormData();
+    const prompt = [tail, basePrompt].filter(Boolean).join(" ");
+    fd.append("file", new File([chunkBlobs[i]], `chunk_${i}.wav`, { type: "audio/wav" }), `chunk_${i}.wav`);
+    fd.append("model", "whisper-1");
+    fd.append("language", "he");
+    fd.append("response_format", "text");
+    if (prompt.trim()) fd.append("prompt", prompt.trim());
+    return fd;
+  };
+
+  for (let b = 0; b < total; b += CONCURRENCY) {
+    const batchIdx = Array.from({ length: Math.min(CONCURRENCY, total - b) }, (_, j) => b + j);
+    const tail     = chainTail; // snapshot for this batch
+
+    await Promise.all(batchIdx.map(i =>
+      whisperFetch(makeFd(i, tail), apiKey, null, true).then(text => {
+        results[i] = text;
+        completed++;
+        setProgress(
+          Math.round(fromPct + (completed / total) * (toPct - fromPct)),
+          `מתמלל... ${completed} / ${total} חלקים הושלמו`
+        );
+      })
+    ));
+
+    chainTail = getTail(results[b + batchIdx.length - 1]);
+  }
+
+  return results;
+}
+
 /* Send pre-built FormData chunks to Whisper in parallel (max 3 concurrent).
    Results are returned in original chunk order regardless of completion order. */
 async function sendChunksParallel(fdList, apiKey, fromPct, toPct) {
@@ -1000,26 +1093,13 @@ async function transcribeWithConversion(apiKey) {
   // Estimate duration from PCM size: bytes / (2 bytes/sample × 16000 samples/sec)
   audioDuration = pcmData.length / (2 * 16000);
 
-  const BYTES_PER_CHUNK = 5 * 60 * 16000 * 2; // 5 min × 16kHz × 16-bit = ~9.6MB (reliable on mobile)
-  const numChunks = Math.ceil(pcmData.length / BYTES_PER_CHUNK);
   const prompt = buildPrompt();
 
-  setProgress(65, `מכין ${numChunks} חלקים לשליחה מקבילית...`);
-  const fdList = [];
-  for (let i = 0; i < numChunks; i++) {
-    const start = i * BYTES_PER_CHUNK;
-    const chunkPCM = pcmData.slice(start, start + BYTES_PER_CHUNK);
-    const wavBlob = pcmToWav(chunkPCM, 16000);
-    const fd = new FormData();
-    fd.append("file", new File([wavBlob], `chunk_${i}.wav`, { type: "audio/wav" }), `chunk_${i}.wav`);
-    fd.append("model", "whisper-1");
-    fd.append("language", "he");
-    fd.append("response_format", "text");
-    if (prompt) fd.append("prompt", prompt);
-    fdList.push(fd);
-  }
+  setProgress(65, "מוצא נקודות חלוקה אופטימליות...");
+  const chunkBlobs = buildSilenceChunks(pcmData);
 
-  const parts = await sendChunksParallel(fdList, apiKey, 66, 97);
+  setProgress(66, `שולח ${chunkBlobs.length} חלקים לתמלול...`);
+  const parts = await sendChunksWithBatchChaining(chunkBlobs, apiKey, prompt, 66, 97);
   transcriptText = parts.join("\n\n");
   finish();
 }
