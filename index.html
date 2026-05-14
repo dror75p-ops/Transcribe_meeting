@@ -19,6 +19,7 @@
     --muted: #6b7280;
     --border: #d1d5db;
     --success: #059669;
+    --success-light: #f0fdf4;
     --danger: #dc2626;
     --danger-light: #fee2e2;
     --radius: 12px;
@@ -48,7 +49,6 @@
 
   /* LAYOUT */
   .page { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-
   .page-title { font-size: 24px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
   .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; }
 
@@ -68,6 +68,13 @@
     letter-spacing: 0.6px;
     margin-bottom: 1rem;
   }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .card-header .card-title { margin-bottom: 0; }
 
   /* API KEY */
   .api-row { display: flex; gap: 8px; }
@@ -95,10 +102,52 @@
     cursor: pointer;
     white-space: nowrap;
     transition: background 0.15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    color: var(--text);
   }
   .btn-sm:hover { background: var(--border); }
-  .key-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
-  .key-hint a { color: var(--cobalt); }
+  .btn-sm.success { background: var(--success-light); border-color: #bbf7d0; color: var(--success); }
+  .btn-sm.success:hover { background: #dcfce7; }
+  .btn-sm.cobalt { background: var(--cobalt-light); border-color: #93c5fd; color: var(--cobalt); }
+  .btn-sm.cobalt:hover { background: #bfdbfe; }
+  .key-hint { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+  .key-hint a { color: var(--cobalt); text-decoration: none; }
+  .key-hint a:hover { text-decoration: underline; }
+
+  /* INSTRUCTIONS */
+  .field-label { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
+  .field-group { margin-bottom: 1rem; }
+  .field-group:last-child { margin-bottom: 0; }
+  textarea.field-input, input.field-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: 'Heebo', sans-serif;
+    color: var(--text);
+    direction: rtl;
+    outline: none;
+    resize: vertical;
+    transition: border 0.15s;
+    background: #fff;
+  }
+  textarea.field-input:focus, input.field-input:focus { border-color: var(--cobalt); }
+  textarea.field-input { min-height: 80px; line-height: 1.6; }
+  .field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* PARTICIPANTS */
+  .participant-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .ptag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--cobalt-light); color: var(--cobalt);
+    font-size: 12px; font-weight: 500;
+    padding: 3px 10px; border-radius: 99px;
+  }
+  .ptag-remove { cursor: pointer; font-size: 14px; line-height: 1; color: #93c5fd; }
+  .ptag-remove:hover { color: var(--cobalt); }
 
   /* DROP ZONE */
   .drop-zone {
@@ -121,15 +170,15 @@
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
-    background: #f0fdf4;
+    background: var(--success-light);
     border: 1px solid #bbf7d0;
     border-radius: var(--radius-sm);
   }
   .file-icon { font-size: 28px; }
-  .file-details { flex: 1; }
-  .file-name { font-size: 14px; font-weight: 500; color: var(--navy); }
+  .file-details { flex: 1; min-width: 0; }
+  .file-name { font-size: 14px; font-weight: 500; color: var(--navy); direction: ltr; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .file-size { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .btn-remove { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--muted); padding: 4px; }
+  .btn-remove { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--muted); padding: 4px; flex-shrink: 0; }
   .btn-remove:hover { color: var(--danger); }
 
   /* RUN BUTTON */
@@ -174,7 +223,7 @@
 
   /* RESULT */
   .result-card { display: none; }
-  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
   .result-title { font-size: 15px; font-weight: 600; color: var(--navy); }
   .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
   .btn-action {
@@ -190,6 +239,7 @@
     align-items: center;
     gap: 5px;
     transition: background 0.15s;
+    white-space: nowrap;
   }
   .btn-action:hover { background: var(--bg); }
   .btn-action.primary { background: var(--cobalt); color: #fff; border-color: var(--cobalt); }
@@ -224,6 +274,46 @@
   .stat-val { font-size: 20px; font-weight: 600; color: var(--navy); }
   .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
+  /* EMAIL SECTION */
+  .email-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .email-section .card-title { margin-bottom: 0.75rem; }
+  .email-row { display: flex; gap: 8px; }
+  .email-row input {
+    flex: 1;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: 'Heebo', sans-serif;
+    direction: ltr;
+    outline: none;
+    transition: border 0.15s;
+  }
+  .email-row input:focus { border-color: var(--cobalt); }
+  .btn-email {
+    height: 40px;
+    padding: 0 16px;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-email:hover { background: #253360; }
+  .email-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
   /* HISTORY */
   .history-item {
     padding: 10px 0;
@@ -231,14 +321,54 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    cursor: pointer;
+    gap: 8px;
   }
   .history-item:last-child { border-bottom: none; }
-  .history-item:hover { background: var(--bg); margin: 0 -1.5rem; padding: 10px 1.5rem; border-radius: var(--radius-sm); }
-  .h-name { font-size: 13px; font-weight: 500; color: var(--navy); }
+  .history-main { flex: 1; cursor: pointer; min-width: 0; }
+  .history-main:hover .h-name { color: var(--cobalt); }
+  .h-name { font-size: 13px; font-weight: 500; color: var(--navy); transition: color 0.15s; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .h-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .h-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--cobalt-light); color: var(--cobalt); font-weight: 500; }
+  .h-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--cobalt-light); color: var(--cobalt); font-weight: 500; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .h-badge:hover { background: #bfdbfe; }
+  .h-delete { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--muted); padding: 4px 6px; flex-shrink: 0; transition: color 0.15s; }
+  .h-delete:hover { color: var(--danger); }
+  .history-actions { display: flex; align-items: center; gap: 4px; }
   .empty-history { text-align: center; padding: 1.5rem; color: var(--muted); font-size: 13px; }
+  .clear-history-btn {
+    font-size: 11px; color: var(--muted); background: none; border: none;
+    cursor: pointer; padding: 2px 0; text-decoration: underline;
+  }
+  .clear-history-btn:hover { color: var(--danger); }
+
+  /* TOAST */
+  .toast-wrap {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--navy);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-family: 'Heebo', sans-serif;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
 
   .hidden { display: none !important; }
 
@@ -246,6 +376,8 @@
     .stats { grid-template-columns: repeat(3, 1fr); }
     .action-row { gap: 4px; }
     .btn-action { font-size: 11px; padding: 0 8px; }
+    .api-row { flex-wrap: wrap; }
+    .api-row input { min-width: 0; }
   }
 </style>
 </head>
@@ -266,10 +398,32 @@
     <div class="api-row">
       <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
       <button class="btn-sm" onclick="toggleKey()">הצג</button>
-      <button class="btn-sm" onclick="saveKey()" style="background:#f0fdf4;border-color:#bbf7d0;color:#059669;">שמור</button>
+      <button class="btn-sm success" onclick="saveKey()">שמור</button>
     </div>
     <div class="key-hint">
-      המפתח נשמר רק בדפדפן שלך (localStorage). קבל מפתח ב-<a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>
+      המפתח נשמר רק בדפדפן שלך (localStorage).<br/>
+      אין מפתח? &rarr;
+      <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">צור מפתח חדש ב-platform.openai.com ↗</a>
+    </div>
+  </div>
+
+  <!-- TRANSCRIPTION SETTINGS -->
+  <div class="card">
+    <div class="card-title">⚙️ הגדרות תמלול</div>
+
+    <div class="field-group">
+      <div class="field-label">👥 משתתפים (יעזור ל-Whisper לזהות שמות)</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="participantInput" class="field-input" placeholder='הוסף שם ולחץ Enter — למשל: "דרור", "מיכל"' style="flex:1;" onkeydown="onParticipantKey(event)" />
+        <button class="btn-sm cobalt" onclick="addParticipant()">+ הוסף</button>
+      </div>
+      <div class="participant-tags" id="participantTags"></div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">📝 הנחיות לתמלול (אופציונלי)</div>
+      <textarea id="instructions" class="field-input" placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira. יש לשמור על מינוח מקצועי."></textarea>
+      <div class="field-hint">הנחיות אלו יועברו ל-Whisper כהקשר וישפרו את דיוק התמלול</div>
     </div>
   </div>
 
@@ -317,7 +471,7 @@
     <div class="result-header">
       <div class="result-title">📄 תמלול</div>
       <div class="action-row">
-        <button class="btn-action" onclick="copyText()">📋 העתק</button>
+        <button class="btn-action" onclick="copyText(this)">📋 העתק</button>
         <button class="btn-action" onclick="downloadTxt()">💾 TXT</button>
         <button class="btn-action primary" onclick="downloadWord()">📝 Word</button>
       </div>
@@ -328,19 +482,36 @@
       <div class="stat"><div class="stat-val" id="s2">—</div><div class="stat-lbl">משך</div></div>
       <div class="stat"><div class="stat-val" id="s3">—</div><div class="stat-lbl">עלות</div></div>
     </div>
+
+    <!-- EMAIL -->
+    <div class="email-section">
+      <div class="card-title">✉️ שלח תמלול למייל</div>
+      <div class="email-row">
+        <input type="email" id="emailTo" placeholder="name@example.com" />
+        <button class="btn-email" onclick="sendEmail()">📨 שלח</button>
+      </div>
+      <div class="email-hint">יפתח את תוכנת המייל שלך עם התמלול המוכן לשליחה</div>
+    </div>
   </div>
 
   <!-- HISTORY -->
   <div class="card" style="margin-top:1.25rem;">
-    <div class="card-title">🕘 היסטוריה</div>
+    <div class="card-header">
+      <div class="card-title">🕘 היסטוריה</div>
+      <button class="clear-history-btn" id="clearHistoryBtn" onclick="clearHistory()" style="display:none;">נקה הכל</button>
+    </div>
     <div id="historyList"><div class="empty-history">עדיין אין תמלולים שמורים</div></div>
   </div>
 </div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
 
 <script>
 let currentFile = null;
 let transcriptText = "";
 let audioDuration = 0;
+let participants = [];
 const HISTORY_KEY = "da_transcripts";
 
 /* ---- Init ---- */
@@ -350,6 +521,20 @@ window.onload = () => {
   renderHistory();
 };
 
+/* ---- Toast ---- */
+function showToast(msg, type = "") {
+  const wrap = document.getElementById("toastWrap");
+  const t = document.createElement("div");
+  t.className = "toast" + (type ? " " + type : "");
+  t.textContent = msg;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add("show"); }); });
+  setTimeout(() => {
+    t.classList.remove("show");
+    setTimeout(() => t.remove(), 250);
+  }, 2500);
+}
+
 /* ---- API Key ---- */
 function toggleKey() {
   const inp = document.getElementById("apiKey");
@@ -357,7 +542,41 @@ function toggleKey() {
 }
 function saveKey() {
   const k = document.getElementById("apiKey").value.trim();
-  if (k) { localStorage.setItem("da_api_key", k); alert("✓ מפתח נשמר בדפדפן"); }
+  if (!k) { showToast("נא להזין מפתח API", "error"); return; }
+  localStorage.setItem("da_api_key", k);
+  showToast("✓ מפתח נשמר בדפדפן", "success");
+}
+
+/* ---- Participants ---- */
+function onParticipantKey(e) {
+  if (e.key === "Enter") { e.preventDefault(); addParticipant(); }
+}
+function addParticipant() {
+  const inp = document.getElementById("participantInput");
+  const name = inp.value.trim();
+  if (!name || participants.includes(name)) { inp.value = ""; return; }
+  participants.push(name);
+  inp.value = "";
+  renderParticipants();
+}
+function removeParticipant(name) {
+  participants = participants.filter(p => p !== name);
+  renderParticipants();
+}
+function renderParticipants() {
+  const el = document.getElementById("participantTags");
+  el.innerHTML = participants.map(p =>
+    `<span class="ptag">${escHtml(p)}<span class="ptag-remove" onclick="removeParticipant(${JSON.stringify(p)})" title="הסר">×</span></span>`
+  ).join("");
+}
+
+/* ---- Build Whisper prompt ---- */
+function buildPrompt() {
+  const instructions = document.getElementById("instructions").value.trim();
+  const parts = [];
+  if (participants.length) parts.push("המשתתפים: " + participants.join(", ") + ".");
+  if (instructions) parts.push(instructions);
+  return parts.join(" ");
 }
 
 /* ---- File ---- */
@@ -394,7 +613,10 @@ function setProgress(pct, label) {
 /* ---- Transcription ---- */
 async function startTranscription() {
   const apiKey = document.getElementById("apiKey").value.trim();
-  if (!apiKey.startsWith("sk-")) { showError("נא להזין OpenAI API Key תקין (מתחיל ב-sk-)"); return; }
+  if (!apiKey.startsWith("sk-")) {
+    showError("נא להזין OpenAI API Key תקין (מתחיל ב-sk-)");
+    return;
+  }
   if (!currentFile) { showError("נא לבחור קובץ"); return; }
 
   document.getElementById("errorBox").style.display = "none";
@@ -426,6 +648,8 @@ async function transcribeSingle(apiKey) {
   fd.append("language", "he");
   fd.append("response_format", "verbose_json");
   fd.append("timestamp_granularities[]", "segment");
+  const prompt = buildPrompt();
+  if (prompt) fd.append("prompt", prompt);
 
   const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
@@ -444,13 +668,17 @@ async function transcribeLarge(apiKey) {
   const CHUNK = 20 * 1024 * 1024;
   const total = Math.ceil(currentFile.size / CHUNK);
   const parts = [];
+  const prompt = buildPrompt();
   for (let i = 0; i < total; i++) {
     setProgress(Math.round(15 + (i / total) * 70), `מתמלל חלק ${i + 1} / ${total}...`);
     const blob = currentFile.slice(i * CHUNK, Math.min((i + 1) * CHUNK, currentFile.size));
     const ext = currentFile.name.split(".").pop() || "mp4";
     const fd = new FormData();
     fd.append("file", new File([blob], `chunk.${ext}`, { type: currentFile.type }), `chunk.${ext}`);
-    fd.append("model", "whisper-1"); fd.append("language", "he"); fd.append("response_format", "text");
+    fd.append("model", "whisper-1");
+    fd.append("language", "he");
+    fd.append("response_format", "text");
+    if (prompt) fd.append("prompt", prompt);
     const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
     });
@@ -458,7 +686,7 @@ async function transcribeLarge(apiKey) {
     parts.push((await res.text()).trim());
   }
   transcriptText = parts.join("\n\n");
-  audioDuration = currentFile.size / (128 * 1024 / 8);
+  audioDuration = currentFile.size / 16000;
   finish();
 }
 
@@ -466,7 +694,8 @@ function finish() {
   setProgress(100, "✓ הושלם!");
   setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
   document.getElementById("transcriptBox").textContent = transcriptText;
-  document.getElementById("resultCard").style.display = "block";
+  const rc = document.getElementById("resultCard");
+  rc.style.display = "block";
   document.getElementById("runBtn").disabled = false;
 
   const words = transcriptText.split(/\s+/).filter(Boolean).length;
@@ -476,10 +705,17 @@ function finish() {
   document.getElementById("s3").textContent = cost ? "$" + cost.toFixed(2) : "—";
 
   saveToHistory(currentFile.name, words, audioDuration);
+  setTimeout(() => rc.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
 }
 
 /* ---- Actions ---- */
-function copyText() { navigator.clipboard.writeText(transcriptText).then(() => { event.target.textContent = "✓ הועתק!"; setTimeout(() => event.target.textContent = "📋 העתק", 1500); }); }
+function copyText(btn) {
+  navigator.clipboard.writeText(transcriptText).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = "✓ הועתק!";
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
 
 function downloadTxt() {
   const a = document.createElement("a");
@@ -491,16 +727,44 @@ function downloadTxt() {
 function downloadWord() {
   const date = new Date().toLocaleDateString("he-IL");
   const rows = transcriptText.split("\n").filter(l => l.trim()).map(l =>
-    `<p style="direction:rtl;text-align:right;font-family:David,Arial;font-size:12pt;margin:4pt 0 4pt 0;">${l.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</p>`
+    `<p style="direction:rtl;text-align:right;font-family:David,Arial;font-size:12pt;margin:4pt 0;">${escHtml(l)}</p>`
   ).join("");
-  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>תמלול</title></head><body style="direction:rtl;font-family:David,Arial;">
-<h1 style="direction:rtl;text-align:right;font-size:16pt;font-family:David,Arial;color:#1a2744;">${stem()}</h1>
-<p style="direction:rtl;text-align:right;font-size:10pt;color:#6b7280;font-family:David,Arial;">תאריך: ${date}</p><hr/>
-${rows}</body></html>`;
+  const participantLine = participants.length
+    ? `<p style="direction:rtl;text-align:right;font-size:10pt;color:#2563eb;font-family:David,Arial;">משתתפים: ${escHtml(participants.join(", "))}</p>`
+    : "";
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>תמלול</title></head>
+<body style="direction:rtl;font-family:David,Arial;">
+<h1 style="direction:rtl;text-align:right;font-size:16pt;font-family:David,Arial;color:#1a2744;">${escHtml(stem())}</h1>
+<p style="direction:rtl;text-align:right;font-size:10pt;color:#6b7280;font-family:David,Arial;">תאריך: ${date}</p>
+${participantLine}
+<hr/>${rows}</body></html>`;
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\uFEFF" + html], { type: "application/msword;charset=utf-8" }));
+  a.href = URL.createObjectURL(new Blob(["﻿" + html], { type: "application/msword;charset=utf-8" }));
   a.download = stem() + "_transcript.doc";
   a.click();
+}
+
+/* ---- Email ---- */
+function sendEmail() {
+  const email = document.getElementById("emailTo").value.trim();
+  if (!email || !email.includes("@")) {
+    showToast("נא להזין כתובת מייל תקינה", "error");
+    return;
+  }
+  if (!transcriptText) {
+    showToast("אין תמלול לשליחה", "error");
+    return;
+  }
+  const subject = encodeURIComponent("תמלול ישיבה — " + stem());
+  const body = encodeURIComponent(transcriptText.slice(0, 4000));
+  const truncated = transcriptText.length > 4000;
+  window.open(`mailto:${email}?subject=${subject}&body=${body}`);
+  if (truncated) {
+    showToast("התמלול ארוך — מומלץ לצרף קובץ Word", "");
+  } else {
+    showToast("✓ פותח תוכנת המייל...", "success");
+  }
 }
 
 /* ---- History ---- */
@@ -515,14 +779,23 @@ function saveToHistory(name, words, dur) {
 function renderHistory() {
   const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
   const el = document.getElementById("historyList");
-  if (!hist.length) { el.innerHTML = '<div class="empty-history">עדיין אין תמלולים שמורים</div>'; return; }
+  const btn = document.getElementById("clearHistoryBtn");
+  if (!hist.length) {
+    el.innerHTML = '<div class="empty-history">עדיין אין תמלולים שמורים</div>';
+    btn.style.display = "none";
+    return;
+  }
+  btn.style.display = "inline";
   el.innerHTML = hist.map((h, i) => `
-    <div class="history-item" onclick="loadHistory(${i})">
-      <div>
-        <div class="h-name">${h.name}</div>
-        <div class="h-meta">${h.date} · ${(h.words || 0).toLocaleString("he-IL")} מילים · ${fmtTime(h.dur || 0)}</div>
+    <div class="history-item">
+      <div class="history-main" onclick="loadHistory(${i})">
+        <div class="h-name">${escHtml(h.name || "ישיבה")}</div>
+        <div class="h-meta">${escHtml(h.date)} · ${(h.words || 0).toLocaleString("he-IL")} מילים · ${fmtTime(h.dur || 0)}</div>
       </div>
-      <span class="h-badge">טען</span>
+      <div class="history-actions">
+        <span class="h-badge" onclick="loadHistory(${i})">טען</span>
+        <button class="h-delete" onclick="deleteHistory(${i})" title="מחק">🗑</button>
+      </div>
     </div>`).join("");
 }
 
@@ -533,17 +806,36 @@ function loadHistory(i) {
   transcriptText = h.text;
   audioDuration = h.dur || 0;
   document.getElementById("transcriptBox").textContent = transcriptText;
-  document.getElementById("resultCard").style.display = "block";
+  const rc = document.getElementById("resultCard");
+  rc.style.display = "block";
   document.getElementById("s1").textContent = (h.words || 0).toLocaleString("he-IL");
   document.getElementById("s2").textContent = fmtTime(audioDuration);
   document.getElementById("s3").textContent = audioDuration ? "$" + (audioDuration / 60 * 0.006).toFixed(2) : "—";
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  setTimeout(() => rc.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+}
+
+function deleteHistory(i) {
+  const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  hist.splice(i, 1);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+  renderHistory();
+  showToast("הוסר מההיסטוריה");
+}
+
+function clearHistory() {
+  if (!confirm("למחוק את כל ההיסטוריה?")) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+  showToast("ההיסטוריה נמחקה");
 }
 
 /* ---- Utils ---- */
 function fmtTime(s) { return Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0"); }
 function stem() { return currentFile ? currentFile.name.replace(/\.[^.]+$/, "") : "transcript"; }
 function showError(msg) { const e = document.getElementById("errorBox"); e.textContent = msg; e.style.display = "block"; }
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
 </script>
 </body>
 </html>
