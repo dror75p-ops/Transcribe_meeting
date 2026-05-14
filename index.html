@@ -675,6 +675,22 @@ function setProgress(pct, label) {
   document.getElementById("progressLabel").textContent = label;
 }
 
+/* Read file into Uint8Array with progress updates between fromPct and toPct */
+function readFileWithProgress(file, fromPct, toPct) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round(fromPct + (e.loaded / e.total) * (toPct - fromPct));
+        setProgress(pct, `קורא קובץ... ${Math.round((e.loaded / e.total) * 100)}%`);
+      }
+    };
+    reader.onload = () => resolve(new Uint8Array(reader.result));
+    reader.onerror = () => reject(new Error("שגיאה בקריאת הקובץ"));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
 /* ---- Transcription ---- */
 async function startTranscription() {
   const apiKey = document.getElementById("apiKey").value.trim();
@@ -804,7 +820,7 @@ async function ensureFFmpeg(isMobile = false) {
 
   setProgress(18, "מאתחל ממיר...");
   ff.on("progress", ({ progress }) => {
-    if (progress > 0) setProgress(Math.round(20 + progress * 42), `ממיר קובץ... ${Math.round(progress * 100)}%`);
+    if (progress > 0) setProgress(Math.round(34 + progress * 28), `ממיר קובץ... ${Math.round(progress * 100)}%`);
   });
 
   await ff.load({ coreURL, wasmURL });
@@ -833,11 +849,12 @@ async function transcribeWithConversion(apiKey) {
   const ext = currentFile.name.split(".").pop().toLowerCase();
   const inputName = `input.${ext}`;
 
-  setProgress(20, "טוען קובץ לממיר...");
-  const fileData = new Uint8Array(await currentFile.arrayBuffer());
+  setProgress(20, "קורא קובץ...");
+  const fileData = await readFileWithProgress(currentFile, 20, 32);
+  setProgress(32, "טוען קובץ לממיר...");
   await ff.writeFile(inputName, fileData);
 
-  setProgress(20, "ממיר לפורמט WAV 16kHz...");
+  setProgress(34, "ממיר לפורמט WAV 16kHz...");
   let exitCode;
   try {
     exitCode = await ff.exec([
