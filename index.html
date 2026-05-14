@@ -767,13 +767,13 @@ async function startTranscription() {
 
   const doWork = async () => {
     const info = analyzeFileType(currentFile);
-    if (!info.needsChunking) {
-      await transcribeSingle(apiKey);
-    } else if (info.needsConversion) {
+    if (info.needsConversion) {
       await transcribeWithConversion(apiKey);
-    } else {
+    } else if (info.needsChunking) {
       setProgress(10, "קובץ גדול — מפצל לחלקים...");
       await transcribeLarge(apiKey);
+    } else {
+      await transcribeSingle(apiKey);
     }
   };
 
