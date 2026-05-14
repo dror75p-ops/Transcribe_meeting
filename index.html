@@ -14,8 +14,10 @@
 (function() {
   var _W = window.Worker;
   window.Worker = function(url, opts) {
-    if (typeof url === 'string' && /^https?:\/\//.test(url) && url.indexOf(location.origin) !== 0) {
-      var blob = new Blob(['importScripts(' + JSON.stringify(url) + ')'], { type: 'text/javascript' });
+    /* Webpack 5 passes new URL(...) objects; older code passes strings — handle both */
+    var urlStr = (url instanceof URL) ? url.href : (typeof url === 'string' ? url : '');
+    if (urlStr && /^https?:\/\//.test(urlStr) && urlStr.indexOf(location.origin) !== 0) {
+      var blob = new Blob(['importScripts(' + JSON.stringify(urlStr) + ')'], { type: 'text/javascript' });
       url = URL.createObjectURL(blob);
     }
     return new _W(url, opts);
