@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DoryAngel — תמלול ישיבות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1a2744;
+    --cobalt: #2563eb;
+    --cobalt-light: #dbeafe;
+    --bg: #eef1f8;
+    --surface: #ffffff;
+    --text: #1a2744;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --success: #059669;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    direction: rtl;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--navy);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
+  .logo span { color: #93c5fd; }
+  .nav-tag { background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 11px; padding: 3px 10px; border-radius: 99px; }
+
+  /* LAYOUT */
+  .page { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  .page-title { font-size: 24px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+  .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    margin-bottom: 1.25rem;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 1rem;
+  }
+
+  /* API KEY */
+  .api-row { display: flex; gap: 8px; }
+  .api-row input {
+    flex: 1;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: monospace;
+    direction: ltr;
+    outline: none;
+    transition: border 0.15s;
+  }
+  .api-row input:focus { border-color: var(--cobalt); }
+  .btn-sm {
+    height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: #f9fafb;
+    font-size: 13px;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .btn-sm:hover { background: var(--border); }
+  .key-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .key-hint a { color: var(--cobalt); }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 2.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--cobalt); background: var(--cobalt-light); }
+  .drop-icon { font-size: 40px; margin-bottom: 10px; }
+  .drop-title { font-size: 15px; font-weight: 500; color: var(--navy); margin-bottom: 4px; }
+  .drop-sub { font-size: 13px; color: var(--muted); }
+  #fileInput { display: none; }
+
+  /* FILE PREVIEW */
+  .file-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: var(--radius-sm);
+  }
+  .file-icon { font-size: 28px; }
+  .file-details { flex: 1; }
+  .file-name { font-size: 14px; font-weight: 500; color: var(--navy); }
+  .file-size { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .btn-remove { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--muted); padding: 4px; }
+  .btn-remove:hover { color: var(--danger); }
+
+  /* RUN BUTTON */
+  .btn-primary {
+    width: 100%;
+    height: 48px;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-primary:hover:not(:disabled) { background: #253360; }
+  .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* PROGRESS */
+  .progress-wrap { margin-top: 1rem; }
+  .progress-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; text-align: center; }
+  .progress-track { height: 6px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--cobalt); border-radius: 99px; transition: width 0.4s ease; }
+
+  /* ERROR */
+  .error-box {
+    background: var(--danger-light);
+    border: 1px solid #fca5a5;
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-top: 1rem;
+    display: none;
+  }
+
+  /* RESULT */
+  .result-card { display: none; }
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .result-title { font-size: 15px; font-weight: 600; color: var(--navy); }
+  .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn-action {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    font-size: 12px;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+  }
+  .btn-action:hover { background: var(--bg); }
+  .btn-action.primary { background: var(--cobalt); color: #fff; border-color: var(--cobalt); }
+  .btn-action.primary:hover { background: #1d4ed8; }
+
+  .transcript-box {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--text);
+    direction: rtl;
+    text-align: right;
+    min-height: 140px;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border: 1px solid var(--border);
+    font-family: 'Heebo', sans-serif;
+  }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 1rem; }
+  .stat {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .stat-val { font-size: 20px; font-weight: 600; color: var(--navy); }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* HISTORY */
+  .history-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-item:hover { background: var(--bg); margin: 0 -1.5rem; padding: 10px 1.5rem; border-radius: var(--radius-sm); }
+  .h-name { font-size: 13px; font-weight: 500; color: var(--navy); }
+  .h-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .h-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--cobalt-light); color: var(--cobalt); font-weight: 500; }
+  .empty-history { text-align: center; padding: 1.5rem; color: var(--muted); font-size: 13px; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 480px) {
+    .stats { grid-template-columns: repeat(3, 1fr); }
+    .action-row { gap: 4px; }
+    .btn-action { font-size: 11px; padding: 0 8px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Dory<span>Angel</span> &nbsp;|&nbsp; תמלול ישיבות</div>
+  <div class="nav-tag">כלי פנימי</div>
+</nav>
+
+<div class="page">
+  <div class="page-title">🎙️ תמלול ישיבות לעברית</div>
+  <div class="page-sub">העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI Whisper</div>
+
+  <!-- API KEY -->
+  <div class="card">
+    <div class="card-title">🔑 OpenAI API Key</div>
+    <div class="api-row">
+      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
+      <button class="btn-sm" onclick="toggleKey()">הצג</button>
+      <button class="btn-sm" onclick="saveKey()" style="background:#f0fdf4;border-color:#bbf7d0;color:#059669;">שמור</button>
+    </div>
+    <div class="key-hint">
+      המפתח נשמר רק בדפדפן שלך (localStorage). קבל מפתח ב-<a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>
+    </div>
+  </div>
+
+  <!-- FILE UPLOAD -->
+  <div class="card">
+    <div class="card-title">📁 קובץ הקלטה</div>
+
+    <div class="drop-zone" id="dropZone"
+      onclick="document.getElementById('fileInput').click()"
+      ondragover="onDragOver(event)"
+      ondragleave="onDragLeave(event)"
+      ondrop="onDrop(event)">
+      <div class="drop-icon">📤</div>
+      <div class="drop-title">לחץ להעלאת קובץ או גרור לכאן</div>
+      <div class="drop-sub">MP4 · MP3 · WAV · M4A · OGG · עד 500MB</div>
+    </div>
+    <input type="file" id="fileInput" accept="video/mp4,audio/*,.mp4,.mp3,.wav,.m4a,.ogg" onchange="onFileSelect(this.files[0])" />
+
+    <div class="file-preview hidden" id="filePreview">
+      <div class="file-icon">🎬</div>
+      <div class="file-details">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-size" id="fileSize"></div>
+      </div>
+      <button class="btn-remove" onclick="removeFile()" title="הסר קובץ">✕</button>
+    </div>
+  </div>
+
+  <!-- RUN -->
+  <button class="btn-primary" id="runBtn" onclick="startTranscription()" disabled>
+    ▶&nbsp; התחל תמלול
+  </button>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap hidden" id="progressWrap">
+    <div class="progress-label" id="progressLabel">מכין...</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- RESULT -->
+  <div class="card result-card" id="resultCard" style="margin-top:1.25rem;">
+    <div class="result-header">
+      <div class="result-title">📄 תמלול</div>
+      <div class="action-row">
+        <button class="btn-action" onclick="copyText()">📋 העתק</button>
+        <button class="btn-action" onclick="downloadTxt()">💾 TXT</button>
+        <button class="btn-action primary" onclick="downloadWord()">📝 Word</button>
+      </div>
+    </div>
+    <div class="transcript-box" id="transcriptBox" dir="rtl"></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="s1">—</div><div class="stat-lbl">מילים</div></div>
+      <div class="stat"><div class="stat-val" id="s2">—</div><div class="stat-lbl">משך</div></div>
+      <div class="stat"><div class="stat-val" id="s3">—</div><div class="stat-lbl">עלות</div></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card" style="margin-top:1.25rem;">
+    <div class="card-title">🕘 היסטוריה</div>
+    <div id="historyList"><div class="empty-history">עדיין אין תמלולים שמורים</div></div>
+  </div>
+</div>
+
+<script>
+let currentFile = null;
+let transcriptText = "";
+let audioDuration = 0;
+const HISTORY_KEY = "da_transcripts";
+
+/* ---- Init ---- */
+window.onload = () => {
+  const saved = localStorage.getItem("da_api_key");
+  if (saved) document.getElementById("apiKey").value = saved;
+  renderHistory();
+};
+
+/* ---- API Key ---- */
+function toggleKey() {
+  const inp = document.getElementById("apiKey");
+  inp.type = inp.type === "password" ? "text" : "password";
+}
+function saveKey() {
+  const k = document.getElementById("apiKey").value.trim();
+  if (k) { localStorage.setItem("da_api_key", k); alert("✓ מפתח נשמר בדפדפן"); }
+}
+
+/* ---- File ---- */
+function onDragOver(e) { e.preventDefault(); document.getElementById("dropZone").classList.add("drag-over"); }
+function onDragLeave(e) { document.getElementById("dropZone").classList.remove("drag-over"); }
+function onDrop(e) { e.preventDefault(); onDragLeave(e); if (e.dataTransfer.files[0]) onFileSelect(e.dataTransfer.files[0]); }
+
+function onFileSelect(file) {
+  if (!file) return;
+  currentFile = file;
+  document.getElementById("dropZone").classList.add("hidden");
+  document.getElementById("filePreview").classList.remove("hidden");
+  document.getElementById("fileName").textContent = file.name;
+  document.getElementById("fileSize").textContent = (file.size / 1024 / 1024).toFixed(1) + " MB";
+  document.getElementById("runBtn").disabled = false;
+  document.getElementById("resultCard").style.display = "none";
+  document.getElementById("errorBox").style.display = "none";
+}
+
+function removeFile() {
+  currentFile = null;
+  document.getElementById("filePreview").classList.add("hidden");
+  document.getElementById("dropZone").classList.remove("hidden");
+  document.getElementById("runBtn").disabled = true;
+  document.getElementById("fileInput").value = "";
+}
+
+/* ---- Progress ---- */
+function setProgress(pct, label) {
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressLabel").textContent = label;
+}
+
+/* ---- Transcription ---- */
+async function startTranscription() {
+  const apiKey = document.getElementById("apiKey").value.trim();
+  if (!apiKey.startsWith("sk-")) { showError("נא להזין OpenAI API Key תקין (מתחיל ב-sk-)"); return; }
+  if (!currentFile) { showError("נא לבחור קובץ"); return; }
+
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("resultCard").style.display = "none";
+  document.getElementById("progressWrap").classList.remove("hidden");
+  document.getElementById("runBtn").disabled = true;
+  setProgress(5, "מכין...");
+
+  try {
+    const sizeMB = currentFile.size / 1024 / 1024;
+    if (sizeMB > 24) {
+      setProgress(10, "קובץ גדול — מפצל לחלקים...");
+      await transcribeLarge(apiKey);
+    } else {
+      await transcribeSingle(apiKey);
+    }
+  } catch (err) {
+    showError("שגיאה: " + err.message);
+    document.getElementById("progressWrap").classList.add("hidden");
+    document.getElementById("runBtn").disabled = false;
+  }
+}
+
+async function transcribeSingle(apiKey) {
+  setProgress(30, "שולח ל-Whisper...");
+  const fd = new FormData();
+  fd.append("file", currentFile, currentFile.name);
+  fd.append("model", "whisper-1");
+  fd.append("language", "he");
+  fd.append("response_format", "verbose_json");
+  fd.append("timestamp_granularities[]", "segment");
+
+  const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
+  });
+  setProgress(80, "מעבד...");
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || res.statusText); }
+  const data = await res.json();
+  audioDuration = data.duration || 0;
+
+  const lines = (data.segments || []).map(s => "[" + fmtTime(s.start) + "]  " + s.text.trim());
+  transcriptText = lines.length ? lines.join("\n") : data.text;
+  finish();
+}
+
+async function transcribeLarge(apiKey) {
+  const CHUNK = 20 * 1024 * 1024;
+  const total = Math.ceil(currentFile.size / CHUNK);
+  const parts = [];
+  for (let i = 0; i < total; i++) {
+    setProgress(Math.round(15 + (i / total) * 70), `מתמלל חלק ${i + 1} / ${total}...`);
+    const blob = currentFile.slice(i * CHUNK, Math.min((i + 1) * CHUNK, currentFile.size));
+    const ext = currentFile.name.split(".").pop() || "mp4";
+    const fd = new FormData();
+    fd.append("file", new File([blob], `chunk.${ext}`, { type: currentFile.type }), `chunk.${ext}`);
+    fd.append("model", "whisper-1"); fd.append("language", "he"); fd.append("response_format", "text");
+    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
+    });
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || res.statusText); }
+    parts.push((await res.text()).trim());
+  }
+  transcriptText = parts.join("\n\n");
+  audioDuration = currentFile.size / (128 * 1024 / 8);
+  finish();
+}
+
+function finish() {
+  setProgress(100, "✓ הושלם!");
+  setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
+  document.getElementById("transcriptBox").textContent = transcriptText;
+  document.getElementById("resultCard").style.display = "block";
+  document.getElementById("runBtn").disabled = false;
+
+  const words = transcriptText.split(/\s+/).filter(Boolean).length;
+  document.getElementById("s1").textContent = words.toLocaleString("he-IL");
+  document.getElementById("s2").textContent = audioDuration ? fmtTime(audioDuration) : "—";
+  const cost = audioDuration ? (audioDuration / 60 * 0.006) : null;
+  document.getElementById("s3").textContent = cost ? "$" + cost.toFixed(2) : "—";
+
+  saveToHistory(currentFile.name, words, audioDuration);
+}
+
+/* ---- Actions ---- */
+function copyText() { navigator.clipboard.writeText(transcriptText).then(() => { event.target.textContent = "✓ הועתק!"; setTimeout(() => event.target.textContent = "📋 העתק", 1500); }); }
+
+function downloadTxt() {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([transcriptText], { type: "text/plain;charset=utf-8" }));
+  a.download = stem() + "_transcript.txt";
+  a.click();
+}
+
+function downloadWord() {
+  const date = new Date().toLocaleDateString("he-IL");
+  const rows = transcriptText.split("\n").filter(l => l.trim()).map(l =>
+    `<p style="direction:rtl;text-align:right;font-family:David,Arial;font-size:12pt;margin:4pt 0 4pt 0;">${l.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</p>`
+  ).join("");
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>תמלול</title></head><body style="direction:rtl;font-family:David,Arial;">
+<h1 style="direction:rtl;text-align:right;font-size:16pt;font-family:David,Arial;color:#1a2744;">${stem()}</h1>
+<p style="direction:rtl;text-align:right;font-size:10pt;color:#6b7280;font-family:David,Arial;">תאריך: ${date}</p><hr/>
+${rows}</body></html>`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + html], { type: "application/msword;charset=utf-8" }));
+  a.download = stem() + "_transcript.doc";
+  a.click();
+}
+
+/* ---- History ---- */
+function saveToHistory(name, words, dur) {
+  const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  hist.unshift({ name, words, dur, text: transcriptText, date: new Date().toLocaleDateString("he-IL"), ts: Date.now() });
+  if (hist.length > 20) hist.pop();
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+  renderHistory();
+}
+
+function renderHistory() {
+  const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  const el = document.getElementById("historyList");
+  if (!hist.length) { el.innerHTML = '<div class="empty-history">עדיין אין תמלולים שמורים</div>'; return; }
+  el.innerHTML = hist.map((h, i) => `
+    <div class="history-item" onclick="loadHistory(${i})">
+      <div>
+        <div class="h-name">${h.name}</div>
+        <div class="h-meta">${h.date} · ${(h.words || 0).toLocaleString("he-IL")} מילים · ${fmtTime(h.dur || 0)}</div>
+      </div>
+      <span class="h-badge">טען</span>
+    </div>`).join("");
+}
+
+function loadHistory(i) {
+  const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  const h = hist[i];
+  if (!h) return;
+  transcriptText = h.text;
+  audioDuration = h.dur || 0;
+  document.getElementById("transcriptBox").textContent = transcriptText;
+  document.getElementById("resultCard").style.display = "block";
+  document.getElementById("s1").textContent = (h.words || 0).toLocaleString("he-IL");
+  document.getElementById("s2").textContent = fmtTime(audioDuration);
+  document.getElementById("s3").textContent = audioDuration ? "$" + (audioDuration / 60 * 0.006).toFixed(2) : "—";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ---- Utils ---- */
+function fmtTime(s) { return Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0"); }
+function stem() { return currentFile ? currentFile.name.replace(/\.[^.]+$/, "") : "transcript"; }
+function showError(msg) { const e = document.getElementById("errorBox"); e.textContent = msg; e.style.display = "block"; }
+</script>
+</body>
+</html>
