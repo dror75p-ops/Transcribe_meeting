@@ -502,7 +502,7 @@
 
   <!-- TAB WARNING -->
   <div id="tabWarning" style="display:none;margin-top:.75rem;padding:.7rem 1rem;background:#fff8e1;border-right:3px solid #f59e0b;border-radius:6px;font-size:.85rem;color:#7c4a00;text-align:right;">
-    ⚠️ אל תסגרו את הטאב או תרעננו את הדף — התמלול יאבד. ניתן למזער את הדפדפן.
+    ⏳ התמלול פועל ברקע — ניתן לעבור לאפליקציות אחרות. אל תסגרו את הטאב או תרעננו את הדף.
   </div>
 
   <!-- ERROR -->
@@ -715,7 +715,7 @@ async function startTranscription() {
   window._transcribing = true;
   setProgress(5, "מכין...");
 
-  try {
+  const doWork = async () => {
     const info = analyzeFileType(currentFile);
     if (!info.needsChunking) {
       await transcribeSingle(apiKey);
@@ -725,12 +725,22 @@ async function startTranscription() {
       setProgress(10, "קובץ גדול — מפצל לחלקים...");
       await transcribeLarge(apiKey);
     }
-  } catch (err) {
+  };
+
+  const onError = (err) => {
     showError("שגיאה: " + err.message);
     document.getElementById("progressWrap").classList.add("hidden");
     document.getElementById("runBtn").disabled = false;
     document.getElementById("tabWarning").style.display = "none";
     window._transcribing = false;
+  };
+
+  /* Web Locks API — tells the browser this tab has active work;
+     prevents Chrome from throttling or suspending it in the background */
+  if (navigator.locks) {
+    navigator.locks.request("transcription", () => doWork().catch(onError));
+  } else {
+    doWork().catch(onError);
   }
 }
 
