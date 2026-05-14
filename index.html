@@ -6,7 +6,7 @@
 <title>DoryAngel — תמלול ישיבות</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js" defer></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -577,14 +577,14 @@ function addParticipant() {
   inp.value = "";
   renderParticipants();
 }
-function removeParticipant(name) {
-  participants = participants.filter(p => p !== name);
+function removeParticipant(idx) {
+  participants.splice(idx, 1);
   renderParticipants();
 }
 function renderParticipants() {
   const el = document.getElementById("participantTags");
-  el.innerHTML = participants.map(p =>
-    `<span class="ptag">${escHtml(p)}<span class="ptag-remove" onclick="removeParticipant(${JSON.stringify(p)})" title="הסר">×</span></span>`
+  el.innerHTML = participants.map((p, i) =>
+    `<span class="ptag">${escHtml(p)}<span class="ptag-remove" onclick="removeParticipant(${i})" title="הסר">×</span></span>`
   ).join("");
 }
 
@@ -678,7 +678,6 @@ async function startTranscription() {
     if (!info.needsChunking) {
       await transcribeSingle(apiKey);
     } else if (info.needsConversion) {
-      setProgress(8, `מזהה פורמט ${info.ext.toUpperCase()} — ממיר ל-WAV...`);
       await transcribeWithConversion(apiKey);
     } else {
       setProgress(10, "קובץ גדול — מפצל לחלקים...");
@@ -762,7 +761,7 @@ async function fetchToBlobURL(url, mimeType, onProgress) {
   return URL.createObjectURL(new Blob(chunks, { type: mimeType }));
 }
 
-async function ensureFFmpeg() {
+async function ensureFFmpeg(isMobile = false) {
   if (_ffmpeg) return _ffmpeg;
   if (typeof FFmpegWASM === "undefined") {
     throw new Error("ספריית הממיר לא נטענה. רענן את הדף ונסה שנית.");
@@ -772,7 +771,8 @@ async function ensureFFmpeg() {
   const BASE = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
 
   // Fetch to blob:// URLs — required because GitHub Pages blocks cross-origin Workers
-  setProgress(8, "מוריד ממיר (JS)...");
+  const initLabel = isMobile ? "📱 נייד — מוריד ממיר (~25MB, עשוי לקחת כמה דקות)..." : "מוריד ממיר (JS)...";
+  setProgress(8, initLabel);
   let coreURL, wasmURL;
   try {
     coreURL = await fetchToBlobURL(`${BASE}/ffmpeg-core.js`, "text/javascript");
@@ -805,15 +805,10 @@ async function transcribeWithConversion(apiKey) {
   }
 
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (isMobile) {
-    setProgress(5, "📱 נייד זוהה — מאתחל ממיר (עשוי לקחת כמה דקות)...");
-  } else {
-    setProgress(5, "מאתחל ממיר...");
-  }
 
   let ff;
   try {
-    ff = await ensureFFmpeg();
+    ff = await ensureFFmpeg(isMobile);
   } catch (e) {
     throw new Error("שגיאה בטעינת ממיר: " + e.message);
   }
@@ -821,7 +816,7 @@ async function transcribeWithConversion(apiKey) {
   const ext = currentFile.name.split(".").pop().toLowerCase();
   const inputName = `input.${ext}`;
 
-  setProgress(18, "טוען קובץ לממיר...");
+  setProgress(20, "טוען קובץ לממיר...");
   const fileData = new Uint8Array(await currentFile.arrayBuffer());
   await ff.writeFile(inputName, fileData);
 
@@ -928,10 +923,10 @@ function copyText(btn) {
 }
 
 function downloadTxt() {
+  const url = URL.createObjectURL(new Blob([transcriptText], { type: "text/plain;charset=utf-8" }));
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([transcriptText], { type: "text/plain;charset=utf-8" }));
-  a.download = stem() + "_transcript.txt";
-  a.click();
+  a.href = url; a.download = stem() + "_transcript.txt"; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 function downloadWord() {
@@ -949,10 +944,10 @@ function downloadWord() {
 <p style="direction:rtl;text-align:right;font-size:10pt;color:#6b7280;font-family:David,Arial;">תאריך: ${date}</p>
 ${participantLine}
 <hr/>${rows}</body></html>`;
+  const url = URL.createObjectURL(new Blob(["﻿" + html], { type: "application/msword;charset=utf-8" }));
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["﻿" + html], { type: "application/msword;charset=utf-8" }));
-  a.download = stem() + "_transcript.doc";
-  a.click();
+  a.href = url; a.download = stem() + "_transcript.doc"; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 /* ---- Email ---- */
