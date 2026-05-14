@@ -682,7 +682,10 @@ function analyzeFileType(file) {
   const sizeMB = file.size / 1024 / 1024;
   const needsChunking = sizeMB > 24;
   const isContainer = CONTAINER_FORMATS.includes(ext);
-  return { ext, sizeMB, needsChunking, needsConversion: needsChunking && isContainer };
+  /* Container formats (M4A/MP4/OGG/FLAC) always go through FFmpeg — even small files.
+     Direct upload of container formats to Whisper is unreliable on mobile networks
+     because the single large request times out. FFmpeg splits into small WAV chunks. */
+  return { ext, sizeMB, needsChunking, needsConversion: isContainer };
 }
 
 function onFileSelect(file) {
@@ -997,7 +1000,7 @@ async function transcribeWithConversion(apiKey) {
   // Estimate duration from PCM size: bytes / (2 bytes/sample × 16000 samples/sec)
   audioDuration = pcmData.length / (2 * 16000);
 
-  const BYTES_PER_CHUNK = 10 * 60 * 16000 * 2; // 10 min × 16kHz × 16-bit = ~19.2MB
+  const BYTES_PER_CHUNK = 5 * 60 * 16000 * 2; // 5 min × 16kHz × 16-bit = ~9.6MB (reliable on mobile)
   const numChunks = Math.ceil(pcmData.length / BYTES_PER_CHUNK);
   const prompt = buildPrompt();
 
