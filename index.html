@@ -768,28 +768,56 @@ async function transcribeSingle(apiKey) {
   finish();
 }
 
+/* Send pre-built FormData chunks to Whisper in parallel (max 3 concurrent).
+   Results are returned in original chunk order regardless of completion order. */
+async function sendChunksParallel(fdList, apiKey, fromPct, toPct) {
+  const CONCURRENCY = 3;
+  const total = fdList.length;
+  const results = new Array(total).fill(null);
+  let completed = 0;
+  const queue = fdList.map((_, i) => i);
+
+  const runWorker = async () => {
+    while (queue.length > 0) {
+      const i = queue.shift();
+      const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+        method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fdList[i]
+      });
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || res.statusText); }
+      results[i] = (await res.text()).trim();
+      completed++;
+      setProgress(
+        Math.round(fromPct + (completed / total) * (toPct - fromPct)),
+        `מתמלל במקביל... ${completed} / ${total} חלקים הושלמו`
+      );
+    }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, total) }, runWorker));
+  return results;
+}
+
 /* transcribeLarge: for MP3/WAV/WEBM that are large — byte-split is fine for these formats */
 async function transcribeLarge(apiKey) {
   const CHUNK = 20 * 1024 * 1024;
   const total = Math.ceil(currentFile.size / CHUNK);
-  const parts = [];
   const prompt = buildPrompt();
+  const ext = currentFile.name.split(".").pop() || "mp3";
+
+  setProgress(15, `מכין ${total} חלקים לשליחה מקבילית...`);
+  const fdList = [];
   for (let i = 0; i < total; i++) {
-    setProgress(Math.round(15 + (i / total) * 70), `מתמלל חלק ${i + 1} / ${total}...`);
     const blob = currentFile.slice(i * CHUNK, Math.min((i + 1) * CHUNK, currentFile.size));
-    const ext = currentFile.name.split(".").pop() || "mp3";
     const fd = new FormData();
     fd.append("file", new File([blob], `chunk.${ext}`, { type: currentFile.type }), `chunk.${ext}`);
     fd.append("model", "whisper-1");
     fd.append("language", "he");
     fd.append("response_format", "text");
     if (prompt) fd.append("prompt", prompt);
-    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
-    });
-    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || res.statusText); }
-    parts.push((await res.text()).trim());
+    fdList.push(fd);
   }
+
+  const parts = await sendChunksParallel(fdList, apiKey, 20, 96);
   transcriptText = parts.join("\n\n");
   audioDuration = currentFile.size / 16000;
   finish();
@@ -910,11 +938,11 @@ async function transcribeWithConversion(apiKey) {
   const parts = [];
   const prompt = buildPrompt();
 
+  setProgress(65, `מכין ${numChunks} חלקים לשליחה מקבילית...`);
+  const fdList = [];
   for (let i = 0; i < numChunks; i++) {
     const start = i * BYTES_PER_CHUNK;
     const chunkPCM = pcmData.slice(start, start + BYTES_PER_CHUNK);
-    setProgress(Math.round(65 + (i / numChunks) * 30), `שולח ל-Whisper חלק ${i + 1} / ${numChunks}...`);
-
     const wavBlob = pcmToWav(chunkPCM, 16000);
     const fd = new FormData();
     fd.append("file", new File([wavBlob], `chunk_${i}.wav`, { type: "audio/wav" }), `chunk_${i}.wav`);
@@ -922,14 +950,10 @@ async function transcribeWithConversion(apiKey) {
     fd.append("language", "he");
     fd.append("response_format", "text");
     if (prompt) fd.append("prompt", prompt);
-
-    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
-    });
-    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || res.statusText); }
-    parts.push((await res.text()).trim());
+    fdList.push(fd);
   }
 
+  const parts = await sendChunksParallel(fdList, apiKey, 66, 97);
   transcriptText = parts.join("\n\n");
   finish();
 }
