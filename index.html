@@ -501,7 +501,7 @@
   </div>
 
   <!-- TAB WARNING -->
-  <div id="tabWarning" style="display:none;margin-top:.75rem;padding:.7rem 1rem;background:#fff8e1;border-right:3px solid #f59e0b;border-radius:6px;font-size:.85rem;color:#7c4a00;text-align:right;">
+  <div id="tabWarning" style="display:none;margin-top:.75rem;padding:.7rem 1rem;background:#dbeafe;border-right:3px solid #2563eb;border-radius:6px;font-size:.85rem;color:#1a2744;text-align:right;">
     ⏳ התמלול פועל ברקע — ניתן לעבור לאפליקציות אחרות. אל תסגרו את הטאב או תרעננו את הדף.
   </div>
 
@@ -935,7 +935,6 @@ async function transcribeWithConversion(apiKey) {
 
   const BYTES_PER_CHUNK = 10 * 60 * 16000 * 2; // 10 min × 16kHz × 16-bit = ~19.2MB
   const numChunks = Math.ceil(pcmData.length / BYTES_PER_CHUNK);
-  const parts = [];
   const prompt = buildPrompt();
 
   setProgress(65, `מכין ${numChunks} חלקים לשליחה מקבילית...`);
