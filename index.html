@@ -500,6 +500,11 @@
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
 
+  <!-- TAB WARNING -->
+  <div id="tabWarning" style="display:none;margin-top:.75rem;padding:.7rem 1rem;background:#fff8e1;border-right:3px solid #f59e0b;border-radius:6px;font-size:.85rem;color:#7c4a00;text-align:right;">
+    ⚠️ אל תסגרו את הטאב או תרעננו את הדף — התמלול יאבד. ניתן למזער את הדפדפן.
+  </div>
+
   <!-- ERROR -->
   <div class="error-box" id="errorBox"></div>
 
@@ -706,6 +711,8 @@ async function startTranscription() {
   document.getElementById("resultCard").style.display = "none";
   document.getElementById("progressWrap").classList.remove("hidden");
   document.getElementById("runBtn").disabled = true;
+  document.getElementById("tabWarning").style.display = "block";
+  window._transcribing = true;
   setProgress(5, "מכין...");
 
   try {
@@ -722,6 +729,8 @@ async function startTranscription() {
     showError("שגיאה: " + err.message);
     document.getElementById("progressWrap").classList.add("hidden");
     document.getElementById("runBtn").disabled = false;
+    document.getElementById("tabWarning").style.display = "none";
+    window._transcribing = false;
   }
 }
 
@@ -938,6 +947,8 @@ function finish() {
   const rc = document.getElementById("resultCard");
   rc.style.display = "block";
   document.getElementById("runBtn").disabled = false;
+  document.getElementById("tabWarning").style.display = "none";
+  window._transcribing = false;
 
   const words = transcriptText.split(/\s+/).filter(Boolean).length;
   document.getElementById("s1").textContent = words.toLocaleString("he-IL");
@@ -1077,6 +1088,13 @@ function showError(msg) { const e = document.getElementById("errorBox"); e.textC
 function escHtml(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
+
+window.addEventListener("beforeunload", function(e) {
+  if (window._transcribing) {
+    e.preventDefault();
+    e.returnValue = "התמלול עדיין פעיל — האם אתם בטוחים שברצונכם לצאת?";
+  }
+});
 </script>
 </body>
 </html>
