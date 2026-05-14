@@ -301,6 +301,40 @@
     border-top: 1px solid var(--border);
   }
   .email-section .card-title { margin-bottom: 0.75rem; }
+  .claude-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .claude-section .card-title { margin-bottom: 0.75rem; }
+  .claude-instructions {
+    width: 100%;
+    min-height: 90px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: 'Heebo', sans-serif;
+    resize: vertical;
+    direction: rtl;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .claude-instructions:focus { outline: none; border-color: var(--cobalt); }
+  .btn-claude {
+    width: 100%;
+    padding: 11px;
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+  }
+  .btn-claude:hover { background: #6d28d9; }
   .email-row { display: flex; gap: 8px; }
   .email-row input {
     flex: 1;
@@ -533,6 +567,19 @@
         <button class="btn-email" onclick="sendEmail()">📨 שלח</button>
       </div>
       <div class="email-hint" id="emailHint">יפתח את תוכנת המייל שלך עם התמלול המוכן לשליחה</div>
+    </div>
+
+    <!-- CLAUDE SUMMARY -->
+    <div class="claude-section">
+      <div class="card-title">🤖 סיכום חכם עם Claude</div>
+      <textarea class="claude-instructions" id="claudeInstructions" placeholder="הנחיות לסיכום (אופציונלי)...">אנא סכם את ישיבה זו בצורה מסודרת:
+- כותרת הישיבה
+- משתתפים (אם מוזכרים)
+- נושאים עיקריים שנדונו
+- החלטות שהתקבלו
+- משימות להמשך ואחראים</textarea>
+      <button class="btn-claude" onclick="openInClaude()">✨ פתח ב-Claude לסיכום</button>
+      <div class="email-hint" style="margin-top:6px;">מעתיק את התמלול + ההנחיות ופותח Claude — הדבק ושלח</div>
     </div>
   </div>
 
@@ -1028,6 +1075,20 @@ ${participantLine}
   const a = document.createElement("a");
   a.href = url; a.download = stem() + "_transcript.doc"; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+/* ---- Claude Summary ---- */
+function openInClaude() {
+  if (!transcriptText) { showToast("אין תמלול לשליחה", "error"); return; }
+  const instructions = document.getElementById("claudeInstructions").value.trim();
+  const prompt = (instructions ? instructions + "\n\n" : "") +
+    "להלן תמלול הישיבה:\n\n" + transcriptText;
+  navigator.clipboard.writeText(prompt).then(() => {
+    window.open("https://claude.ai/new", "_blank");
+    showToast("✓ הועתק — הדבק בחלון Claude שנפתח", "success");
+  }).catch(() => {
+    showToast("שגיאה בהעתקה — נסה שוב", "error");
+  });
 }
 
 /* ---- Email / Share ---- */
