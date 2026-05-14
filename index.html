@@ -6,6 +6,23 @@
 <title>DoryAngel — תמלול ישיבות</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<!-- Patch Worker constructor BEFORE FFmpeg loads.
+     GitHub Pages blocks: new Worker('https://unpkg.com/...')
+     Fix: wrap cross-origin URLs in a same-origin blob that calls importScripts(),
+     which IS allowed cross-origin inside Worker context (CORS headers are enough). -->
+<script>
+(function() {
+  var _W = window.Worker;
+  window.Worker = function(url, opts) {
+    if (typeof url === 'string' && /^https?:\/\//.test(url) && url.indexOf(location.origin) !== 0) {
+      var blob = new Blob(['importScripts(' + JSON.stringify(url) + ')'], { type: 'text/javascript' });
+      url = URL.createObjectURL(blob);
+    }
+    return new _W(url, opts);
+  };
+  window.Worker.prototype = _W.prototype;
+})();
+</script>
 <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js" defer></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
