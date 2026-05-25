@@ -1481,7 +1481,6 @@ function copyText(btn) {
     setTimeout(() => btn.textContent = orig, 1500);
   });
 }
-
 function downloadTxt() {
   const url = URL.createObjectURL(new Blob([transcriptText], { type: "text/plain;charset=utf-8" }));
   const a = document.createElement("a");
@@ -1650,7 +1649,7 @@ async function writeToFolder(dirHandle, filename, blob) {
 async function executeDriveSave() {
   const fmt = selectedFormat;
   const name = (document.getElementById("driveFileName").value.trim() || combinedStem())
-    .replace(/[/\\:*?"<>|]/g, "-"); // sanitize filename
+    .replace(/[\/\\:*?"<>|]/g, "-"); // sanitize filename
 
   /* No FS API — fall back to download */
   if (!("showDirectoryPicker" in window)) {
