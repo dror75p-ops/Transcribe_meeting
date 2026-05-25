@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Preview — שינויים מוצעים ל-DoryAngel</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #1a2744; --cobalt: #2563eb; --cobalt-light: #dbeafe;
+  --bg: #eef1f8; --surface: #ffffff; --text: #1a2744;
+  --muted: #6b7280; --border: #d1d5db;
+  --success: #059669; --success-light: #f0fdf4;
+  --danger: #dc2626; --danger-light: #fee2e2;
+  --radius: 12px; --radius-sm: 8px;
+}
+body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; padding: 0; }
+nav { background: var(--navy); padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+.logo { color: #fff; font-size: 15px; font-weight: 600; }
+.logo span { color: #93c5fd; }
+.nav-tag { background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 11px; padding: 3px 10px; border-radius: 99px; }
+
+/* Preview banner */
+.preview-banner {
+  background: #7c3aed; color: #fff; text-align: center;
+  padding: 10px; font-size: 13px; font-weight: 500;
+}
+.preview-banner span { opacity: 0.75; font-size: 12px; margin-right: 8px; }
+
+/* Section labels */
+.section-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: #7c3aed; margin: 2rem 0 0.5rem;
+  padding: 0 1rem; display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: #e9d5ff; }
+
+.page { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.page-title { font-size: 24px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; }
+.card { background: var(--surface); border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--border); margin-bottom: 1.25rem; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 1rem; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.card-header .card-title { margin-bottom: 0; }
+
+.field-label { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
+.field-group { margin-bottom: 1rem; }
+.field-group:last-child { margin-bottom: 0; }
+textarea.field-input, input.field-input {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; font-family: 'Heebo', sans-serif;
+  color: var(--text); direction: rtl; outline: none; resize: vertical;
+  transition: border 0.15s; background: #fff;
+}
+textarea.field-input:focus, input.field-input:focus { border-color: var(--cobalt); }
+textarea.field-input { min-height: 80px; line-height: 1.6; }
+.field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.btn-sm {
+  height: 40px; padding: 0 14px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: #f9fafb; font-size: 13px;
+  font-family: 'Heebo', sans-serif; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s; display: inline-flex; align-items: center; color: var(--text);
+}
+.btn-sm:hover { background: var(--border); }
+.btn-sm.success { background: var(--success-light); border-color: #bbf7d0; color: var(--success); }
+.btn-sm.cobalt { background: var(--cobalt-light); border-color: #93c5fd; color: var(--cobalt); }
+
+/* ---- CHANGE 1: Collapsible API key ---- */
+.api-collapsed {
+  display: flex; align-items: center; gap: 10px;
+}
+.api-saved-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--success-light); border: 1px solid #bbf7d0;
+  color: var(--success); font-size: 13px; font-weight: 500;
+  padding: 6px 14px; border-radius: var(--radius-sm);
+  flex: 1;
+}
+.api-edit-link {
+  font-size: 12px; color: var(--cobalt); cursor: pointer;
+  text-decoration: underline; white-space: nowrap;
+}
+
+/* ---- CHANGE 2: Subject field ---- */
+.file-name-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0.75rem;
+}
+.file-name-fixed {
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 13px; color: var(--muted); background: #f9fafb; direction: ltr;
+  text-align: right; font-family: 'Heebo', sans-serif; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.filename-preview {
+  margin-top: 8px; padding: 8px 12px;
+  background: var(--cobalt-light); border-radius: var(--radius-sm);
+  font-size: 12px; color: var(--cobalt); font-weight: 500;
+}
+.filename-preview span { opacity: 0.7; font-weight: 400; }
+
+/* ---- CHANGE 3: Preset chips ---- */
+.preset-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.chip {
+  font-size: 12px; padding: 4px 12px; border-radius: 99px;
+  border: 1px solid var(--border); background: #f9fafb;
+  cursor: pointer; color: var(--text); font-family: 'Heebo', sans-serif;
+  transition: background 0.15s, border-color 0.15s;
+}
+.chip:hover { background: var(--cobalt-light); border-color: #93c5fd; color: var(--cobalt); }
+.chip.active { background: var(--cobalt-light); border-color: #93c5fd; color: var(--cobalt); }
+
+/* ---- CHANGE 4: Result actions ---- */
+.result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+.result-title { font-size: 15px; font-weight: 600; color: var(--navy); }
+.action-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-action {
+  height: 32px; padding: 0 12px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: #fff; font-size: 12px;
+  font-family: 'Heebo', sans-serif; cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  transition: background 0.15s; white-space: nowrap;
+}
+.btn-action:hover { background: var(--bg); }
+.btn-action.primary { background: var(--cobalt); color: #fff; border-color: var(--cobalt); }
+.btn-action.primary:hover { background: #1d4ed8; }
+.btn-action.drive { background: #0f9d58; color: #fff; border-color: #0f9d58; font-size: 13px; height: 36px; padding: 0 16px; }
+.btn-action.drive:hover { background: #0b8049; }
+
+.transcript-box {
+  background: var(--bg); border-radius: var(--radius-sm); padding: 1rem 1.25rem;
+  font-size: 14px; line-height: 1.9; color: var(--text); direction: rtl;
+  min-height: 100px; max-height: 200px; overflow-y: auto;
+  white-space: pre-wrap; border: 1px solid var(--border); font-family: 'Heebo', sans-serif;
+}
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 1rem; }
+.stat { background: var(--bg); border-radius: var(--radius-sm); padding: 12px; text-align: center; border: 1px solid var(--border); }
+.stat-val { font-size: 20px; font-weight: 600; color: var(--navy); }
+.stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ---- CHANGE 5: Save to Drive panel ---- */
+.drive-panel-overlay {
+  position: fixed; inset: 0; background: rgba(26,39,68,0.45);
+  z-index: 100; display: flex; align-items: flex-end; justify-content: center;
+}
+.drive-panel {
+  background: #fff; border-radius: var(--radius) var(--radius) 0 0;
+  padding: 1.5rem; width: 100%; max-width: 500px;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
+  animation: slideUp 0.22s ease;
+}
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.panel-title { font-size: 16px; font-weight: 600; color: var(--navy); }
+.panel-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); }
+
+.save-filename-row { margin-bottom: 1rem; }
+.save-filename-preview {
+  padding: 10px 14px; background: #f0fdf4; border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+  color: #065f46; margin-bottom: 4px; direction: ltr; text-align: right;
+}
+.save-filename-preview small { color: #6b7280; font-weight: 400; margin-right: 4px; }
+
+.format-row { display: flex; gap: 8px; margin-bottom: 1.25rem; }
+.format-btn {
+  flex: 1; padding: 10px; border: 2px solid var(--border); border-radius: var(--radius-sm);
+  background: #fff; font-size: 13px; font-family: 'Heebo', sans-serif;
+  cursor: pointer; text-align: center; transition: all 0.15s;
+}
+.format-btn:hover { border-color: var(--cobalt); background: var(--cobalt-light); }
+.format-btn.selected { border-color: var(--cobalt); background: var(--cobalt-light); color: var(--cobalt); font-weight: 600; }
+
+.folder-section { margin-bottom: 1.25rem; }
+.folder-section-label { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
+.folder-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  margin-bottom: 6px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  background: #fff;
+}
+.folder-option:hover { border-color: var(--cobalt); background: var(--cobalt-light); }
+.folder-option.selected { border-color: #0f9d58; background: #f0fdf4; }
+.folder-icon { font-size: 20px; }
+.folder-details { flex: 1; min-width: 0; }
+.folder-name { font-size: 13px; font-weight: 500; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.folder-path { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.folder-check { font-size: 16px; color: #0f9d58; }
+
+.btn-pick-folder {
+  width: 100%; padding: 10px; border: 1px dashed var(--border);
+  border-radius: var(--radius-sm); background: #f9fafb;
+  font-size: 13px; font-family: 'Heebo', sans-serif; cursor: pointer;
+  color: var(--cobalt); text-align: center; transition: background 0.15s;
+}
+.btn-pick-folder:hover { background: var(--cobalt-light); border-color: var(--cobalt); }
+
+.panel-actions { display: flex; gap: 8px; }
+.btn-panel-cancel { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #fff; font-size: 14px; font-family: 'Heebo', sans-serif; cursor: pointer; }
+.btn-panel-save { flex: 2; padding: 12px; border: none; border-radius: var(--radius-sm); background: #0f9d58; color: #fff; font-size: 14px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer; }
+.btn-panel-save:hover { background: #0b8049; }
+
+.method-note {
+  background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm);
+  padding: 10px 14px; font-size: 12px; color: #92400e; margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+/* Change annotations */
+.change-note {
+  background: #faf5ff; border: 1px solid #e9d5ff; border-right: 3px solid #7c3aed;
+  border-radius: var(--radius-sm); padding: 8px 12px; font-size: 12px; color: #5b21b6;
+  margin-bottom: 0.75rem;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Dory<span>Angel</span> &nbsp;|&nbsp; תמלול ישיבות</div>
+  <div class="nav-tag">כלי פנימי</div>
+</nav>
+
+<div class="preview-banner">
+  👁 תצוגה מקדימה — שינויים מוצעים בלבד. אין קוד פעיל כאן.
+  <span>אשר והשינויים יבוצעו ב-index.html</span>
+</div>
+
+<div class="page">
+  <div class="page-title">🎙️ תמלול ישיבות לעברית</div>
+  <div class="page-sub">העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI Whisper</div>
+
+  <!-- ══════════════ CHANGE 1: Collapsible API Key ══════════════ -->
+  <div class="section-label">שינוי 1 — מפתח API מתקפל</div>
+  <div class="change-note">לאחר שמירת המפתח הכרטיסייה מתקפלת לשורה אחת. לחיצה על "✎ שנה" פותחת אותה מחדש.</div>
+
+  <div class="card">
+    <div class="card-header" style="margin-bottom:0;">
+      <div class="card-title" style="margin-bottom:0;">🔑 OpenAI API Key</div>
+    </div>
+    <div class="api-collapsed" style="margin-top:0.75rem;">
+      <div class="api-saved-badge">✓ מפתח שמור &nbsp;<span style="font-family:monospace;opacity:0.6;">sk-...a3f9</span></div>
+      <span class="api-edit-link">✎ שנה</span>
+    </div>
+    <!-- Hidden when key is saved — shown here for reference: -->
+    <div style="margin-top:0.75rem;display:flex;gap:8px;opacity:0.4;pointer-events:none;">
+      <input style="flex:1;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:monospace;" placeholder="sk-..." disabled/>
+      <button class="btn-sm">הצג</button>
+      <button class="btn-sm success">שמור</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;opacity:0.5;">(שדה נסתר לאחר שמירה)</div>
+  </div>
+
+  <!-- ══════════════ CHANGE 2: Subject Field ══════════════ -->
+  <div class="section-label">שינוי 2 — שדה נושא + שם קובץ משולב</div>
+  <div class="change-note">שדה הנושא נוסף מתחת לשם הקובץ שהועלה. שניהם מאוחדים לשם קובץ אחד בעת השמירה.</div>
+
+  <div class="card">
+    <div class="card-title">⚙️ הגדרות תמלול</div>
+
+    <div class="field-group">
+      <div class="field-label">📁 קובץ שהועלה</div>
+      <div class="file-name-row">
+        <div>
+          <div class="field-label" style="font-size:11px;color:#9ca3af;">שם הקובץ המקורי (לא ניתן לעריכה)</div>
+          <div class="file-name-fixed">ישיבת_צוות_25_05_25.m4a</div>
+        </div>
+        <div>
+          <div class="field-label" style="font-size:11px;">נושא הישיבה (לשם השמירה)</div>
+          <input type="text" class="field-input" placeholder="לדוגמה: ישיבת צוות פיתוח" value="ישיבת צוות פיתוח" style="height:40px;resize:none;" />
+        </div>
+      </div>
+      <div class="filename-preview">
+        📄 שם הקובץ שישמר: <strong>ישיבת צוות פיתוח — ישיבת_צוות_25_05_25</strong>
+        <span>.docx / .txt</span>
+      </div>
+    </div>
+
+    <!-- Preset chips -->
+    <div class="field-group">
+      <div class="field-label">📝 הנחיות לתמלול</div>
+      <div class="preset-chips">
+        <span class="chip">ישיבת פיתוח</span>
+        <span class="chip active">ישיבת צוות</span>
+        <span class="chip">שיחת מכירות</span>
+        <span class="chip">ראיון עבודה</span>
+        <span class="chip">ישיבת הנהלה</span>
+        <span class="chip">שיחת לקוח</span>
+      </div>
+      <textarea class="field-input" style="min-height:65px;">ישיבת צוות — דיון על רודמאפ המוצר. מונחים: sprint, backlog, Jira, PR, release.</textarea>
+      <div class="field-hint">לחץ על צ'יפ לטעינת הנחיות מוכנות, או כתוב ידנית</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ CHANGE 3: Result actions with Drive button ══════════════ -->
+  <div class="section-label">שינוי 3 — כפתורי פעולה בתוצאה (כולל שמירה ל-Drive)</div>
+  <div class="change-note">כפתור "שמור ל-Drive" מוצג בצבע ירוק כ-CTA ראשי. Word/TXT נשארים כמשניים.</div>
+
+  <div class="card">
+    <div class="result-header">
+      <div class="result-title">📄 תמלול</div>
+      <div class="action-row">
+        <button class="btn-action drive">📁 שמור ל-Drive</button>
+        <button class="btn-action">📋 העתק</button>
+        <button class="btn-action">💾 TXT</button>
+        <button class="btn-action primary">📝 Word</button>
+      </div>
+    </div>
+    <div class="transcript-box" dir="rtl">[00:00]  ברוכים הבאים לישיבת הצוות. נתחיל עם עדכון מהספרינט האחרון.
+[00:42]  הסתיימנו את כל הפיצ'רים שתכננו, אבל יש כמה באגים שצריך לטפל בהם.
+[01:15]  מה לגבי לוח הזמנים לרילוז הבא?</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val">1,243</div><div class="stat-lbl">מילים</div></div>
+      <div class="stat"><div class="stat-val">32:14</div><div class="stat-lbl">משך</div></div>
+      <div class="stat"><div class="stat-val">$0.19</div><div class="stat-lbl">עלות</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ CHANGE 4: Save to Drive panel ══════════════ -->
+  <div class="section-label">שינוי 4 — פאנל שמירה ל-Google Drive</div>
+  <div class="change-note">נפתח מלמטה בלחיצה על "שמור ל-Drive". ללא צורך בחשבון Google Cloud — המשתמש בוחר תיקייה מקומית (שמסונכרנת אוטומטית עם Google Drive for Desktop).</div>
+
+  <!-- Simulated panel (always visible here for preview) -->
+  <div style="position:relative;border:2px solid #7c3aed;border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem;">
+    <div style="background:#7c3aed;color:#fff;font-size:11px;padding:4px 10px;text-align:center;">פאנל שמירה — מופיע כשכבת-על מלמטה</div>
+    <div class="drive-panel" style="border-radius:0;box-shadow:none;animation:none;">
+
+      <div class="panel-header">
+        <div class="panel-title">📁 שמור תמלול</div>
+        <button class="panel-close">✕</button>
+      </div>
+
+      <!-- Method note -->
+      <div class="method-note">
+        💡 <strong>ללא הגדרות Google Cloud.</strong> בחר תיקייה מקומית במחשב — אם Google Drive for Desktop מותקן, הקובץ יסונכרן אוטומטית לענן.
+        לא מותקן? <a href="#" style="color:#92400e;">הורד כאן</a>
+      </div>
+
+      <!-- Filename preview -->
+      <div class="save-filename-row">
+        <div class="field-label">📄 שם הקובץ שישמר</div>
+        <div class="save-filename-preview">
+          ישיבת צוות פיתוח — ישיבת_צוות_25_05_25
+          <small style="display:block;font-size:11px;margin-top:2px;">✎ ניתן לערוך</small>
+        </div>
+        <input type="text" class="field-input" value="ישיבת צוות פיתוח — ישיבת_צוות_25_05_25" style="margin-top:6px;" />
+      </div>
+
+      <!-- Format selector -->
+      <div class="field-group">
+        <div class="field-label">פורמט</div>
+        <div class="format-row">
+          <button class="format-btn selected">📝 Word</button>
+          <button class="format-btn">💾 TXT</button>
+          <button class="format-btn">📦 שניהם</button>
+        </div>
+      </div>
+
+      <!-- Folder selector -->
+      <div class="folder-section">
+        <div class="folder-section-label">📂 תיקיית יעד</div>
+
+        <!-- Previously used folders (remembered) -->
+        <div class="folder-option selected">
+          <div class="folder-icon">📁</div>
+          <div class="folder-details">
+            <div class="folder-name">ישיבות 2025</div>
+            <div class="folder-path">Google Drive › Shared › ישיבות 2025</div>
+          </div>
+          <div class="folder-check">✓</div>
+        </div>
+        <div class="folder-option">
+          <div class="folder-icon">📁</div>
+          <div class="folder-details">
+            <div class="folder-name">לקוחות</div>
+            <div class="folder-path">Google Drive › Shared › לקוחות</div>
+          </div>
+        </div>
+        <div class="folder-option">
+          <div class="folder-icon">📁</div>
+          <div class="folder-details">
+            <div class="folder-name">Desktop</div>
+            <div class="folder-path">C:\Users\Dror\Desktop</div>
+          </div>
+        </div>
+
+        <!-- Pick new folder -->
+        <button class="btn-pick-folder" style="margin-top:6px;">＋ בחר תיקייה אחרת...</button>
+      </div>
+
+      <div class="panel-actions">
+        <button class="btn-panel-cancel">ביטול</button>
+        <button class="btn-panel-save">💾 שמור כאן</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Summary of what's NOT changing -->
+  <div class="section-label">ללא שינוי</div>
+  <div class="change-note" style="border-right-color:#059669;background:#f0fdf4;color:#065f46;">
+    ✓ לוגיקת תמלול (Whisper, FFmpeg, chunking) — ללא שינוי<br/>
+    ✓ כרטיסיית משתתפים — ללא שינוי<br/>
+    ✓ כרטיסיית סיכום Claude — ללא שינוי<br/>
+    ✓ היסטוריה — ללא שינוי (רק שם הנושא ישמש כותרת במקום שם הקובץ)<br/>
+    ✓ שליחה במייל — ללא שינוי
+  </div>
+
+</div>
+</body>
+</html>
