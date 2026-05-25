@@ -42,8 +42,12 @@
     --success-light: #f0fdf4;
     --danger: #dc2626;
     --danger-light: #fee2e2;
+    --drive: #1e8e3e;
+    --drive-light: #e6f4ea;
     --radius: 12px;
     --radius-sm: 8px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-panel: 0 -4px 24px rgba(0,0,0,0.13), 0 -1px 6px rgba(0,0,0,0.07);
   }
 
   body {
@@ -52,40 +56,47 @@
     color: var(--text);
     min-height: 100vh;
     direction: rtl;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* NAV */
+  /* ── NAV ─────────────────────────────────── */
   nav {
     background: var(--navy);
     padding: 0 2rem;
-    height: 56px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   }
   .logo { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
   .logo span { color: #93c5fd; }
-  .nav-tag { background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 11px; padding: 3px 10px; border-radius: 99px; }
+  .nav-tag { background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 11px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.3px; }
 
-  /* LAYOUT */
-  .page { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-  .page-title { font-size: 24px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
-  .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; }
+  /* ── LAYOUT ──────────────────────────────── */
+  .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .page-title { font-size: 26px; font-weight: 600; color: var(--navy); margin-bottom: 5px; }
+  .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
 
-  /* CARD */
+  /* ── CARD ────────────────────────────────── */
   .card {
     background: var(--surface);
     border-radius: var(--radius);
     padding: 1.5rem;
     border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
     margin-bottom: 1.25rem;
+    transition: box-shadow 0.2s;
   }
   .card-title {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.7px;
     margin-bottom: 1rem;
   }
   .card-header {
@@ -96,7 +107,7 @@
   }
   .card-header .card-title { margin-bottom: 0; }
 
-  /* API KEY */
+  /* ── API KEY ─────────────────────────────── */
   .api-row { display: flex; gap: 8px; }
   .api-row input {
     flex: 1;
@@ -108,12 +119,34 @@
     font-family: monospace;
     direction: ltr;
     outline: none;
-    transition: border 0.15s;
+    transition: border 0.15s, box-shadow 0.15s;
+    min-width: 0;
   }
-  .api-row input:focus { border-color: var(--cobalt); }
+  .api-row input:focus { border-color: var(--cobalt); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+
+  /* Collapsed API key state */
+  .api-saved-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--success-light);
+    border: 1px solid #bbf7d0;
+    border-radius: var(--radius-sm);
+  }
+  .api-saved-bar .check { color: var(--success); font-size: 16px; flex-shrink: 0; }
+  .api-saved-bar .label { flex: 1; font-size: 13px; font-weight: 500; color: #065f46; }
+  .api-saved-bar .mono { font-family: monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.5px; }
+  .api-edit-link {
+    font-size: 12px; color: var(--cobalt); cursor: pointer;
+    text-decoration: none; white-space: nowrap; flex-shrink: 0;
+    padding: 4px 8px; border-radius: 6px; transition: background 0.15s;
+  }
+  .api-edit-link:hover { background: var(--cobalt-light); }
+
   .btn-sm {
     height: 40px;
-    padding: 0 14px;
+    padding: 0 16px;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     background: #f9fafb;
@@ -121,28 +154,29 @@
     font-family: 'Heebo', sans-serif;
     cursor: pointer;
     white-space: nowrap;
-    transition: background 0.15s;
+    transition: background 0.15s, border-color 0.15s;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     color: var(--text);
+    flex-shrink: 0;
   }
-  .btn-sm:hover { background: var(--border); }
+  .btn-sm:hover { background: #f0f2f5; border-color: #b0b8c8; }
   .btn-sm.success { background: var(--success-light); border-color: #bbf7d0; color: var(--success); }
   .btn-sm.success:hover { background: #dcfce7; }
   .btn-sm.cobalt { background: var(--cobalt-light); border-color: #93c5fd; color: var(--cobalt); }
   .btn-sm.cobalt:hover { background: #bfdbfe; }
-  .key-hint { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+  .key-hint { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.7; }
   .key-hint a { color: var(--cobalt); text-decoration: none; }
   .key-hint a:hover { text-decoration: underline; }
 
-  /* INSTRUCTIONS */
-  .field-label { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
-  .field-group { margin-bottom: 1rem; }
+  /* ── FIELDS ──────────────────────────────── */
+  .field-label { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+  .field-group { margin-bottom: 1.1rem; }
   .field-group:last-child { margin-bottom: 0; }
   textarea.field-input, input.field-input {
     width: 100%;
-    padding: 10px 12px;
+    padding: 10px 14px;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     font-size: 13px;
@@ -151,85 +185,164 @@
     direction: rtl;
     outline: none;
     resize: vertical;
-    transition: border 0.15s;
+    transition: border 0.15s, box-shadow 0.15s;
     background: #fff;
+    line-height: 1.6;
   }
-  textarea.field-input:focus, input.field-input:focus { border-color: var(--cobalt); }
-  textarea.field-input { min-height: 80px; line-height: 1.6; }
-  .field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  textarea.field-input:focus, input.field-input:focus {
+    border-color: var(--cobalt);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
+  textarea.field-input { min-height: 80px; }
+  .field-hint { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.6; }
 
-  /* PARTICIPANTS */
+  /* Subject + filename row */
+  .subject-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .subject-row-label { font-size: 11px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
+  .filename-fixed {
+    height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--muted);
+    background: #f9fafb;
+    display: flex;
+    align-items: center;
+    direction: ltr;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Heebo', sans-serif;
+  }
+  .filename-combined {
+    margin-top: 2px;
+    padding: 9px 14px;
+    background: var(--cobalt-light);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--cobalt);
+    font-weight: 500;
+    line-height: 1.5;
+    display: none;
+  }
+  .filename-combined.show { display: block; }
+  .filename-combined .fc-label { font-weight: 400; color: #3b82f6; opacity: 0.8; margin-left: 4px; }
+
+  /* ── PRESET CHIPS ────────────────────────── */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .chip {
+    font-size: 12px;
+    padding: 5px 13px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    background: #f9fafb;
+    cursor: pointer;
+    color: var(--text);
+    font-family: 'Heebo', sans-serif;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .chip:hover { background: var(--cobalt-light); border-color: #93c5fd; color: var(--cobalt); }
+  .chip.active { background: var(--cobalt-light); border-color: #93c5fd; color: var(--cobalt); font-weight: 500; }
+
+  /* ── PARTICIPANTS ─────────────────────────── */
   .participant-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .ptag {
     display: inline-flex; align-items: center; gap: 4px;
     background: var(--cobalt-light); color: var(--cobalt);
     font-size: 12px; font-weight: 500;
-    padding: 3px 10px; border-radius: 99px;
+    padding: 4px 10px; border-radius: 99px;
   }
   .ptag-remove { cursor: pointer; font-size: 14px; line-height: 1; color: #93c5fd; }
   .ptag-remove:hover { color: var(--cobalt); }
 
-  /* DROP ZONE */
+  /* ── DROP ZONE ───────────────────────────── */
   .drop-zone {
     border: 2px dashed var(--border);
     border-radius: var(--radius);
-    padding: 2.5rem 1rem;
+    padding: 2.75rem 1rem;
     text-align: center;
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s;
   }
   .drop-zone:hover, .drop-zone.drag-over { border-color: var(--cobalt); background: var(--cobalt-light); }
-  .drop-icon { font-size: 40px; margin-bottom: 10px; }
-  .drop-title { font-size: 15px; font-weight: 500; color: var(--navy); margin-bottom: 4px; }
+  .drop-icon { font-size: 40px; margin-bottom: 12px; }
+  .drop-title { font-size: 15px; font-weight: 500; color: var(--navy); margin-bottom: 5px; }
   .drop-sub { font-size: 13px; color: var(--muted); }
   #fileInput { display: none; }
 
-  /* FILE PREVIEW */
+  /* ── FILE PREVIEW ────────────────────────── */
   .file-preview {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
+    gap: 14px;
+    padding: 14px 16px;
     background: var(--success-light);
     border: 1px solid #bbf7d0;
     border-radius: var(--radius-sm);
   }
-  .file-icon { font-size: 28px; }
+  .file-icon { font-size: 28px; flex-shrink: 0; }
   .file-details { flex: 1; min-width: 0; }
   .file-name { font-size: 14px; font-weight: 500; color: var(--navy); direction: ltr; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .file-size { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .btn-remove { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--muted); padding: 4px; flex-shrink: 0; }
-  .btn-remove:hover { color: var(--danger); }
+  .file-size { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .btn-remove { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--muted); padding: 6px; flex-shrink: 0; transition: color 0.15s; border-radius: 6px; }
+  .btn-remove:hover { color: var(--danger); background: var(--danger-light); }
 
-  /* RUN BUTTON */
+  /* ── FILE TYPE BADGE ─────────────────────── */
+  .file-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+  .file-type-badge.ok { background: var(--cobalt-light); color: var(--cobalt); }
+  .file-type-badge.convert { background: #fef3c7; color: #92400e; }
+
+  /* ── RUN BUTTON ──────────────────────────── */
   .btn-primary {
     width: 100%;
-    height: 48px;
+    height: 52px;
     background: var(--navy);
     color: #fff;
     border: none;
     border-radius: var(--radius-sm);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
     font-family: 'Heebo', sans-serif;
     cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(26,39,68,0.18);
   }
-  .btn-primary:hover:not(:disabled) { background: #253360; }
+  .btn-primary:hover:not(:disabled) { background: #253360; box-shadow: 0 4px 16px rgba(26,39,68,0.22); }
   .btn-primary:active:not(:disabled) { transform: scale(0.99); }
-  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
-  /* PROGRESS */
-  .progress-wrap { margin-top: 1rem; }
-  .progress-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; text-align: center; }
-  .progress-track { height: 6px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+  /* ── PROGRESS ────────────────────────────── */
+  .progress-wrap { margin-top: 1.1rem; }
+  .progress-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; text-align: center; }
+  .progress-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--cobalt); border-radius: 99px; transition: width 0.4s ease; }
 
-  /* ERROR */
+  /* ── ERROR ───────────────────────────────── */
   .error-box {
     background: var(--danger-light);
     border: 1px solid #fca5a5;
@@ -239,16 +352,25 @@
     color: var(--danger);
     margin-top: 1rem;
     display: none;
+    line-height: 1.6;
   }
 
-  /* RESULT */
+  /* ── RESULT ──────────────────────────────── */
   .result-card { display: none; }
-  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
   .result-title { font-size: 15px; font-weight: 600; color: var(--navy); }
-  .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .action-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .btn-action {
-    height: 32px;
-    padding: 0 12px;
+    height: 34px;
+    padding: 0 14px;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     background: #fff;
@@ -258,12 +380,32 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    transition: background 0.15s;
+    transition: background 0.15s, border-color 0.15s;
     white-space: nowrap;
+    color: var(--text);
   }
-  .btn-action:hover { background: var(--bg); }
-  .btn-action.primary { background: var(--cobalt); color: #fff; border-color: var(--cobalt); }
-  .btn-action.primary:hover { background: #1d4ed8; }
+  .btn-action:hover { background: var(--bg); border-color: #b0b8c8; }
+  .btn-action.secondary { background: var(--cobalt); color: #fff; border-color: var(--cobalt); }
+  .btn-action.secondary:hover { background: #1d4ed8; }
+  .btn-drive {
+    height: 38px;
+    padding: 0 18px;
+    background: var(--drive);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 6px rgba(30,142,62,0.25);
+  }
+  .btn-drive:hover { background: #157a33; box-shadow: 0 3px 10px rgba(30,142,62,0.3); }
 
   .transcript-box {
     background: var(--bg);
@@ -282,95 +424,61 @@
     font-family: 'Heebo', sans-serif;
   }
 
-  /* STATS */
+  /* ── STATS ───────────────────────────────── */
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 1rem; }
   .stat {
     background: var(--bg);
     border-radius: var(--radius-sm);
-    padding: 12px;
+    padding: 14px 12px;
     text-align: center;
     border: 1px solid var(--border);
   }
   .stat-val { font-size: 20px; font-weight: 600; color: var(--navy); }
-  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; }
 
-  /* EMAIL SECTION */
-  .email-section {
-    margin-top: 1rem;
-    padding-top: 1rem;
+  /* ── EMAIL / CLAUDE SECTIONS ─────────────── */
+  .email-section, .claude-section {
+    margin-top: 1.1rem;
+    padding-top: 1.1rem;
     border-top: 1px solid var(--border);
   }
-  .email-section .card-title { margin-bottom: 0.75rem; }
-  .claude-section {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border);
-  }
-  .claude-section .card-title { margin-bottom: 0.75rem; }
+  .email-section .card-title, .claude-section .card-title { margin-bottom: 0.75rem; }
   .claude-instructions {
-    width: 100%;
-    min-height: 90px;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-family: 'Heebo', sans-serif;
-    resize: vertical;
-    direction: rtl;
-    margin-bottom: 8px;
-    color: var(--text);
+    width: 100%; min-height: 90px; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 13px; font-family: 'Heebo', sans-serif;
+    resize: vertical; direction: rtl; margin-bottom: 10px;
+    color: var(--text); line-height: 1.6; outline: none;
+    transition: border 0.15s, box-shadow 0.15s;
   }
-  .claude-instructions:focus { outline: none; border-color: var(--cobalt); }
+  .claude-instructions:focus { border-color: var(--cobalt); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
   .btn-claude {
-    width: 100%;
-    padding: 11px;
-    background: #7c3aed;
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-family: 'Heebo', sans-serif;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: 0.3px;
+    width: 100%; padding: 12px; background: #7c3aed; color: #fff;
+    border: none; border-radius: var(--radius-sm); font-size: 14px;
+    font-family: 'Heebo', sans-serif; font-weight: 600; cursor: pointer;
+    letter-spacing: 0.3px; transition: background 0.15s;
   }
   .btn-claude:hover { background: #6d28d9; }
   .email-row { display: flex; gap: 8px; }
   .email-row input {
-    flex: 1;
-    height: 40px;
-    padding: 0 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-family: 'Heebo', sans-serif;
-    direction: ltr;
-    outline: none;
-    transition: border 0.15s;
+    flex: 1; height: 40px; padding: 0 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 13px;
+    font-family: 'Heebo', sans-serif; direction: ltr; outline: none;
+    transition: border 0.15s, box-shadow 0.15s; min-width: 0;
   }
-  .email-row input:focus { border-color: var(--cobalt); }
+  .email-row input:focus { border-color: var(--cobalt); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
   .btn-email {
-    height: 40px;
-    padding: 0 16px;
-    background: var(--navy);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-family: 'Heebo', sans-serif;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    height: 40px; padding: 0 18px; background: var(--navy); color: #fff;
+    border: none; border-radius: var(--radius-sm); font-size: 13px;
+    font-family: 'Heebo', sans-serif; cursor: pointer; white-space: nowrap;
+    transition: background 0.15s; display: flex; align-items: center; gap: 6px; flex-shrink: 0;
   }
   .btn-email:hover { background: #253360; }
-  .email-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .email-hint { font-size: 11px; color: var(--muted); margin-top: 7px; line-height: 1.6; }
 
-  /* HISTORY */
+  /* ── HISTORY ─────────────────────────────── */
   .history-item {
-    padding: 10px 0;
+    padding: 11px 0;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -381,73 +489,154 @@
   .history-main { flex: 1; cursor: pointer; min-width: 0; }
   .history-main:hover .h-name { color: var(--cobalt); }
   .h-name { font-size: 13px; font-weight: 500; color: var(--navy); transition: color 0.15s; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .h-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .h-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--cobalt-light); color: var(--cobalt); font-weight: 500; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .h-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .h-badge { font-size: 11px; padding: 3px 10px; border-radius: 99px; background: var(--cobalt-light); color: var(--cobalt); font-weight: 500; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.15s; }
   .h-badge:hover { background: #bfdbfe; }
-  .h-delete { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--muted); padding: 4px 6px; flex-shrink: 0; transition: color 0.15s; }
-  .h-delete:hover { color: var(--danger); }
+  .h-delete { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--muted); padding: 5px 7px; flex-shrink: 0; transition: color 0.15s; border-radius: 6px; }
+  .h-delete:hover { color: var(--danger); background: var(--danger-light); }
   .history-actions { display: flex; align-items: center; gap: 4px; }
-  .empty-history { text-align: center; padding: 1.5rem; color: var(--muted); font-size: 13px; }
-  .clear-history-btn {
-    font-size: 11px; color: var(--muted); background: none; border: none;
-    cursor: pointer; padding: 2px 0; text-decoration: underline;
-  }
+  .empty-history { text-align: center; padding: 2rem; color: var(--muted); font-size: 13px; }
+  .clear-history-btn { font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 2px 0; text-decoration: underline; }
   .clear-history-btn:hover { color: var(--danger); }
 
-  /* TOAST */
+  /* ── TOAST ───────────────────────────────── */
   .toast-wrap {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    pointer-events: none;
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 999; display: flex; flex-direction: column; align-items: center;
+    gap: 8px; pointer-events: none;
   }
   .toast {
-    background: var(--navy);
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 99px;
-    font-size: 13px;
-    font-family: 'Heebo', sans-serif;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.2s, transform 0.2s;
-    white-space: nowrap;
+    background: var(--navy); color: #fff; padding: 10px 22px;
+    border-radius: 99px; font-size: 13px; font-family: 'Heebo', sans-serif;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2); opacity: 0; transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s; white-space: nowrap;
   }
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.success { background: var(--success); }
   .toast.error { background: var(--danger); }
 
-  /* FILE TYPE BADGE */
-  .file-type-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 99px;
-    margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
+  /* ── DRIVE PANEL ─────────────────────────── */
+  .drive-overlay {
+    position: fixed; inset: 0; background: rgba(26,39,68,0.5);
+    z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    backdrop-filter: blur(2px);
   }
-  .file-type-badge.ok { background: var(--cobalt-light); color: var(--cobalt); }
-  .file-type-badge.convert { background: #fef3c7; color: #92400e; }
+  .drive-overlay.open { opacity: 1; pointer-events: auto; }
+  .drive-panel {
+    background: #fff; border-radius: var(--radius) var(--radius) 0 0;
+    padding: 1.5rem 1.5rem 2rem;
+    width: 100%; max-width: 500px;
+    box-shadow: var(--shadow-panel);
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32,0.72,0,1);
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .drive-overlay.open .drive-panel { transform: translateY(0); }
+
+  .panel-drag { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 1.25rem; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .panel-title { font-size: 17px; font-weight: 600; color: var(--navy); }
+  .panel-close {
+    background: #f3f4f6; border: none; width: 32px; height: 32px;
+    border-radius: 50%; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); transition: background 0.15s, color 0.15s;
+  }
+  .panel-close:hover { background: var(--border); color: var(--text); }
+
+  /* Drive filename */
+  .drive-name-group { margin-bottom: 1.1rem; }
+  .drive-name-group .field-label { margin-bottom: 6px; }
+  #driveFileName {
+    width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 13px;
+    font-family: 'Heebo', sans-serif; direction: rtl; outline: none;
+    transition: border 0.15s, box-shadow 0.15s; color: var(--text);
+  }
+  #driveFileName:focus { border-color: var(--cobalt); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+
+  /* Format tabs */
+  .format-tabs { display: flex; gap: 8px; margin-bottom: 1.25rem; }
+  .format-tab {
+    flex: 1; padding: 10px 8px; border: 2px solid var(--border);
+    border-radius: var(--radius-sm); background: #fff; font-size: 13px;
+    font-family: 'Heebo', sans-serif; cursor: pointer; text-align: center;
+    transition: all 0.15s; color: var(--text); white-space: nowrap;
+    font-weight: 500;
+  }
+  .format-tab:hover { border-color: var(--cobalt); background: var(--cobalt-light); color: var(--cobalt); }
+  .format-tab.active { border-color: var(--cobalt); background: var(--cobalt-light); color: var(--cobalt); }
+
+  /* Folder section */
+  .folder-section { margin-bottom: 1.25rem; }
+  .folder-section-title {
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px;
+  }
+  .folder-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); margin-bottom: 6px; cursor: pointer;
+    transition: border-color 0.15s, background 0.15s; background: #fff;
+  }
+  .folder-item:hover { border-color: var(--drive); background: var(--drive-light); }
+  .folder-item.selected { border-color: var(--drive); background: var(--drive-light); }
+  .folder-item-icon { font-size: 20px; flex-shrink: 0; }
+  .folder-item-info { flex: 1; min-width: 0; }
+  .folder-item-name { font-size: 13px; font-weight: 500; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .folder-item-path { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .folder-check { color: var(--drive); font-size: 16px; flex-shrink: 0; }
+
+  .btn-pick-folder {
+    width: 100%; padding: 11px 14px; border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm); background: #f9fafb;
+    font-size: 13px; font-family: 'Heebo', sans-serif; cursor: pointer;
+    color: var(--cobalt); text-align: center; transition: background 0.15s, border-color 0.15s;
+    margin-top: 4px;
+  }
+  .btn-pick-folder:hover { background: var(--cobalt-light); border-color: var(--cobalt); }
+
+  /* No FS API fallback */
+  .drive-fallback {
+    background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm);
+    padding: 12px 14px; font-size: 12px; color: #78350f; line-height: 1.7;
+    margin-bottom: 1.1rem;
+  }
+  .drive-fallback strong { color: #92400e; }
+
+  .panel-footer { display: flex; gap: 10px; margin-top: 0.5rem; }
+  .btn-panel-cancel {
+    flex: 1; padding: 13px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: #fff; font-size: 14px;
+    font-family: 'Heebo', sans-serif; cursor: pointer; color: var(--text);
+    transition: background 0.15s;
+  }
+  .btn-panel-cancel:hover { background: var(--bg); }
+  .btn-panel-save {
+    flex: 2; padding: 13px; border: none; border-radius: var(--radius-sm);
+    background: var(--drive); color: #fff; font-size: 14px; font-weight: 600;
+    font-family: 'Heebo', sans-serif; cursor: pointer;
+    transition: background 0.15s; box-shadow: 0 2px 6px rgba(30,142,62,0.25);
+  }
+  .btn-panel-save:hover { background: #157a33; }
 
   .hidden { display: none !important; }
 
-  @media (max-width: 480px) {
+  /* ── RESPONSIVE ──────────────────────────── */
+  @media (max-width: 520px) {
+    .page { padding: 1.5rem 1rem 4rem; }
     .stats { grid-template-columns: repeat(3, 1fr); }
-    .action-row { gap: 4px; }
-    .btn-action { font-size: 11px; padding: 0 8px; }
+    .action-row { gap: 5px; }
+    .btn-action { font-size: 11px; padding: 0 10px; }
+    .btn-drive { font-size: 12px; padding: 0 14px; }
+    .subject-row { grid-template-columns: 1fr; }
     .api-row { flex-wrap: wrap; }
     .api-row input { min-width: 0; }
+    .format-tabs { gap: 5px; }
+    .format-tab { font-size: 12px; padding: 9px 6px; }
+    .panel-footer { gap: 8px; }
   }
 </style>
 </head>
@@ -465,35 +654,82 @@
   <!-- API KEY -->
   <div class="card">
     <div class="card-title">🔑 OpenAI API Key</div>
-    <div class="api-row">
-      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
-      <button class="btn-sm" onclick="toggleKey()">הצג</button>
-      <button class="btn-sm success" onclick="saveKey()">שמור</button>
+
+    <!-- Collapsed state (shown when key is saved) -->
+    <div id="apiKeySaved" class="hidden">
+      <div class="api-saved-bar">
+        <span class="check">✓</span>
+        <span class="label">מפתח שמור</span>
+        <span class="mono" id="apiKeyHint"></span>
+        <span class="api-edit-link" onclick="expandApiKey()">✎ שנה</span>
+      </div>
     </div>
-    <div class="key-hint">
-      המפתח נשמר רק בדפדפן שלך (localStorage).<br/>
-      אין מפתח? &rarr;
-      <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">צור מפתח חדש ב-platform.openai.com ↗</a>
+
+    <!-- Full form -->
+    <div id="apiKeyForm">
+      <div class="api-row">
+        <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
+        <button class="btn-sm" onclick="toggleKey()">הצג</button>
+        <button class="btn-sm success" onclick="saveKey()">שמור</button>
+      </div>
+      <div class="key-hint">
+        המפתח נשמר רק בדפדפן שלך (localStorage).<br/>
+        אין מפתח? &rarr;
+        <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">צור מפתח חדש ב-platform.openai.com ↗</a>
+      </div>
     </div>
   </div>
 
-  <!-- TRANSCRIPTION SETTINGS -->
+  <!-- SETTINGS -->
   <div class="card">
     <div class="card-title">⚙️ הגדרות תמלול</div>
 
+    <!-- Subject + filename row -->
+    <div class="field-group" id="subjectGroup">
+      <div class="subject-row">
+        <div>
+          <div class="subject-row-label">📁 שם קובץ מקורי</div>
+          <div class="filename-fixed" id="originalFileName">לא נבחר קובץ</div>
+        </div>
+        <div>
+          <div class="subject-row-label">✏️ נושא הישיבה</div>
+          <input type="text" id="meetingSubjectInput" class="field-input" style="height:40px;resize:none;"
+            placeholder='לדוגמה: ישיבת פיתוח Q3'
+            oninput="onSubjectChange()" />
+        </div>
+      </div>
+      <div class="filename-combined" id="filenameCombined">
+        <span class="fc-label">שם לשמירה:</span>
+        <strong id="filenameCombinedText"></strong>
+      </div>
+    </div>
+
+    <!-- Participants -->
     <div class="field-group">
       <div class="field-label">👥 משתתפים (יעזור ל-Whisper לזהות שמות)</div>
       <div style="display:flex;gap:8px;">
-        <input type="text" id="participantInput" class="field-input" placeholder='הוסף שם ולחץ Enter — למשל: "דרור", "מיכל"' style="flex:1;" onkeydown="onParticipantKey(event)" />
+        <input type="text" id="participantInput" class="field-input" style="flex:1;"
+          placeholder='הוסף שם ולחץ Enter — למשל: "דרור", "מיכל"'
+          onkeydown="onParticipantKey(event)" />
         <button class="btn-sm cobalt" onclick="addParticipant()">+ הוסף</button>
       </div>
       <div class="participant-tags" id="participantTags"></div>
     </div>
 
+    <!-- Instructions + preset chips -->
     <div class="field-group">
       <div class="field-label">📝 הנחיות לתמלול (אופציונלי)</div>
-      <textarea id="instructions" class="field-input" placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira. יש לשמור על מינוח מקצועי."></textarea>
-      <div class="field-hint">הנחיות אלו יועברו ל-Whisper כהקשר וישפרו את דיוק התמלול</div>
+      <div class="chip-row">
+        <span class="chip" onclick="applyChip(this,'ישיבת פיתוח')">💻 ישיבת פיתוח</span>
+        <span class="chip" onclick="applyChip(this,'ישיבת צוות')">👥 ישיבת צוות</span>
+        <span class="chip" onclick="applyChip(this,'שיחת מכירות')">💼 שיחת מכירות</span>
+        <span class="chip" onclick="applyChip(this,'ראיון עבודה')">🎤 ראיון עבודה</span>
+        <span class="chip" onclick="applyChip(this,'ישיבת הנהלה')">🏛️ ישיבת הנהלה</span>
+        <span class="chip" onclick="applyChip(this,'שיחת לקוח')">📞 שיחת לקוח</span>
+      </div>
+      <textarea id="instructions" class="field-input"
+        placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira."></textarea>
+      <div class="field-hint">לחץ על ניחוש מהיר למעלה, או כתוב הנחיות מותאמות ל-Whisper</div>
     </div>
   </div>
 
@@ -535,7 +771,7 @@
   </div>
 
   <!-- TAB WARNING -->
-  <div id="tabWarning" style="display:none;margin-top:.75rem;padding:.7rem 1rem;background:#dbeafe;border-right:3px solid #2563eb;border-radius:6px;font-size:.85rem;color:#1a2744;text-align:right;">
+  <div id="tabWarning" style="display:none;margin-top:.75rem;padding:.75rem 1rem;background:#dbeafe;border-right:3px solid #2563eb;border-radius:8px;font-size:.85rem;color:#1a2744;text-align:right;line-height:1.6;">
     ⏳ התמלול פועל ברקע — ניתן לעבור לאפליקציות אחרות. אל תסגרו את הטאב או תרעננו את הדף.
   </div>
 
@@ -547,9 +783,10 @@
     <div class="result-header">
       <div class="result-title">📄 תמלול</div>
       <div class="action-row">
+        <button class="btn-drive" onclick="openDrivePanel()">📁 שמור ל-Drive</button>
         <button class="btn-action" onclick="copyText(this)">📋 העתק</button>
         <button class="btn-action" onclick="downloadTxt()">💾 TXT</button>
-        <button class="btn-action primary" onclick="downloadWord()">📝 Word</button>
+        <button class="btn-action secondary" onclick="downloadWord()">📝 Word</button>
       </div>
     </div>
     <div class="transcript-box" id="transcriptBox" dir="rtl"></div>
@@ -579,7 +816,7 @@
 - החלטות שהתקבלו
 - משימות להמשך ואחראים</textarea>
       <button class="btn-claude" onclick="openInClaude()">✨ פתח ב-Claude לסיכום</button>
-      <div class="email-hint" style="margin-top:6px;">מעתיק את התמלול + ההנחיות ופותח Claude — הדבק ושלח</div>
+      <div class="email-hint" style="margin-top:7px;">מעתיק את התמלול + ההנחיות ופותח Claude — הדבק ושלח</div>
     </div>
   </div>
 
@@ -593,6 +830,58 @@
   </div>
 </div>
 
+<!-- GOOGLE DRIVE SAVE PANEL -->
+<div class="drive-overlay" id="driveOverlay" onclick="onOverlayClick(event)">
+  <div class="drive-panel" id="drivePanel">
+    <div class="panel-drag"></div>
+    <div class="panel-header">
+      <div class="panel-title">📁 שמור תמלול</div>
+      <button class="panel-close" onclick="closeDrivePanel()">✕</button>
+    </div>
+
+    <!-- Filename -->
+    <div class="drive-name-group">
+      <div class="field-label">📄 שם הקובץ</div>
+      <input type="text" id="driveFileName" placeholder="שם הקובץ..." />
+    </div>
+
+    <!-- Format -->
+    <div class="field-label" style="margin-bottom:8px;">פורמט</div>
+    <div class="format-tabs" style="margin-bottom:1.25rem;">
+      <button class="format-tab active" data-fmt="word" onclick="selectFormat(this)">📝 Word</button>
+      <button class="format-tab" data-fmt="txt" onclick="selectFormat(this)">💾 TXT</button>
+      <button class="format-tab" data-fmt="both" onclick="selectFormat(this)">📦 שניהם</button>
+    </div>
+
+    <!-- Folder selector -->
+    <div class="folder-section">
+      <div class="folder-section-title">📂 תיקיית יעד</div>
+
+      <!-- FS API supported -->
+      <div id="fsFolderUI">
+        <div id="recentFolders"></div>
+        <button class="btn-pick-folder" onclick="pickFolder()">＋ בחר תיקייה...</button>
+        <div class="field-hint" style="margin-top:8px;">
+          💡 בחר תיקייה מקומית. אם Google Drive for Desktop מותקן — הקובץ יסונכרן אוטומטית לענן.
+        </div>
+      </div>
+
+      <!-- FS API not supported -->
+      <div id="fsFallbackUI" class="hidden">
+        <div class="drive-fallback">
+          <strong>הדפדפן שלך אינו תומך בשמירה ישירה לתיקייה.</strong><br/>
+          הורד את הקובץ ואז גרור אותו לתיקיית Google Drive שלך.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <button class="btn-panel-cancel" onclick="closeDrivePanel()">ביטול</button>
+      <button class="btn-panel-save" id="btnPanelSave" onclick="executeDriveSave()">💾 שמור כאן</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div class="toast-wrap" id="toastWrap"></div>
 
@@ -601,13 +890,29 @@ let currentFile = null;
 let transcriptText = "";
 let audioDuration = 0;
 let participants = [];
+let meetingSubject = "";
+let driveDirectoryHandle = null;
+let selectedFormat = "word";
+
 const HISTORY_KEY = "da_transcripts";
+const DRIVE_FOLDER_KEY = "da_drive_folders"; // stores [{name, path}]
 
 /* ---- Init ---- */
 window.onload = () => {
   const saved = localStorage.getItem("da_api_key");
-  if (saved) document.getElementById("apiKey").value = saved;
+  if (saved) {
+    document.getElementById("apiKey").value = saved;
+    collapseApiKey(saved);
+  }
   renderHistory();
+  renderRecentFolders();
+
+  // Check File System Access API support
+  if (!("showDirectoryPicker" in window)) {
+    document.getElementById("fsFolderUI").classList.add("hidden");
+    document.getElementById("fsFallbackUI").classList.remove("hidden");
+    document.getElementById("btnPanelSave").textContent = "⬇️ הורד קובץ";
+  }
 };
 
 /* ---- Toast ---- */
@@ -621,7 +926,7 @@ function showToast(msg, type = "") {
   setTimeout(() => {
     t.classList.remove("show");
     setTimeout(() => t.remove(), 250);
-  }, 2500);
+  }, 2800);
 }
 
 /* ---- API Key ---- */
@@ -633,7 +938,54 @@ function saveKey() {
   const k = document.getElementById("apiKey").value.trim();
   if (!k) { showToast("נא להזין מפתח API", "error"); return; }
   localStorage.setItem("da_api_key", k);
+  collapseApiKey(k);
   showToast("✓ מפתח נשמר בדפדפן", "success");
+}
+function collapseApiKey(key) {
+  const hint = key.length > 8 ? key.slice(0, 5) + "..." + key.slice(-4) : "•••";
+  document.getElementById("apiKeyHint").textContent = hint;
+  document.getElementById("apiKeySaved").classList.remove("hidden");
+  document.getElementById("apiKeyForm").classList.add("hidden");
+}
+function expandApiKey() {
+  document.getElementById("apiKeySaved").classList.add("hidden");
+  document.getElementById("apiKeyForm").classList.remove("hidden");
+  document.getElementById("apiKey").focus();
+}
+
+/* ---- Subject field ---- */
+function onSubjectChange() {
+  meetingSubject = document.getElementById("meetingSubjectInput").value.trim();
+  updateFilenameCombined();
+}
+function updateFilenameCombined() {
+  const combined = combinedStem();
+  const el = document.getElementById("filenameCombined");
+  const txt = document.getElementById("filenameCombinedText");
+  if (currentFile && meetingSubject) {
+    txt.textContent = combined;
+    el.classList.add("show");
+  } else {
+    el.classList.remove("show");
+  }
+  // Also sync drive panel filename if open
+  const dfn = document.getElementById("driveFileName");
+  if (dfn && !dfn.dataset.userEdited) dfn.value = combined;
+}
+
+/* ---- Preset chips ---- */
+const CHIP_PRESETS = {
+  "ישיבת פיתוח": "ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira, PR, release.",
+  "ישיבת צוות":  "ישיבת צוות שבועית. דיון על התקדמות, חסימות ומשימות הבאות.",
+  "שיחת מכירות": "שיחת מכירות עם לקוח. הצגת מוצר, שאלות ותשובות, סיכום עסקה.",
+  "ראיון עבודה":  "ראיון עבודה — שאלות מקצועיות ותשובות מועמד.",
+  "ישיבת הנהלה": "ישיבת הנהלה בכירה. דיון אסטרטגי, תקציב ויעדים.",
+  "שיחת לקוח":   "שיחת שירות לקוחות. בירור בעיה, פתרון ומעקב.",
+};
+function applyChip(el, label) {
+  document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("instructions").value = CHIP_PRESETS[label] || "";
 }
 
 /* ---- Participants ---- */
@@ -673,18 +1025,14 @@ function onDragOver(e) { e.preventDefault(); document.getElementById("dropZone")
 function onDragLeave(e) { document.getElementById("dropZone").classList.remove("drag-over"); }
 function onDrop(e) { e.preventDefault(); onDragLeave(e); if (e.dataTransfer.files[0]) onFileSelect(e.dataTransfer.files[0]); }
 
-/* ---- File type analysis ---- */
-const WHISPER_NATIVE = ["mp3","wav","webm","mpga","mpeg"]; // sent as-is even when large
-const CONTAINER_FORMATS = ["mp4","m4a","ogg","flac"]; // need FFmpeg conversion before chunking
+const WHISPER_NATIVE = ["mp3","wav","webm","mpga","mpeg"];
+const CONTAINER_FORMATS = ["mp4","m4a","ogg","flac"];
 
 function analyzeFileType(file) {
   const ext = file.name.split(".").pop().toLowerCase();
   const sizeMB = file.size / 1024 / 1024;
   const needsChunking = sizeMB > 24;
   const isContainer = CONTAINER_FORMATS.includes(ext);
-  /* Container formats (M4A/MP4/OGG/FLAC) always go through FFmpeg — even small files.
-     Direct upload of container formats to Whisper is unreliable on mobile networks
-     because the single large request times out. FFmpeg splits into small WAV chunks. */
   return { ext, sizeMB, needsChunking, needsConversion: isContainer };
 }
 
@@ -692,11 +1040,13 @@ function onFileSelect(file) {
   if (!file) return;
   currentFile = file;
   const info = analyzeFileType(file);
+  const originalStem = file.name.replace(/\.[^.]+$/, "");
 
   document.getElementById("dropZone").classList.add("hidden");
   document.getElementById("filePreview").classList.remove("hidden");
   document.getElementById("fileName").textContent = file.name;
   document.getElementById("fileSize").textContent = info.sizeMB.toFixed(1) + " MB";
+  document.getElementById("originalFileName").textContent = originalStem;
 
   const badge = document.getElementById("fileTypeBadge");
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -712,6 +1062,7 @@ function onFileSelect(file) {
     badge.innerHTML = `<span class="file-type-badge ok">✓ ${info.ext.toUpperCase()} — נתמך ישירות</span>`;
   }
 
+  updateFilenameCombined();
   document.getElementById("runBtn").disabled = false;
   document.getElementById("resultCard").style.display = "none";
   document.getElementById("errorBox").style.display = "none";
@@ -724,6 +1075,8 @@ function removeFile() {
   document.getElementById("runBtn").disabled = true;
   document.getElementById("fileInput").value = "";
   document.getElementById("fileTypeBadge").innerHTML = "";
+  document.getElementById("originalFileName").textContent = "לא נבחר קובץ";
+  document.getElementById("filenameCombined").classList.remove("show");
 }
 
 /* ---- Progress ---- */
@@ -732,7 +1085,6 @@ function setProgress(pct, label) {
   document.getElementById("progressLabel").textContent = label;
 }
 
-/* Read file into Uint8Array with progress updates between fromPct and toPct */
 function readFileWithProgress(file, fromPct, toPct) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -785,8 +1137,6 @@ async function startTranscription() {
     window._transcribing = false;
   };
 
-  /* Web Locks API — tells the browser this tab has active work;
-     prevents Chrome from throttling or suspending it in the background */
   if (navigator.locks) {
     navigator.locks.request("transcription", () => doWork().catch(onError));
   } else {
@@ -815,7 +1165,6 @@ async function transcribeSingle(apiKey) {
   finish();
 }
 
-/* Whisper API fetch with up to 3 retries on network errors or 5xx responses */
 async function whisperFetch(fd, apiKey, onAttempt, asText = false) {
   const MAX = 3;
   let lastErr;
@@ -826,12 +1175,11 @@ async function whisperFetch(fd, apiKey, onAttempt, asText = false) {
         method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
       });
       if (res.ok) return asText ? (await res.text()).trim() : await res.json();
-      /* 4xx = permanent error (bad key, bad file) — don't retry */
       const e = await res.json().catch(() => ({}));
       if (res.status < 500) throw new Error(e.error?.message || res.statusText);
       lastErr = new Error(e.error?.message || `שגיאת שרת ${res.status}`);
     } catch (err) {
-      if (err.message && !err.message.includes("fetch")) throw err; /* rethrow 4xx */
+      if (err.message && !err.message.includes("fetch")) throw err;
       lastErr = err;
     }
     if (attempt < MAX) await new Promise(r => setTimeout(r, attempt * 2000));
@@ -839,13 +1187,10 @@ async function whisperFetch(fd, apiKey, onAttempt, asText = false) {
   throw lastErr;
 }
 
-/* Find the best silence-based split point near targetByte in raw PCM data.
-   Scans ±20 sec around the target; returns byte offset of silence midpoint.
-   Falls back to exact targetByte if no suitable silence is found. */
 function findSilenceSplit(pcmData, targetByte) {
-  const WINDOW   = 20 * 16000 * 2; // ±20 seconds in bytes
-  const THRESH   = 400;             // silence amplitude (out of 32767)
-  const MIN_SAMP = 1600;            // 100ms minimum silence run
+  const WINDOW   = 20 * 16000 * 2;
+  const THRESH   = 400;
+  const MIN_SAMP = 1600;
 
   const samples    = new Int16Array(pcmData.buffer, pcmData.byteOffset, pcmData.byteLength / 2);
   const targetSamp = Math.floor(targetByte / 2);
@@ -869,12 +1214,11 @@ function findSilenceSplit(pcmData, targetByte) {
       silStart = -1; silLen = 0;
     }
   }
-  return bestSamp * 2; // convert sample index back to byte offset
+  return bestSamp * 2;
 }
 
-/* Split PCM into WAV blobs at silence points near every CHUNK_BYTES boundary */
 function buildSilenceChunks(pcmData) {
-  const CHUNK_BYTES = 5 * 60 * 16000 * 2; // 5-min target size
+  const CHUNK_BYTES = 5 * 60 * 16000 * 2;
   const numChunks   = Math.ceil(pcmData.length / CHUNK_BYTES);
   const blobs = [];
   let start = 0;
@@ -887,15 +1231,12 @@ function buildSilenceChunks(pcmData) {
   return blobs;
 }
 
-/* Send WAV blobs to Whisper in parallel batches of CONCURRENCY.
-   Between batches, the last 30 words of the previous batch become the
-   prompt for the next batch (prompt chaining for boundary accuracy). */
 async function sendChunksWithBatchChaining(chunkBlobs, apiKey, basePrompt, fromPct, toPct) {
   const CONCURRENCY = 3;
   const total    = chunkBlobs.length;
   const results  = new Array(total);
   let completed  = 0;
-  let chainTail  = ""; // last 30 words of previous batch's final chunk
+  let chainTail  = "";
 
   const getTail = (text) =>
     text ? text.trim().split(/\s+/).slice(-30).join(" ") : "";
@@ -913,7 +1254,7 @@ async function sendChunksWithBatchChaining(chunkBlobs, apiKey, basePrompt, fromP
 
   for (let b = 0; b < total; b += CONCURRENCY) {
     const batchIdx = Array.from({ length: Math.min(CONCURRENCY, total - b) }, (_, j) => b + j);
-    const tail     = chainTail; // snapshot for this batch
+    const tail     = chainTail;
 
     await Promise.all(batchIdx.map(i =>
       whisperFetch(makeFd(i, tail), apiKey, null, true).then(text => {
@@ -932,8 +1273,6 @@ async function sendChunksWithBatchChaining(chunkBlobs, apiKey, basePrompt, fromP
   return results;
 }
 
-/* Send pre-built FormData chunks to Whisper in parallel (max 3 concurrent).
-   Results are returned in original chunk order regardless of completion order. */
 async function sendChunksParallel(fdList, apiKey, fromPct, toPct) {
   const CONCURRENCY = 3;
   const total = fdList.length;
@@ -957,7 +1296,6 @@ async function sendChunksParallel(fdList, apiKey, fromPct, toPct) {
   return results;
 }
 
-/* transcribeLarge: for MP3/WAV/WEBM that are large — byte-split is fine for these formats */
 async function transcribeLarge(apiKey) {
   const CHUNK = 20 * 1024 * 1024;
   const total = Math.ceil(currentFile.size / CHUNK);
@@ -983,7 +1321,6 @@ async function transcribeLarge(apiKey) {
   finish();
 }
 
-/* ---- FFmpeg.wasm loader ---- */
 let _ffmpeg = null;
 
 async function fetchToBlobURL(url, mimeType, onProgress) {
@@ -1012,7 +1349,6 @@ async function ensureFFmpeg(isMobile = false) {
   const ff = new FFmpeg();
   const BASE = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
 
-  // Fetch to blob:// URLs — required because GitHub Pages blocks cross-origin Workers
   const initLabel = isMobile ? "📱 נייד — מוריד ממיר (~25MB, עשוי לקחת כמה דקות)..." : "מוריד ממיר (JS)...";
   setProgress(8, initLabel);
   let coreURL, wasmURL;
@@ -1037,9 +1373,6 @@ async function ensureFFmpeg(isMobile = false) {
   return ff;
 }
 
-/* transcribeWithConversion: FFmpeg converts M4A/MP4/OGG/FLAC → 16kHz mono PCM,
-   we wrap each 10-min chunk in a WAV header and send to Whisper.
-   Memory peak: ~2-3× file size in WASM pool — much safer than Web Audio API. */
 async function transcribeWithConversion(apiKey) {
   const sizeMB = currentFile.size / 1024 / 1024;
   if (sizeMB > 200) {
@@ -1067,12 +1400,9 @@ async function transcribeWithConversion(apiKey) {
   let exitCode;
   try {
     exitCode = await ff.exec([
-      "-i", inputName,
-      "-vn",           // skip video if present
-      "-ar", "16000",  // 16kHz — optimal for speech recognition
-      "-ac", "1",      // mono
-      "-f", "s16le",   // raw signed 16-bit PCM (no WAV header — we add per-chunk below)
-      "output.pcm"
+      "-i", inputName, "-vn",
+      "-ar", "16000", "-ac", "1",
+      "-f", "s16le", "output.pcm"
     ]);
   } catch (e) {
     await ff.deleteFile(inputName).catch(() => {});
@@ -1087,10 +1417,9 @@ async function transcribeWithConversion(apiKey) {
   await ff.deleteFile(inputName).catch(() => {});
 
   setProgress(62, "קורא נתוני אודיו...");
-  const pcmData = await ff.readFile("output.pcm"); // Uint8Array of 16-bit samples
+  const pcmData = await ff.readFile("output.pcm");
   await ff.deleteFile("output.pcm").catch(() => {});
 
-  // Estimate duration from PCM size: bytes / (2 bytes/sample × 16000 samples/sec)
   audioDuration = pcmData.length / (2 * 16000);
 
   const prompt = buildPrompt();
@@ -1104,7 +1433,6 @@ async function transcribeWithConversion(apiKey) {
   finish();
 }
 
-/* Wrap raw signed 16-bit LE PCM bytes in a WAV header */
 function pcmToWav(pcmBytes, sampleRate) {
   const dataSize = pcmBytes.length;
   const ab = new ArrayBuffer(44 + dataSize);
@@ -1136,11 +1464,16 @@ function finish() {
   const cost = audioDuration ? (audioDuration / 60 * 0.006) : null;
   document.getElementById("s3").textContent = cost ? "$" + cost.toFixed(2) : "—";
 
-  if (currentFile) saveToHistory(currentFile.name, words, audioDuration);
+  // Pre-fill drive panel filename
+  const dfn = document.getElementById("driveFileName");
+  dfn.value = combinedStem();
+  dfn.dataset.userEdited = "";
+
+  if (currentFile) saveToHistory(currentFile.name, meetingSubject, words, audioDuration);
   setTimeout(() => rc.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
 }
 
-/* ---- Actions ---- */
+/* ---- Download actions ---- */
 function copyText(btn) {
   navigator.clipboard.writeText(transcriptText).then(() => {
     const orig = btn.textContent;
@@ -1152,11 +1485,11 @@ function copyText(btn) {
 function downloadTxt() {
   const url = URL.createObjectURL(new Blob([transcriptText], { type: "text/plain;charset=utf-8" }));
   const a = document.createElement("a");
-  a.href = url; a.download = stem() + "_transcript.txt"; a.click();
+  a.href = url; a.download = combinedStem() + "_transcript.txt"; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
-function downloadWord() {
+function buildWordBlob() {
   const date = new Date().toLocaleDateString("he-IL");
   const rows = transcriptText.split("\n").filter(l => l.trim()).map(l =>
     `<p style="direction:rtl;text-align:right;font-family:David,Arial;font-size:12pt;margin:4pt 0;">${escHtml(l)}</p>`
@@ -1164,16 +1497,23 @@ function downloadWord() {
   const participantLine = participants.length
     ? `<p style="direction:rtl;text-align:right;font-size:10pt;color:#2563eb;font-family:David,Arial;">משתתפים: ${escHtml(participants.join(", "))}</p>`
     : "";
+  const titleLine = meetingSubject
+    ? escHtml(meetingSubject + (currentFile ? " — " + stem() : ""))
+    : escHtml(stem());
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><title>תמלול</title></head>
 <body style="direction:rtl;font-family:David,Arial;">
-<h1 style="direction:rtl;text-align:right;font-size:16pt;font-family:David,Arial;color:#1a2744;">${escHtml(stem())}</h1>
+<h1 style="direction:rtl;text-align:right;font-size:16pt;font-family:David,Arial;color:#1a2744;">${titleLine}</h1>
 <p style="direction:rtl;text-align:right;font-size:10pt;color:#6b7280;font-family:David,Arial;">תאריך: ${date}</p>
 ${participantLine}
 <hr/>${rows}</body></html>`;
-  const url = URL.createObjectURL(new Blob(["﻿" + html], { type: "application/msword;charset=utf-8" }));
+  return new Blob(["﻿" + html], { type: "application/msword;charset=utf-8" });
+}
+
+function downloadWord() {
+  const url = URL.createObjectURL(buildWordBlob());
   const a = document.createElement("a");
-  a.href = url; a.download = stem() + "_transcript.doc"; a.click();
+  a.href = url; a.download = combinedStem() + "_transcript.doc"; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
@@ -1195,25 +1535,18 @@ function openInClaude() {
 async function sendEmail() {
   if (!transcriptText) { showToast("אין תמלול לשליחה", "error"); return; }
 
-  const title = "תמלול ישיבה — " + stem();
-  const txtFile = new File([transcriptText], stem() + ".txt", { type: "text/plain" });
+  const title = "תמלול ישיבה — " + combinedStem();
+  const txtFile = new File([transcriptText], combinedStem() + ".txt", { type: "text/plain" });
 
-  /* On mobile: use Web Share API — opens native share sheet (Gmail, WhatsApp, etc.)
-     with the full transcript as an attached file, no URL length limit. */
   if (navigator.canShare && navigator.canShare({ files: [txtFile] })) {
     try {
       await navigator.share({ title, files: [txtFile] });
       return;
     } catch (e) {
-      if (e.name !== "AbortError") {
-        /* share failed — fall through to mailto */
-      } else {
-        return; /* user cancelled */
-      }
+      if (e.name !== "AbortError") { /* fall through */ } else { return; }
     }
   }
 
-  /* Desktop fallback: mailto link with full text (browsers handle up to ~64KB) */
   const email = document.getElementById("emailTo").value.trim();
   if (!email || !email.includes("@")) {
     showToast("נא להזין כתובת מייל תקינה", "error");
@@ -1225,7 +1558,6 @@ async function sendEmail() {
   showToast("✓ פותח תוכנת המייל...", "success");
 }
 
-/* Hide email input row on mobile where Web Share API is available — not needed there */
 (function() {
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   if (isMobile && navigator.share) {
@@ -1236,10 +1568,136 @@ async function sendEmail() {
   }
 })();
 
+/* ---- Google Drive Panel ---- */
+function openDrivePanel() {
+  if (!transcriptText) { showToast("אין תמלול לשמירה", "error"); return; }
+  const dfn = document.getElementById("driveFileName");
+  dfn.value = combinedStem();
+  dfn.dataset.userEdited = "";
+  dfn.addEventListener("input", () => { dfn.dataset.userEdited = "1"; }, { once: true });
+  renderRecentFolders();
+  document.getElementById("driveOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDrivePanel() {
+  document.getElementById("driveOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function onOverlayClick(e) {
+  if (e.target === document.getElementById("driveOverlay")) closeDrivePanel();
+}
+
+function selectFormat(el) {
+  document.querySelectorAll(".format-tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  selectedFormat = el.dataset.fmt;
+}
+
+/* ---- Folder management ---- */
+function getSavedFolders() {
+  try { return JSON.parse(localStorage.getItem(DRIVE_FOLDER_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveFolderToHistory(name, path) {
+  const folders = getSavedFolders().filter(f => f.name !== name);
+  folders.unshift({ name, path });
+  if (folders.length > 5) folders.pop();
+  localStorage.setItem(DRIVE_FOLDER_KEY, JSON.stringify(folders));
+}
+function renderRecentFolders() {
+  const container = document.getElementById("recentFolders");
+  if (!container) return;
+  const folders = getSavedFolders();
+  if (!folders.length) { container.innerHTML = ""; return; }
+  container.innerHTML = folders.map((f, i) => `
+    <div class="folder-item${driveDirectoryHandle && driveDirectoryHandle.name === f.name ? " selected" : ""}"
+         onclick="selectRecentFolder(${i})">
+      <div class="folder-item-icon">📁</div>
+      <div class="folder-item-info">
+        <div class="folder-item-name">${escHtml(f.name)}</div>
+        <div class="folder-item-path">${escHtml(f.path || "")}</div>
+      </div>
+      ${driveDirectoryHandle && driveDirectoryHandle.name === f.name ? '<div class="folder-check">✓</div>' : ''}
+    </div>`).join("");
+}
+
+async function selectRecentFolder(i) {
+  /* Re-pick the folder so the browser grants permission for this session */
+  await pickFolder();
+}
+
+async function pickFolder() {
+  try {
+    const handle = await window.showDirectoryPicker({ mode: "readwrite" });
+    driveDirectoryHandle = handle;
+    saveFolderToHistory(handle.name, handle.name);
+    renderRecentFolders();
+    showToast("✓ תיקייה נבחרה: " + handle.name, "success");
+  } catch (e) {
+    if (e.name !== "AbortError") showToast("שגיאה בבחירת תיקייה", "error");
+  }
+}
+
+async function writeToFolder(dirHandle, filename, blob) {
+  const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
+async function executeDriveSave() {
+  const fmt = selectedFormat;
+  const name = (document.getElementById("driveFileName").value.trim() || combinedStem())
+    .replace(/[/\\:*?"<>|]/g, "-"); // sanitize filename
+
+  /* No FS API — fall back to download */
+  if (!("showDirectoryPicker" in window)) {
+    if (fmt === "word" || fmt === "both") downloadWord();
+    if (fmt === "txt" || fmt === "both") downloadTxt();
+    closeDrivePanel();
+    return;
+  }
+
+  if (!driveDirectoryHandle) {
+    showToast("נא לבחור תיקייה תחילה", "error");
+    return;
+  }
+
+  try {
+    if (fmt === "word" || fmt === "both") {
+      await writeToFolder(driveDirectoryHandle, name + ".doc", buildWordBlob());
+    }
+    if (fmt === "txt" || fmt === "both") {
+      const blob = new Blob([transcriptText], { type: "text/plain;charset=utf-8" });
+      await writeToFolder(driveDirectoryHandle, name + ".txt", blob);
+    }
+    showToast("✓ נשמר בהצלחה ל: " + driveDirectoryHandle.name, "success");
+    closeDrivePanel();
+  } catch (e) {
+    if (e.name === "NotAllowedError") {
+      showToast("גישה לתיקייה נדחתה — נסה לבחור שוב", "error");
+      driveDirectoryHandle = null;
+      renderRecentFolders();
+    } else {
+      showToast("שגיאה בשמירה: " + e.message, "error");
+    }
+  }
+}
+
 /* ---- History ---- */
-function saveToHistory(name, words, dur) {
+function saveToHistory(fileName, subject, words, dur) {
   const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-  hist.unshift({ name, words, dur, text: transcriptText, date: new Date().toLocaleDateString("he-IL"), ts: Date.now() });
+  hist.unshift({
+    name: fileName,
+    subject: subject || "",
+    words,
+    dur,
+    text: transcriptText,
+    date: new Date().toLocaleDateString("he-IL"),
+    ts: Date.now()
+  });
   if (hist.length > 20) hist.pop();
   localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
   renderHistory();
@@ -1255,17 +1713,22 @@ function renderHistory() {
     return;
   }
   btn.style.display = "inline";
-  el.innerHTML = hist.map((h, i) => `
+  el.innerHTML = hist.map((h, i) => {
+    const displayName = h.subject
+      ? h.subject + (h.name ? " — " + h.name.replace(/\.[^.]+$/, "") : "")
+      : (h.name || "ישיבה");
+    return `
     <div class="history-item">
       <div class="history-main" onclick="loadHistory(${i})">
-        <div class="h-name">${escHtml(h.name || "ישיבה")}</div>
+        <div class="h-name">${escHtml(displayName)}</div>
         <div class="h-meta">${escHtml(h.date)} · ${(h.words || 0).toLocaleString("he-IL")} מילים · ${fmtTime(h.dur || 0)}</div>
       </div>
       <div class="history-actions">
         <span class="h-badge" onclick="loadHistory(${i})">טען</span>
         <button class="h-delete" onclick="deleteHistory(${i})" title="מחק">🗑</button>
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
 function loadHistory(i) {
@@ -1274,6 +1737,10 @@ function loadHistory(i) {
   if (!h) return;
   transcriptText = h.text;
   audioDuration = h.dur || 0;
+  if (h.subject) {
+    meetingSubject = h.subject;
+    document.getElementById("meetingSubjectInput").value = h.subject;
+  }
   document.getElementById("transcriptBox").textContent = transcriptText;
   const rc = document.getElementById("resultCard");
   rc.style.display = "block";
@@ -1301,6 +1768,13 @@ function clearHistory() {
 /* ---- Utils ---- */
 function fmtTime(s) { return Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0"); }
 function stem() { return currentFile ? currentFile.name.replace(/\.[^.]+$/, "") : "transcript"; }
+function combinedStem() {
+  const s = meetingSubject.trim();
+  const f = stem();
+  if (s && currentFile) return s + " — " + f;
+  if (s) return s;
+  return f;
+}
 function showError(msg) { const e = document.getElementById("errorBox"); e.textContent = msg; e.style.display = "block"; }
 function escHtml(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
