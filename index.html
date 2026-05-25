@@ -1650,7 +1650,7 @@ async function writeToFolder(dirHandle, filename, blob) {
 async function executeDriveSave() {
   const fmt = selectedFormat;
   const name = (document.getElementById("driveFileName").value.trim() || combinedStem())
-    .replace(/[/\\:*?"<>|]/g, "-"); // sanitize filename
+    .replace(/[\/\\:*?"<>|]/g, "-"); // sanitize filename
 
   /* No FS API — fall back to download */
   if (!("showDirectoryPicker" in window)) {
