@@ -1296,28 +1296,126 @@ async function sendChunksParallel(fdList, apiKey, fromPct, toPct) {
   return results;
 }
 
+/* ---- WAV chunking helpers (pure) ----
+   Raw byte-slicing strips the RIFF/fmt header off every WAV chunk after the
+   first, so Whisper can't decode them. These helpers parse the header once and
+   rebuild a valid self-contained WAV around each slice. Any failure falls back
+   to the original raw-slice path, so existing working formats never regress. */
+function _wavFourCC(bytes, off) {
+  return String.fromCharCode(bytes[off], bytes[off + 1], bytes[off + 2], bytes[off + 3]);
+}
+function _wavU32(bytes, off) {
+  return (bytes[off] | (bytes[off + 1] << 8) | (bytes[off + 2] << 16) | (bytes[off + 3] << 24)) >>> 0;
+}
+function _wavU16(bytes, off) {
+  return bytes[off] | (bytes[off + 1] << 8);
+}
+function parseWavHeader(bytes, fileSize) {
+  if (bytes.length < 12) return null;
+  if (_wavFourCC(bytes, 0) !== "RIFF" || _wavFourCC(bytes, 8) !== "WAVE") return null;
+  let pos = 12, fmtChunkBytes = null, dataOffset = -1, dataSizeDeclared = 0;
+  while (pos + 8 <= bytes.length) {
+    const id = _wavFourCC(bytes, pos);
+    const size = _wavU32(bytes, pos + 4);
+    if (id === "fmt ") {
+      const end = pos + 8 + size;
+      if (end > bytes.length) return null;            // fmt chunk not fully in probe
+      fmtChunkBytes = bytes.slice(pos, end);
+    } else if (id === "data") {
+      dataOffset = pos + 8;
+      dataSizeDeclared = size;
+      break;
+    }
+    pos += 8 + size + (size & 1);                     // sub-chunks are word-aligned
+  }
+  if (!fmtChunkBytes || dataOffset < 0 || fmtChunkBytes.length < 24) return null;
+  const byteRate   = _wavU32(fmtChunkBytes, 16);      // fmt body: fmt(2)ch(2)rate(4)byteRate(4)blockAlign(2)
+  const blockAlign = _wavU16(fmtChunkBytes, 20) || 1;
+  let dataSize = dataSizeDeclared;
+  if (dataSize === 0 || dataSize === 0xFFFFFFFF || dataOffset + dataSize > fileSize) {
+    dataSize = fileSize - dataOffset;                 // streamed/unknown size → derive from file
+  }
+  if (dataSize <= 0) return null;
+  return { fmtChunkBytes, dataOffset, dataSize, blockAlign, byteRate };
+}
+function makeWavHeader(fmtChunkBytes, dataLen) {
+  const header = new Uint8Array(12 + fmtChunkBytes.length + 8);
+  const dv = new DataView(header.buffer);
+  const put4 = (off, s) => { for (let i = 0; i < 4; i++) header[off + i] = s.charCodeAt(i); };
+  put4(0, "RIFF");
+  dv.setUint32(4, 4 + fmtChunkBytes.length + 8 + dataLen, true);  // RIFF size = everything after this field
+  put4(8, "WAVE");
+  header.set(fmtChunkBytes, 12);
+  put4(12 + fmtChunkBytes.length, "data");
+  dv.setUint32(12 + fmtChunkBytes.length + 4, dataLen, true);
+  return header;
+}
+function planWavChunks(dataOffset, dataSize, blockAlign, maxDataBytes) {
+  let chunkLen = Math.floor(maxDataBytes / blockAlign) * blockAlign;  // never split mid-sample
+  if (chunkLen < blockAlign) chunkLen = blockAlign;
+  const ranges = [];
+  for (let off = 0; off < dataSize; off += chunkLen) {
+    ranges.push({ start: dataOffset + off, len: Math.min(chunkLen, dataSize - off) });
+  }
+  return ranges;
+}
+
 async function transcribeLarge(apiKey) {
   const CHUNK = 20 * 1024 * 1024;
-  const total = Math.ceil(currentFile.size / CHUNK);
   const prompt = buildPrompt();
-  const ext = currentFile.name.split(".").pop() || "mp3";
+  const ext = (currentFile.name.split(".").pop() || "mp3").toLowerCase();
 
-  setProgress(15, `מכין ${total} חלקים לשליחה מקבילית...`);
-  const fdList = [];
-  for (let i = 0; i < total; i++) {
-    const blob = currentFile.slice(i * CHUNK, Math.min((i + 1) * CHUNK, currentFile.size));
-    const fd = new FormData();
-    fd.append("file", new File([blob], `chunk.${ext}`, { type: currentFile.type }), `chunk.${ext}`);
+  let fdList = null;
+  let wavDuration = 0;
+
+  const appendCommon = (fd) => {
     fd.append("model", "whisper-1");
     fd.append("language", "he");
     fd.append("response_format", "text");
     if (prompt) fd.append("prompt", prompt);
-    fdList.push(fd);
+  };
+
+  // WAV: build self-contained chunks. On any parse failure, fdList stays null
+  // and we drop through to the original raw-slice path below.
+  if (ext === "wav") {
+    try {
+      const probe = new Uint8Array(await currentFile.slice(0, Math.min(currentFile.size, 65536)).arrayBuffer());
+      const hdr = parseWavHeader(probe, currentFile.size);
+      if (hdr) {
+        const ranges = planWavChunks(hdr.dataOffset, hdr.dataSize, hdr.blockAlign, CHUNK);
+        setProgress(15, `מכין ${ranges.length} חלקים לשליחה מקבילית...`);
+        fdList = ranges.map((r, i) => {
+          const header = makeWavHeader(hdr.fmtChunkBytes, r.len);
+          const blob = new Blob([header, currentFile.slice(r.start, r.start + r.len)], { type: "audio/wav" });
+          const fd = new FormData();
+          fd.append("file", new File([blob], `chunk_${i}.wav`, { type: "audio/wav" }), `chunk_${i}.wav`);
+          appendCommon(fd);
+          return fd;
+        });
+        if (hdr.byteRate > 0) wavDuration = hdr.dataSize / hdr.byteRate;
+      }
+    } catch (e) {
+      fdList = null;
+    }
+  }
+
+  // Original path — unchanged — for mp3/webm/etc. and as the WAV fallback.
+  if (!fdList) {
+    const total = Math.ceil(currentFile.size / CHUNK);
+    setProgress(15, `מכין ${total} חלקים לשליחה מקבילית...`);
+    fdList = [];
+    for (let i = 0; i < total; i++) {
+      const blob = currentFile.slice(i * CHUNK, Math.min((i + 1) * CHUNK, currentFile.size));
+      const fd = new FormData();
+      fd.append("file", new File([blob], `chunk.${ext}`, { type: currentFile.type }), `chunk.${ext}`);
+      appendCommon(fd);
+      fdList.push(fd);
+    }
   }
 
   const parts = await sendChunksParallel(fdList, apiKey, 20, 96);
   transcriptText = parts.join("\n\n");
-  audioDuration = currentFile.size / 16000;
+  audioDuration = wavDuration || currentFile.size / 16000;
   finish();
 }
 
