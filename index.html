@@ -50,6 +50,7 @@
     --shadow-panel: 0 -4px 24px rgba(0,0,0,0.13), 0 -1px 6px rgba(0,0,0,0.07);
   }
 
+  html { overflow-x: hidden; }
   body {
     font-family: 'Heebo', sans-serif;
     background: var(--bg);
@@ -57,6 +58,8 @@
     min-height: 100vh;
     direction: rtl;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    max-width: 100%;
   }
 
   /* ── NAV ─────────────────────────────────── */
@@ -72,7 +75,7 @@
     z-index: 50;
     box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   }
-  .logo { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
+  .logo { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .logo span { color: #93c5fd; }
   .nav-tag { background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 11px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.3px; }
 
@@ -221,8 +224,22 @@
     direction: ltr;
     text-align: right;
   }
-  .mg-desc { font-size: 12px; color: var(--text); line-height: 1.6; }
+  .mg-desc { font-size: 12px; color: var(--text); line-height: 1.6; min-width: 0; }
   .mg-desc strong { color: var(--navy); font-weight: 600; }
+
+  /* Step badges */
+  .step-title {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 14px; color: var(--navy); text-transform: none; letter-spacing: 0;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--cobalt); color: #fff;
+    font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .step-optional { font-size: 11px; font-weight: 400; color: var(--muted); }
 
   /* Subject + filename row */
   .subject-row {
@@ -535,9 +552,10 @@
   }
   .toast {
     background: var(--navy); color: #fff; padding: 10px 22px;
-    border-radius: 99px; font-size: 13px; font-family: 'Heebo', sans-serif;
+    border-radius: 18px; font-size: 13px; font-family: 'Heebo', sans-serif;
     box-shadow: 0 4px 16px rgba(0,0,0,0.2); opacity: 0; transform: translateY(8px);
-    transition: opacity 0.2s, transform 0.2s; white-space: nowrap;
+    transition: opacity 0.2s, transform 0.2s;
+    max-width: min(92vw, 440px); text-align: center; line-height: 1.5; word-break: break-word;
   }
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.success { background: var(--success); }
@@ -677,7 +695,7 @@
 
 <div class="page">
   <div class="page-title">🎙️ תמלול ישיבות לעברית</div>
-  <div class="page-sub">העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI Whisper</div>
+  <div class="page-sub">העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI</div>
 
   <!-- API KEY -->
   <div class="card">
@@ -708,13 +726,10 @@
     </div>
   </div>
 
-  <!-- SETTINGS -->
+  <!-- STEP 1: MODEL -->
   <div class="card">
-    <div class="card-title">⚙️ הגדרות תמלול</div>
-
-    <!-- Transcription engine -->
-    <div class="field-group">
-      <div class="field-label">🧠 מנוע תמלול</div>
+    <div class="card-title step-title"><span class="step-num">1</span>בחירת מנוע תמלול</div>
+    <div class="field-group" style="margin-bottom:0;">
       <select id="modelSelect" class="field-input" style="height:40px;" onchange="onModelChange()">
         <option value="whisper-1">Whisper — מהיר, עם חותמות זמן (ברירת מחדל)</option>
         <option value="gpt-4o-mini-transcribe">GPT-4o mini — דיוק טוב, חסכוני</option>
@@ -736,6 +751,37 @@
         <div class="field-hint" style="margin-top:8px;">💡 לזיהוי דוברים — הריצו תמלול ואז לחצו "🏷️ זהה דוברים" בתוצאה (פועל עם כל מנוע).</div>
       </div>
     </div>
+  </div>
+
+  <!-- STEP 2: FILE UPLOAD -->
+  <div class="card">
+    <div class="card-title step-title"><span class="step-num">2</span>העלאת קובץ הקלטה</div>
+
+    <div class="drop-zone" id="dropZone"
+      onclick="document.getElementById('fileInput').click()"
+      ondragover="onDragOver(event)"
+      ondragleave="onDragLeave(event)"
+      ondrop="onDrop(event)">
+      <div class="drop-icon">📤</div>
+      <div class="drop-title">לחץ להעלאת קובץ או גרור לכאן</div>
+      <div class="drop-sub">MP4 · MP3 · WAV · M4A · OGG — עד 500MB (וידאו/המרה: עד ~200MB)</div>
+    </div>
+    <input type="file" id="fileInput" accept="video/mp4,audio/*,.mp4,.mp3,.wav,.m4a,.ogg" onchange="onFileSelect(this.files[0])" />
+
+    <div class="file-preview hidden" id="filePreview">
+      <div class="file-icon">🎬</div>
+      <div class="file-details">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-size" id="fileSize"></div>
+        <div id="fileTypeBadge"></div>
+      </div>
+      <button class="btn-remove" onclick="removeFile()" title="הסר קובץ">✕</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: DETAILS -->
+  <div class="card">
+    <div class="card-title step-title"><span class="step-num">3</span>פרטי הישיבה <span class="step-optional">(אופציונלי)</span></div>
 
     <!-- Subject + filename row -->
     <div class="field-group" id="subjectGroup">
@@ -759,9 +805,9 @@
 
     <!-- Participants -->
     <div class="field-group">
-      <div class="field-label">👥 משתתפים (יעזור ל-Whisper לזהות שמות)</div>
+      <div class="field-label">👥 משתתפים (עוזר למנוע לזהות שמות)</div>
       <div style="display:flex;gap:8px;">
-        <input type="text" id="participantInput" class="field-input" style="flex:1;"
+        <input type="text" id="participantInput" class="field-input" style="flex:1;min-width:0;"
           placeholder='הוסף שם ולחץ Enter — למשל: "דרור", "מיכל"'
           onkeydown="onParticipantKey(event)" />
         <button class="btn-sm cobalt" onclick="addParticipant()">+ הוסף</button>
@@ -770,8 +816,8 @@
     </div>
 
     <!-- Instructions + preset chips -->
-    <div class="field-group">
-      <div class="field-label">📝 הנחיות לתמלול (אופציונלי)</div>
+    <div class="field-group" style="margin-bottom:0;">
+      <div class="field-label">📝 הנחיות לתמלול</div>
       <div class="chip-row">
         <span class="chip" onclick="applyChip(this,'ישיבת פיתוח')">💻 ישיבת פיתוח</span>
         <span class="chip" onclick="applyChip(this,'ישיבת צוות')">👥 ישיבת צוות</span>
@@ -782,37 +828,11 @@
       </div>
       <textarea id="instructions" class="field-input"
         placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira."></textarea>
-      <div class="field-hint">לחץ על ניחוש מהיר למעלה, או כתוב הנחיות מותאמות ל-Whisper</div>
+      <div class="field-hint">לחץ על ניחוש מהיר למעלה, או כתוב הנחיות מותאמות למנוע התמלול</div>
     </div>
   </div>
 
-  <!-- FILE UPLOAD -->
-  <div class="card">
-    <div class="card-title">📁 קובץ הקלטה</div>
-
-    <div class="drop-zone" id="dropZone"
-      onclick="document.getElementById('fileInput').click()"
-      ondragover="onDragOver(event)"
-      ondragleave="onDragLeave(event)"
-      ondrop="onDrop(event)">
-      <div class="drop-icon">📤</div>
-      <div class="drop-title">לחץ להעלאת קובץ או גרור לכאן</div>
-      <div class="drop-sub">MP4 · MP3 · WAV · M4A · OGG · עד 500MB</div>
-    </div>
-    <input type="file" id="fileInput" accept="video/mp4,audio/*,.mp4,.mp3,.wav,.m4a,.ogg" onchange="onFileSelect(this.files[0])" />
-
-    <div class="file-preview hidden" id="filePreview">
-      <div class="file-icon">🎬</div>
-      <div class="file-details">
-        <div class="file-name" id="fileName"></div>
-        <div class="file-size" id="fileSize"></div>
-        <div id="fileTypeBadge"></div>
-      </div>
-      <button class="btn-remove" onclick="removeFile()" title="הסר קובץ">✕</button>
-    </div>
-  </div>
-
-  <!-- RUN -->
+  <!-- STEP 4: RUN -->
   <button class="btn-primary" id="runBtn" onclick="startTranscription()" disabled>
     ▶&nbsp; התחל תמלול
   </button>
