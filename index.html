@@ -196,6 +196,34 @@
   textarea.field-input { min-height: 80px; }
   .field-hint { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.6; }
 
+  /* Engine "when to use" guide */
+  .model-guide {
+    margin-top: 10px;
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .model-guide-row {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eef1f8;
+    align-items: baseline;
+  }
+  .model-guide-row:last-of-type { border-bottom: none; }
+  .mg-name {
+    flex-shrink: 0;
+    width: 92px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cobalt);
+    direction: ltr;
+    text-align: right;
+  }
+  .mg-desc { font-size: 12px; color: var(--text); line-height: 1.6; }
+  .mg-desc strong { color: var(--navy); font-weight: 600; }
+
   /* Subject + filename row */
   .subject-row {
     display: grid;
@@ -692,7 +720,21 @@
         <option value="gpt-4o-mini-transcribe">GPT-4o mini — דיוק טוב, חסכוני</option>
         <option value="gpt-4o-transcribe">GPT-4o — הדיוק הגבוה ביותר בעברית</option>
       </select>
-      <div class="field-hint">מנועי GPT-4o מדייקים יותר בעברית, אך מחזירים תמלול ללא חותמות זמן.</div>
+      <div class="model-guide">
+        <div class="model-guide-row">
+          <span class="mg-name">Whisper</span>
+          <span class="mg-desc">מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.</span>
+        </div>
+        <div class="model-guide-row">
+          <span class="mg-name">GPT-4o mini</span>
+          <span class="mg-desc">דיוק גבוה יותר בעברית במחיר נמוך, <strong>ללא חותמות זמן</strong>. מתאים כשהדיוק חשוב והעלות חשובה.</span>
+        </div>
+        <div class="model-guide-row">
+          <span class="mg-name">GPT-4o</span>
+          <span class="mg-desc">הדיוק הגבוה ביותר בעברית (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה או איכות נמוכה.</span>
+        </div>
+        <div class="field-hint" style="margin-top:8px;">💡 לזיהוי דוברים — הריצו תמלול ואז לחצו "🏷️ זהה דוברים" בתוצאה (פועל עם כל מנוע).</div>
+      </div>
     </div>
 
     <!-- Subject + filename row -->
