@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DoryAngel — תמלול ישיבות</title>
+<title>DoryAngel v4 — תמלול ישיבות</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <!-- Patch Worker constructor BEFORE FFmpeg loads.
@@ -644,7 +644,7 @@
 
 <nav>
   <div class="logo">Dory<span>Angel</span> &nbsp;|&nbsp; תמלול ישיבות</div>
-  <div class="nav-tag">כלי פנימי</div>
+  <div class="nav-tag">כלי פנימי · v4</div>
 </nav>
 
 <div class="page">
@@ -683,6 +683,17 @@
   <!-- SETTINGS -->
   <div class="card">
     <div class="card-title">⚙️ הגדרות תמלול</div>
+
+    <!-- Transcription engine -->
+    <div class="field-group">
+      <div class="field-label">🧠 מנוע תמלול</div>
+      <select id="modelSelect" class="field-input" style="height:40px;" onchange="onModelChange()">
+        <option value="whisper-1">Whisper — מהיר, עם חותמות זמן (ברירת מחדל)</option>
+        <option value="gpt-4o-mini-transcribe">GPT-4o mini — דיוק טוב, חסכוני</option>
+        <option value="gpt-4o-transcribe">GPT-4o — הדיוק הגבוה ביותר בעברית</option>
+      </select>
+      <div class="field-hint">מנועי GPT-4o מדייקים יותר בעברית, אך מחזירים תמלול ללא חותמות זמן.</div>
+    </div>
 
     <!-- Subject + filename row -->
     <div class="field-group" id="subjectGroup">
@@ -784,11 +795,20 @@
       <div class="result-title">📄 תמלול</div>
       <div class="action-row">
         <button class="btn-drive" onclick="openDrivePanel()">📁 שמור ל-Drive</button>
+        <button class="btn-action" onclick="labelSpeakers(this)">🏷️ זהה דוברים</button>
+        <button class="btn-action" id="undoLabelBtn" onclick="undoLabelSpeakers()" style="display:none;">↩︎ בטל</button>
         <button class="btn-action" onclick="copyText(this)">📋 העתק</button>
         <button class="btn-action" onclick="downloadTxt()">💾 TXT</button>
         <button class="btn-action secondary" onclick="downloadWord()">📝 Word</button>
       </div>
     </div>
+
+    <!-- Failed-chunk retry banner -->
+    <div id="retryBanner" style="display:none;margin-bottom:12px;padding:11px 14px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;font-size:13px;color:#92400e;line-height:1.6;">
+      ⚠️ <span id="retryCount">0</span> חלקים לא תומללו (שאר התמלול תקין).
+      <button onclick="retryFailedChunks()" style="margin-right:8px;background:#92400e;color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-family:'Heebo',sans-serif;font-size:12px;">🔄 נסה שוב את החלקים שנכשלו</button>
+    </div>
+
     <div class="transcript-box" id="transcriptBox" dir="rtl"></div>
     <div class="stats">
       <div class="stat"><div class="stat-val" id="s1">—</div><div class="stat-lbl">מילים</div></div>
@@ -894,8 +914,18 @@ let meetingSubject = "";
 let driveDirectoryHandle = null;
 let selectedFormat = "word";
 
+/* Transcription engines. `timestamps` = supports verbose_json segments
+   (only whisper-1). `rate` = USD per audio-minute, used for the cost stat. */
+const MODELS = {
+  "whisper-1":              { rate: 0.006, timestamps: true },
+  "gpt-4o-mini-transcribe": { rate: 0.003, timestamps: false },
+  "gpt-4o-transcribe":      { rate: 0.006, timestamps: false },
+};
+let selectedModel = "whisper-1";
+
 const HISTORY_KEY = "da_transcripts";
 const DRIVE_FOLDER_KEY = "da_drive_folders"; // stores [{name, path}]
+const MODEL_KEY = "da_model";
 
 /* ---- Init ---- */
 window.onload = () => {
@@ -903,6 +933,12 @@ window.onload = () => {
   if (saved) {
     document.getElementById("apiKey").value = saved;
     collapseApiKey(saved);
+  }
+  const savedModel = localStorage.getItem(MODEL_KEY);
+  if (savedModel && MODELS[savedModel]) {
+    selectedModel = savedModel;
+    const sel = document.getElementById("modelSelect");
+    if (sel) sel.value = savedModel;
   }
   renderHistory();
   renderRecentFolders();
@@ -1009,6 +1045,15 @@ function renderParticipants() {
   el.innerHTML = participants.map((p, i) =>
     `<span class="ptag">${escHtml(p)}<span class="ptag-remove" onclick="removeParticipant(${i})" title="הסר">×</span></span>`
   ).join("");
+}
+
+/* ---- Model selection ---- */
+function onModelChange() {
+  const sel = document.getElementById("modelSelect");
+  if (sel && MODELS[sel.value]) {
+    selectedModel = sel.value;
+    localStorage.setItem(MODEL_KEY, selectedModel);
+  }
 }
 
 /* ---- Build Whisper prompt ---- */
@@ -1145,23 +1190,28 @@ async function startTranscription() {
 }
 
 async function transcribeSingle(apiKey) {
-  setProgress(30, "שולח ל-Whisper...");
+  setProgress(30, "שולח לתמלול...");
+  const wantTs = !!(MODELS[selectedModel] && MODELS[selectedModel].timestamps);
   const fd = new FormData();
   fd.append("file", currentFile, currentFile.name);
-  fd.append("model", "whisper-1");
+  fd.append("model", selectedModel);
   fd.append("language", "he");
-  fd.append("response_format", "verbose_json");
-  fd.append("timestamp_granularities[]", "segment");
+  fd.append("response_format", wantTs ? "verbose_json" : "json");
+  if (wantTs) fd.append("timestamp_granularities[]", "segment");
   const prompt = buildPrompt();
   if (prompt) fd.append("prompt", prompt);
 
   const data = await whisperFetch(fd, apiKey, (attempt) =>
-    setProgress(30, attempt > 1 ? `שולח ל-Whisper (ניסיון ${attempt})...` : "שולח ל-Whisper...")
+    setProgress(30, attempt > 1 ? `שולח לתמלול (ניסיון ${attempt})...` : "שולח לתמלול...")
   );
   setProgress(80, "מעבד...");
   audioDuration = data.duration || 0;
-  const lines = (data.segments || []).map(s => "[" + fmtTime(s.start) + "]  " + s.text.trim());
-  transcriptText = lines.length ? lines.join("\n") : data.text;
+  if (wantTs) {
+    const lines = (data.segments || []).map(s => "[" + fmtTime(s.start) + "]  " + s.text.trim());
+    transcriptText = lines.length ? lines.join("\n") : (data.text || "");
+  } else {
+    transcriptText = data.text || "";
+  }
   finish();
 }
 
@@ -1231,94 +1281,243 @@ function buildSilenceChunks(pcmData) {
   return blobs;
 }
 
-async function sendChunksWithBatchChaining(chunkBlobs, apiKey, basePrompt, fromPct, toPct) {
-  const CONCURRENCY = 3;
-  const total    = chunkBlobs.length;
-  const results  = new Array(total);
-  let completed  = 0;
-  let chainTail  = "";
+/* ---- Unified chunk transcription ----
+   One engine for both chunked paths (silence-split conversion + large-file
+   slicing). Handles model selection, optional timestamps, prompt chaining,
+   and per-chunk failure isolation so one bad chunk never kills the whole job.
+   A "job" keeps its chunk list + per-chunk results so failed chunks can be
+   retried later without re-billing the ones that already succeeded. */
 
-  const getTail = (text) =>
-    text ? text.trim().split(/\s+/).slice(-30).join(" ") : "";
-
-  const makeFd = (i, tail) => {
-    const fd     = new FormData();
-    const prompt = [tail, basePrompt].filter(Boolean).join(" ");
-    fd.append("file", new File([chunkBlobs[i]], `chunk_${i}.wav`, { type: "audio/wav" }), `chunk_${i}.wav`);
-    fd.append("model", "whisper-1");
-    fd.append("language", "he");
-    fd.append("response_format", "text");
-    if (prompt.trim()) fd.append("prompt", prompt.trim());
-    return fd;
-  };
-
-  for (let b = 0; b < total; b += CONCURRENCY) {
-    const batchIdx = Array.from({ length: Math.min(CONCURRENCY, total - b) }, (_, j) => b + j);
-    const tail     = chainTail;
-
-    await Promise.all(batchIdx.map(i =>
-      whisperFetch(makeFd(i, tail), apiKey, null, true).then(text => {
-        results[i] = text;
-        completed++;
-        setProgress(
-          Math.round(fromPct + (completed / total) * (toPct - fromPct)),
-          `מתמלל... ${completed} / ${total} חלקים הושלמו`
-        );
-      })
-    ));
-
-    chainTail = getTail(results[b + batchIdx.length - 1]);
+// Send a single chunk; returns {text, segments, duration} or null on failure.
+async function sendChunk(job, i, tail, apiKey) {
+  const c  = job.chunks[i];
+  const fd = new FormData();
+  fd.append("file", new File([c.blob], c.name, { type: c.type || c.blob.type || "audio/wav" }), c.name);
+  fd.append("model", job.model);
+  fd.append("language", "he");
+  fd.append("response_format", job.wantTs ? "verbose_json" : "text");
+  if (job.wantTs) fd.append("timestamp_granularities[]", "segment");
+  const prompt = [tail, job.basePrompt].filter(Boolean).join(" ").trim();
+  if (prompt) fd.append("prompt", prompt);
+  try {
+    const data = await whisperFetch(fd, apiKey, null, !job.wantTs);
+    return job.wantTs
+      ? { text: data.text || "", segments: data.segments || [], duration: data.duration || 0 }
+      : { text: data, segments: null, duration: 0 };
+  } catch (e) {
+    return null; // isolated failure — retried on demand
   }
-
-  return results;
 }
 
-async function sendChunksParallel(fdList, apiKey, fromPct, toPct) {
+// Transcribe the given chunk indices, writing into job.results in place.
+async function processChunks(job, indices, apiKey, fromPct, toPct) {
   const CONCURRENCY = 3;
-  const total = fdList.length;
-  const results = new Array(total).fill(null);
-  let completed = 0;
-  const queue = fdList.map((_, i) => i);
+  const total = indices.length;
+  let done = 0;
+  const tick = () => setProgress(
+    Math.round(fromPct + (done / total) * (toPct - fromPct)),
+    `מתמלל... ${done} / ${total} חלקים`
+  );
 
-  const runWorker = async () => {
-    while (queue.length > 0) {
-      const i = queue.shift();
-      results[i] = await whisperFetch(fdList[i], apiKey, null, true);
-      completed++;
-      setProgress(
-        Math.round(fromPct + (completed / total) * (toPct - fromPct)),
-        `מתמלל במקביל... ${completed} / ${total} חלקים הושלמו`
-      );
+  if (job.chaining) {
+    let tail = "";
+    for (let b = 0; b < total; b += CONCURRENCY) {
+      const batch = indices.slice(b, b + CONCURRENCY);
+      const useTail = tail;
+      await Promise.all(batch.map(async (i) => {
+        job.results[i] = await sendChunk(job, i, useTail, apiKey);
+        done++; tick();
+      }));
+      const last = job.results[batch[batch.length - 1]];
+      tail = last ? (last.text || "").trim().split(/\s+/).slice(-30).join(" ") : "";
     }
-  };
+  } else {
+    const queue = indices.slice();
+    const worker = async () => {
+      while (queue.length) {
+        const i = queue.shift();
+        job.results[i] = await sendChunk(job, i, "", apiKey);
+        done++; tick();
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, total) }, worker));
+  }
+}
 
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, total) }, runWorker));
-  return results;
+// Stitch per-chunk results into final text, offsetting timestamps by the
+// cumulative duration of preceding chunks. Returns {text, duration, failures}.
+function assembleChunks(results, wantTs) {
+  let offset = 0;
+  const out = [];
+  const failures = [];
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    if (!r) {
+      failures.push(i);
+      out.push(`[⚠️ חלק ${i + 1} לא תומלל — נסה שוב]`);
+      continue;
+    }
+    if (wantTs && r.segments && r.segments.length) {
+      for (const s of r.segments) {
+        out.push("[" + fmtTime(offset + (s.start || 0)) + "]  " + (s.text || "").trim());
+      }
+    } else {
+      out.push((r.text || "").trim());
+    }
+    offset += r.duration || 0;
+  }
+  return { text: out.join(wantTs ? "\n" : "\n\n"), duration: offset, failures };
+}
+
+// chunks: [{ blob, name, type? }]
+async function transcribeChunks(chunks, apiKey, basePrompt, chaining, fromPct, toPct) {
+  const job = {
+    chunks, basePrompt, chaining,
+    model: selectedModel,
+    wantTs: !!(MODELS[selectedModel] && MODELS[selectedModel].timestamps),
+    results: new Array(chunks.length).fill(null),
+  };
+  window._chunkJob = job;
+  await processChunks(job, chunks.map((_, i) => i), apiKey, fromPct, toPct);
+  return assembleChunks(job.results, job.wantTs);
+}
+
+async function retryFailedChunks() {
+  const job = window._chunkJob;
+  if (!job) return;
+  const failed = job.results.map((r, i) => (r === null ? i : -1)).filter(i => i >= 0);
+  if (!failed.length) return;
+
+  const apiKey = document.getElementById("apiKey").value.trim();
+  if (!apiKey.startsWith("sk-")) { showToast("נא להזין מפתח API תקין", "error"); return; }
+
+  document.getElementById("retryBanner").style.display = "none";
+  document.getElementById("progressWrap").classList.remove("hidden");
+  setProgress(10, `מנסה שוב ${failed.length} חלקים...`);
+  try {
+    await processChunks(job, failed, apiKey, 10, 95);
+  } catch (e) { /* per-chunk failures already isolated */ }
+
+  const a = assembleChunks(job.results, job.wantTs);
+  transcriptText = a.text;
+  if (a.duration) audioDuration = a.duration;
+  setProgress(100, "✓ הושלם!");
+  setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
+  renderResult(a.failures);
+  showToast(a.failures.length ? `נותרו ${a.failures.length} חלקים שנכשלו` : "✓ כל החלקים תומללו", a.failures.length ? "error" : "success");
+}
+
+/* ---- WAV chunking helpers (pure) ----
+   Raw byte-slicing strips the RIFF/fmt header off every WAV chunk after the
+   first, so Whisper can't decode them. These helpers parse the header once and
+   rebuild a valid self-contained WAV around each slice. Any failure falls back
+   to the original raw-slice path, so existing working formats never regress. */
+function _wavFourCC(bytes, off) {
+  return String.fromCharCode(bytes[off], bytes[off + 1], bytes[off + 2], bytes[off + 3]);
+}
+function _wavU32(bytes, off) {
+  return (bytes[off] | (bytes[off + 1] << 8) | (bytes[off + 2] << 16) | (bytes[off + 3] << 24)) >>> 0;
+}
+function _wavU16(bytes, off) {
+  return bytes[off] | (bytes[off + 1] << 8);
+}
+function parseWavHeader(bytes, fileSize) {
+  if (bytes.length < 12) return null;
+  if (_wavFourCC(bytes, 0) !== "RIFF" || _wavFourCC(bytes, 8) !== "WAVE") return null;
+  let pos = 12, fmtChunkBytes = null, dataOffset = -1, dataSizeDeclared = 0;
+  while (pos + 8 <= bytes.length) {
+    const id = _wavFourCC(bytes, pos);
+    const size = _wavU32(bytes, pos + 4);
+    if (id === "fmt ") {
+      const end = pos + 8 + size;
+      if (end > bytes.length) return null;            // fmt chunk not fully in probe
+      fmtChunkBytes = bytes.slice(pos, end);
+    } else if (id === "data") {
+      dataOffset = pos + 8;
+      dataSizeDeclared = size;
+      break;
+    }
+    pos += 8 + size + (size & 1);                     // sub-chunks are word-aligned
+  }
+  if (!fmtChunkBytes || dataOffset < 0 || fmtChunkBytes.length < 24) return null;
+  const byteRate   = _wavU32(fmtChunkBytes, 16);      // fmt body: fmt(2)ch(2)rate(4)byteRate(4)blockAlign(2)
+  const blockAlign = _wavU16(fmtChunkBytes, 20) || 1;
+  let dataSize = dataSizeDeclared;
+  if (dataSize === 0 || dataSize === 0xFFFFFFFF || dataOffset + dataSize > fileSize) {
+    dataSize = fileSize - dataOffset;                 // streamed/unknown size → derive from file
+  }
+  if (dataSize <= 0) return null;
+  return { fmtChunkBytes, dataOffset, dataSize, blockAlign, byteRate };
+}
+function makeWavHeader(fmtChunkBytes, dataLen) {
+  const header = new Uint8Array(12 + fmtChunkBytes.length + 8);
+  const dv = new DataView(header.buffer);
+  const put4 = (off, s) => { for (let i = 0; i < 4; i++) header[off + i] = s.charCodeAt(i); };
+  put4(0, "RIFF");
+  dv.setUint32(4, 4 + fmtChunkBytes.length + 8 + dataLen, true);  // RIFF size = everything after this field
+  put4(8, "WAVE");
+  header.set(fmtChunkBytes, 12);
+  put4(12 + fmtChunkBytes.length, "data");
+  dv.setUint32(12 + fmtChunkBytes.length + 4, dataLen, true);
+  return header;
+}
+function planWavChunks(dataOffset, dataSize, blockAlign, maxDataBytes) {
+  let chunkLen = Math.floor(maxDataBytes / blockAlign) * blockAlign;  // never split mid-sample
+  if (chunkLen < blockAlign) chunkLen = blockAlign;
+  const ranges = [];
+  for (let off = 0; off < dataSize; off += chunkLen) {
+    ranges.push({ start: dataOffset + off, len: Math.min(chunkLen, dataSize - off) });
+  }
+  return ranges;
 }
 
 async function transcribeLarge(apiKey) {
   const CHUNK = 20 * 1024 * 1024;
-  const total = Math.ceil(currentFile.size / CHUNK);
   const prompt = buildPrompt();
-  const ext = currentFile.name.split(".").pop() || "mp3";
+  const ext = (currentFile.name.split(".").pop() || "mp3").toLowerCase();
 
-  setProgress(15, `מכין ${total} חלקים לשליחה מקבילית...`);
-  const fdList = [];
-  for (let i = 0; i < total; i++) {
-    const blob = currentFile.slice(i * CHUNK, Math.min((i + 1) * CHUNK, currentFile.size));
-    const fd = new FormData();
-    fd.append("file", new File([blob], `chunk.${ext}`, { type: currentFile.type }), `chunk.${ext}`);
-    fd.append("model", "whisper-1");
-    fd.append("language", "he");
-    fd.append("response_format", "text");
-    if (prompt) fd.append("prompt", prompt);
-    fdList.push(fd);
+  let chunks = null;
+  let wavDuration = 0;
+
+  // WAV: build self-contained chunks. On any parse failure, chunks stays null
+  // and we drop through to the original raw-slice path below.
+  if (ext === "wav") {
+    try {
+      const probe = new Uint8Array(await currentFile.slice(0, Math.min(currentFile.size, 65536)).arrayBuffer());
+      const hdr = parseWavHeader(probe, currentFile.size);
+      if (hdr) {
+        const ranges = planWavChunks(hdr.dataOffset, hdr.dataSize, hdr.blockAlign, CHUNK);
+        setProgress(15, `מכין ${ranges.length} חלקים לשליחה מקבילית...`);
+        chunks = ranges.map((r, i) => ({
+          blob: new Blob([makeWavHeader(hdr.fmtChunkBytes, r.len), currentFile.slice(r.start, r.start + r.len)], { type: "audio/wav" }),
+          name: `chunk_${i}.wav`,
+          type: "audio/wav",
+        }));
+        if (hdr.byteRate > 0) wavDuration = hdr.dataSize / hdr.byteRate;
+      }
+    } catch (e) {
+      chunks = null;
+    }
   }
 
-  const parts = await sendChunksParallel(fdList, apiKey, 20, 96);
-  transcriptText = parts.join("\n\n");
-  audioDuration = currentFile.size / 16000;
-  finish();
+  // Original path — unchanged slicing — for mp3/webm/etc. and as the WAV fallback.
+  if (!chunks) {
+    const total = Math.ceil(currentFile.size / CHUNK);
+    setProgress(15, `מכין ${total} חלקים לשליחה מקבילית...`);
+    chunks = [];
+    for (let i = 0; i < total; i++) {
+      chunks.push({
+        blob: currentFile.slice(i * CHUNK, Math.min((i + 1) * CHUNK, currentFile.size)),
+        name: `chunk.${ext}`,
+        type: currentFile.type,
+      });
+    }
+  }
+
+  const a = await transcribeChunks(chunks, apiKey, prompt, false, 20, 96);
+  transcriptText = a.text;
+  audioDuration = a.duration || wavDuration || currentFile.size / 16000;
+  finish(a.failures);
 }
 
 let _ffmpeg = null;
@@ -1428,9 +1627,11 @@ async function transcribeWithConversion(apiKey) {
   const chunkBlobs = buildSilenceChunks(pcmData);
 
   setProgress(66, `שולח ${chunkBlobs.length} חלקים לתמלול...`);
-  const parts = await sendChunksWithBatchChaining(chunkBlobs, apiKey, prompt, 66, 97);
-  transcriptText = parts.join("\n\n");
-  finish();
+  const chunks = chunkBlobs.map((b, i) => ({ blob: b, name: `chunk_${i}.wav`, type: "audio/wav" }));
+  const a = await transcribeChunks(chunks, apiKey, prompt, true, 66, 97);
+  transcriptText = a.text;
+  if (a.duration) audioDuration = a.duration; // else keep PCM-derived duration set above
+  finish(a.failures);
 }
 
 function pcmToWav(pcmBytes, sampleRate) {
@@ -1448,29 +1649,41 @@ function pcmToWav(pcmBytes, sampleRate) {
   return new Blob([ab], { type: "audio/wav" });
 }
 
-function finish() {
-  setProgress(100, "✓ הושלם!");
-  setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
+// Render transcript + stats + failure banner (no history write — reusable by retry).
+function renderResult(failures) {
   document.getElementById("transcriptBox").textContent = transcriptText;
-  const rc = document.getElementById("resultCard");
-  rc.style.display = "block";
-  document.getElementById("runBtn").disabled = false;
-  document.getElementById("tabWarning").style.display = "none";
-  window._transcribing = false;
+  document.getElementById("resultCard").style.display = "block";
 
   const words = transcriptText.split(/\s+/).filter(Boolean).length;
   document.getElementById("s1").textContent = words.toLocaleString("he-IL");
   document.getElementById("s2").textContent = audioDuration ? fmtTime(audioDuration) : "—";
-  const cost = audioDuration ? (audioDuration / 60 * 0.006) : null;
+  const rate = (MODELS[selectedModel] && MODELS[selectedModel].rate) || 0.006;
+  const cost = audioDuration ? (audioDuration / 60 * rate) : null;
   document.getElementById("s3").textContent = cost ? "$" + cost.toFixed(2) : "—";
+
+  const banner = document.getElementById("retryBanner");
+  const fc = failures ? failures.length : 0;
+  if (fc) { document.getElementById("retryCount").textContent = fc; banner.style.display = "block"; }
+  else { banner.style.display = "none"; }
+}
+
+function finish(failures) {
+  setProgress(100, "✓ הושלם!");
+  setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
+  document.getElementById("runBtn").disabled = false;
+  document.getElementById("tabWarning").style.display = "none";
+  window._transcribing = false;
+
+  renderResult(failures);
 
   // Pre-fill drive panel filename
   const dfn = document.getElementById("driveFileName");
   dfn.value = combinedStem();
   dfn.dataset.userEdited = "";
 
+  const words = transcriptText.split(/\s+/).filter(Boolean).length;
   if (currentFile) saveToHistory(currentFile.name, meetingSubject, words, audioDuration);
-  setTimeout(() => rc.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+  setTimeout(() => document.getElementById("resultCard").scrollIntoView({ behavior: "smooth", block: "start" }), 150);
 }
 
 /* ---- Download actions ---- */
@@ -1529,6 +1742,66 @@ function openInClaude() {
   }).catch(() => {
     showToast("שגיאה בהעתקה — נסה שוב", "error");
   });
+}
+
+/* ---- Speaker labelling (uses the same OpenAI key) ---- */
+async function labelSpeakers(btn) {
+  if (!transcriptText) { showToast("אין תמלול לעיבוד", "error"); return; }
+  const apiKey = document.getElementById("apiKey").value.trim();
+  if (!apiKey.startsWith("sk-")) { showToast("נא להזין מפתח API תקין", "error"); return; }
+
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "⏳ מזהה דוברים...";
+
+  const sys = "אתה עורך תמלולים. קבל תמלול ישיבה בעברית וסדר אותו מחדש לפי דוברים. " +
+    "סמן כל מעבר דובר בשורה חדשה בפורמט 'דובר: טקסט'. אם קיימות חותמות זמן בפורמט [mm:ss] בתחילת שורות — שמר אותן. " +
+    "השתמש בשמות המשתתפים אם סופקו; אחרת סמן 'דובר 1', 'דובר 2' וכו'. " +
+    "אל תמציא תוכן, אל תתרגם ואל תסכם — רק שייך את הטקסט הקיים לדוברים.";
+  const usr = (participants.length ? "המשתתפים: " + participants.join(", ") + ".\n\n" : "") +
+    "התמלול:\n\n" + transcriptText;
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + apiKey },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        temperature: 0,
+        messages: [{ role: "system", content: sys }, { role: "user", content: usr }],
+      }),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error?.message || res.statusText);
+    }
+    const data = await res.json();
+    const labeled = data.choices?.[0]?.message?.content?.trim();
+    if (!labeled) throw new Error("התקבלה תשובה ריקה");
+
+    window._preLabelTranscript = transcriptText; // keep original for undo
+    transcriptText = labeled;
+    document.getElementById("transcriptBox").textContent = transcriptText;
+    document.getElementById("s1").textContent =
+      transcriptText.split(/\s+/).filter(Boolean).length.toLocaleString("he-IL");
+    document.getElementById("undoLabelBtn").style.display = "inline-flex";
+    showToast("✓ דוברים זוהו", "success");
+  } catch (e) {
+    showToast("שגיאה בזיהוי דוברים: " + e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
+function undoLabelSpeakers() {
+  if (typeof window._preLabelTranscript !== "string") return;
+  transcriptText = window._preLabelTranscript;
+  document.getElementById("transcriptBox").textContent = transcriptText;
+  document.getElementById("s1").textContent =
+    transcriptText.split(/\s+/).filter(Boolean).length.toLocaleString("he-IL");
+  document.getElementById("undoLabelBtn").style.display = "none";
+  showToast("התמלול שוחזר");
 }
 
 /* ---- Email / Share ---- */
