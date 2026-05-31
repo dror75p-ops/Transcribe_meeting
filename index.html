@@ -555,6 +555,13 @@
     transition: background 0.15s; display: flex; align-items: center; gap: 6px; flex-shrink: 0;
   }
   .btn-email:hover { background: #253360; }
+  .btn-share {
+    width: 100%; height: 42px; margin-top: 8px;
+    background: var(--drive); color: #fff; border: none; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.15s;
+  }
+  .btn-share:hover { background: #157a33; }
   .email-hint { font-size: 11px; color: var(--muted); margin-top: 7px; line-height: 1.6; }
 
   /* ── HISTORY ─────────────────────────────── */
@@ -937,12 +944,13 @@
 
     <!-- EMAIL / SHARE -->
     <div class="email-section">
-      <div class="card-title">✉️ שלח תמלול למייל</div>
-      <div class="email-row" id="emailRow">
-        <input type="email" id="emailTo" placeholder="name@example.com" />
-        <button class="btn-email" onclick="sendEmail()">📨 שלח</button>
+      <div class="card-title">✉️ שליחה / שיתוף</div>
+      <div class="email-row">
+        <input type="email" id="emailTo" placeholder="name@example.com" oninput="onEmailInput()" />
+        <button class="btn-email" onclick="sendEmail()">✉️ שלח במייל</button>
       </div>
-      <div class="email-hint" id="emailHint">יפתח את תוכנת המייל שלך עם התמלול המוכן לשליחה</div>
+      <button class="btn-share" id="shareBtn" onclick="shareTranscript()">📤 שתף (וואטסאפ / Gmail)</button>
+      <div class="email-hint" id="emailHint">"שלח במייל" פותח את אפליקציית המייל עם התמלול מוכן · "שתף" שולח את קובץ התמלול דרך וואטסאפ/Gmail</div>
     </div>
 
     <!-- CLAUDE SUMMARY -->
@@ -1058,6 +1066,13 @@ window.onload = () => {
     selectedModel = savedModel;
     const sel = document.getElementById("modelSelect");
     if (sel) sel.value = savedModel;
+  }
+  const savedEmail = localStorage.getItem(EMAIL_KEY);
+  if (savedEmail) document.getElementById("emailTo").value = savedEmail;
+  // Hide the OS-share button where the Web Share API isn't available (e.g. most desktops)
+  if (!navigator.share) {
+    const sb = document.getElementById("shareBtn");
+    if (sb) sb.style.display = "none";
   }
   renderHistory();
   renderRecentFolders();
@@ -1933,41 +1948,49 @@ function undoLabelSpeakers() {
 }
 
 /* ---- Email / Share ---- */
-async function sendEmail() {
-  if (!transcriptText) { showToast("אין תמלול לשליחה", "error"); return; }
-
-  const title = "תמלול ישיבה — " + combinedStem();
-  const txtFile = new File([transcriptText], combinedStem() + ".txt", { type: "text/plain" });
-
-  if (navigator.canShare && navigator.canShare({ files: [txtFile] })) {
-    try {
-      await navigator.share({ title, files: [txtFile] });
-      return;
-    } catch (e) {
-      if (e.name !== "AbortError") { /* fall through */ } else { return; }
-    }
-  }
-
-  const email = document.getElementById("emailTo").value.trim();
-  if (!email || !email.includes("@")) {
-    showToast("נא להזין כתובת מייל תקינה", "error");
-    return;
-  }
-  const subject = encodeURIComponent(title);
-  const body = encodeURIComponent(transcriptText);
-  window.open(`mailto:${email}?subject=${subject}&body=${body}`);
-  showToast("✓ פותח תוכנת המייל...", "success");
+const EMAIL_KEY = "da_email";
+function saveEmailAddr(e) { try { localStorage.setItem(EMAIL_KEY, e); } catch (_) {} }
+function onEmailInput() {
+  const v = document.getElementById("emailTo").value.trim();
+  if (v) saveEmailAddr(v);
 }
 
-(function() {
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (isMobile && navigator.share) {
-    const row = document.getElementById("emailRow");
-    const hint = document.getElementById("emailHint");
-    if (row) row.style.display = "none";
-    if (hint) hint.textContent = "ישתף קובץ טקסט דרך Gmail, WhatsApp, ואפליקציות אחרות";
+// Opens the user's mail app with the transcript prefilled (a static page can't
+// send mail itself). mailto bodies are length-limited, so very long transcripts
+// are trimmed with a pointer to the Share button (which attaches the full file).
+function sendEmail() {
+  if (!transcriptText) { showToast("אין תמלול לשליחה", "error"); return; }
+  const email = document.getElementById("emailTo").value.trim();
+  if (!email || !email.includes("@")) { showToast("נא להזין כתובת מייל תקינה", "error"); return; }
+  saveEmailAddr(email);
+  const subject = encodeURIComponent("תמלול ישיבה — " + combinedStem());
+  const MAX = 1800;
+  let body = transcriptText;
+  if (body.length > MAX) {
+    body = body.slice(0, MAX) + "\n\n[התמלול ארוך — לשליחת הקובץ המלא השתמשו בכפתור \"שתף\"]";
   }
-})();
+  window.open(`mailto:${email}?subject=${subject}&body=${encodeURIComponent(body)}`);
+  showToast("✓ פותח את אפליקציית המייל…", "success");
+}
+
+// Shares the transcript file via the OS share sheet (WhatsApp/Gmail/etc.).
+async function shareTranscript() {
+  if (!transcriptText) { showToast("אין תמלול לשיתוף", "error"); return; }
+  const title = "תמלול ישיבה — " + combinedStem();
+  const file = new File([transcriptText], combinedStem() + ".txt", { type: "text/plain" });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title, files: [file] });
+    } else if (navigator.share) {
+      await navigator.share({ title, text: transcriptText });
+    } else {
+      downloadTxt();
+      showToast("שיתוף לא נתמך במכשיר — הקובץ ירד למכשיר", "");
+    }
+  } catch (e) {
+    if (e.name !== "AbortError") showToast("השיתוף בוטל", "error");
+  }
+}
 
 /* ---- Google Drive Panel ---- */
 function openDrivePanel() {
@@ -2048,21 +2071,46 @@ async function writeToFolder(dirHandle, filename, blob) {
   await writable.close();
 }
 
+// Confirm we still hold read-write permission on the folder (handles can go
+// stale between sessions, especially on mobile).
+async function ensureFolderPermission(handle) {
+  if (!handle || !handle.queryPermission) return true;
+  const opts = { mode: "readwrite" };
+  try {
+    if ((await handle.queryPermission(opts)) === "granted") return true;
+    return (await handle.requestPermission(opts)) === "granted";
+  } catch (_) {
+    return false;
+  }
+}
+
 async function executeDriveSave() {
   const fmt = selectedFormat;
   const name = (document.getElementById("driveFileName").value.trim() || combinedStem())
     .replace(/[\/\\:*?"<>|]/g, "-"); // sanitize filename
 
-  /* No FS API — fall back to download */
-  if (!("showDirectoryPicker" in window)) {
+  const downloadSelected = () => {
     if (fmt === "word" || fmt === "both") downloadWord();
     if (fmt === "txt" || fmt === "both") downloadTxt();
+  };
+
+  /* No FS API — just download */
+  if (!("showDirectoryPicker" in window)) {
+    downloadSelected();
     closeDrivePanel();
     return;
   }
 
   if (!driveDirectoryHandle) {
     showToast("נא לבחור תיקייה תחילה", "error");
+    return;
+  }
+
+  // Make sure we can still write; if not, deliver the file via download.
+  if (!(await ensureFolderPermission(driveDirectoryHandle))) {
+    showToast("אין הרשאת כתיבה לתיקייה — הקובץ ירד למכשיר במקום", "error");
+    downloadSelected();
+    closeDrivePanel();
     return;
   }
 
@@ -2077,13 +2125,11 @@ async function executeDriveSave() {
     showToast("✓ נשמר בהצלחה ל: " + driveDirectoryHandle.name, "success");
     closeDrivePanel();
   } catch (e) {
-    if (e.name === "NotAllowedError") {
-      showToast("גישה לתיקייה נדחתה — נסה לבחור שוב", "error");
-      driveDirectoryHandle = null;
-      renderRecentFolders();
-    } else {
-      showToast("שגיאה בשמירה: " + e.message, "error");
-    }
+    // Any write failure (incl. Android's stale-state InvalidStateError on
+    // cloud-synced folders) → fall back to a download so the file is never lost.
+    showToast("לא ניתן לכתוב לתיקייה במכשיר זה — הקובץ ירד למכשיר במקום", "error");
+    downloadSelected();
+    closeDrivePanel();
   }
 }
 
