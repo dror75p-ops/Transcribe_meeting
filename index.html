@@ -350,6 +350,32 @@
   .btn-remove { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--muted); padding: 6px; flex-shrink: 0; transition: color 0.15s; border-radius: 6px; }
   .btn-remove:hover { color: var(--danger); background: var(--danger-light); }
 
+  /* ── RECORDER ────────────────────────────── */
+  .rec-divider { display: flex; align-items: center; text-align: center; color: var(--muted); font-size: 12px; margin: 16px 0; }
+  .rec-divider::before, .rec-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .rec-divider span { padding: 0 12px; }
+  .btn-record {
+    width: 100%; height: 48px; border: none; border-radius: var(--radius-sm);
+    background: var(--danger); color: #fff; font-size: 15px; font-weight: 500;
+    font-family: 'Heebo', sans-serif; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(220,38,38,0.22);
+  }
+  .btn-record:hover { background: #b91c1c; box-shadow: 0 4px 14px rgba(220,38,38,0.28); }
+  .rec-panel {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px;
+    padding: 14px 16px; border: 1px solid #fca5a5; background: var(--danger-light);
+    border-radius: var(--radius-sm);
+  }
+  .rec-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--danger); flex-shrink: 0; animation: recPulse 1.2s ease-in-out infinite; }
+  .rec-panel.paused .rec-dot { animation: none; background: var(--muted); }
+  @keyframes recPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.8); } }
+  .rec-time { font-size: 22px; font-weight: 600; color: var(--navy); font-variant-numeric: tabular-nums; direction: ltr; }
+  .rec-status { font-size: 13px; color: var(--danger); font-weight: 500; }
+  .rec-controls { display: flex; gap: 8px; margin-inline-start: auto; }
+  .btn-sm.rec-stop { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn-sm.rec-stop:hover { background: #b91c1c; border-color: #b91c1c; }
+
   /* ── FILE TYPE BADGE ─────────────────────── */
   .file-type-badge {
     display: inline-flex;
@@ -787,6 +813,27 @@
       </div>
       <button class="btn-remove" onclick="removeFile()" title="הסר קובץ">✕</button>
     </div>
+
+    <!-- In-app recorder -->
+    <div id="recorderBlock">
+      <div class="rec-divider"><span>או</span></div>
+      <div id="recIdle">
+        <button class="btn-record" onclick="startRecording()">🎙️ הקלט ישיבה עכשיו</button>
+        <div class="field-hint" style="text-align:center;margin-top:8px;">הקלטה מהמיקרופון של המכשיר · ביפ כל 10 דקות · מתאים לישיבות בחדר (לא לשיחות זום/טלפון)</div>
+      </div>
+      <div id="recActive" class="hidden">
+        <div class="rec-panel">
+          <span class="rec-dot"></span>
+          <span class="rec-time" id="recTime">0:00</span>
+          <span class="rec-status" id="recStatus">מקליט…</span>
+          <div class="rec-controls">
+            <button class="btn-sm" id="recPauseBtn" onclick="togglePauseRecording()">⏸️ השהה</button>
+            <button class="btn-sm rec-stop" onclick="stopRecording()">⏹️ עצור וסיים</button>
+          </div>
+        </div>
+        <div class="field-hint" style="text-align:center;margin-top:8px;">🔔 ביפ קצר יישמע כל 10 דקות · השאירו את המסך דולק</div>
+      </div>
+    </div>
   </div>
 
   <!-- STEP 3: DETAILS -->
@@ -1144,13 +1191,18 @@ function onDrop(e) { e.preventDefault(); onDragLeave(e); if (e.dataTransfer.file
 
 const WHISPER_NATIVE = ["mp3","wav","webm","mpga","mpeg"];
 const CONTAINER_FORMATS = ["mp4","m4a","ogg","flac"];
+// Formats that survive raw byte-slicing for large files (mp3/mpeg resync at
+// frame headers; wav is rebuilt into valid chunks in transcribeLarge). Anything
+// else big — e.g. webm/opus from the in-app recorder — must be decoded first.
+const SLICE_SAFE = ["mp3","mpga","mpeg","wav"];
 
 function analyzeFileType(file) {
   const ext = file.name.split(".").pop().toLowerCase();
   const sizeMB = file.size / 1024 / 1024;
   const needsChunking = sizeMB > 24;
   const isContainer = CONTAINER_FORMATS.includes(ext);
-  return { ext, sizeMB, needsChunking, needsConversion: isContainer };
+  const needsConversion = isContainer || (needsChunking && !SLICE_SAFE.includes(ext));
+  return { ext, sizeMB, needsChunking, needsConversion };
 }
 
 function onFileSelect(file) {
@@ -1183,6 +1235,8 @@ function onFileSelect(file) {
   document.getElementById("runBtn").disabled = false;
   document.getElementById("resultCard").style.display = "none";
   document.getElementById("errorBox").style.display = "none";
+  const rb = document.getElementById("recorderBlock");
+  if (rb) rb.classList.add("hidden"); // a file is chosen — hide the recorder
 }
 
 function removeFile() {
@@ -1194,6 +1248,8 @@ function removeFile() {
   document.getElementById("fileTypeBadge").innerHTML = "";
   document.getElementById("originalFileName").textContent = "לא נבחר קובץ";
   document.getElementById("filenameCombined").classList.remove("show");
+  const rb = document.getElementById("recorderBlock");
+  if (rb) rb.classList.remove("hidden"); // file cleared — offer recording again
 }
 
 /* ---- Progress ---- */
@@ -2125,10 +2181,161 @@ function escHtml(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
+/* ---- In-app recorder (mic → existing transcription pipeline) ---- */
+let mediaRecorder = null, recChunks = [], recStream = null;
+let recTimerId = null, recStartMs = 0, recAccumMs = 0, recBeepMark = 0;
+let recWakeLock = null, recMime = "", recAudioCtx = null;
+
+function pickRecorderMime() {
+  const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
+  if (typeof MediaRecorder === "undefined" || !MediaRecorder.isTypeSupported) return "";
+  for (const m of candidates) { if (MediaRecorder.isTypeSupported(m)) return m; }
+  return "";
+}
+function recExtForMime(mime) {
+  if (!mime) return "webm";
+  if (mime.includes("mp4")) return "mp4";
+  if (mime.includes("ogg")) return "ogg";
+  return "webm";
+}
+function recElapsedMs() {
+  return recAccumMs + (recStartMs ? Date.now() - recStartMs : 0);
+}
+
+async function startRecording() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showToast("הדפדפן אינו תומך בהקלטה", "error"); return;
+  }
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+    });
+  } catch (e) {
+    showToast(e.name === "NotAllowedError" ? "הגישה למיקרופון נדחתה" : "שגיאה בגישה למיקרופון", "error");
+    return;
+  }
+  recMime = pickRecorderMime();
+  try {
+    mediaRecorder = recMime ? new MediaRecorder(stream, { mimeType: recMime }) : new MediaRecorder(stream);
+  } catch (e) {
+    mediaRecorder = new MediaRecorder(stream);
+  }
+  recStream = stream;
+  recChunks = [];
+  mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
+  mediaRecorder.onstop = onRecordingStopped;
+  mediaRecorder.start(1000); // timeslice → resilient for long meetings
+
+  recAccumMs = 0; recStartMs = Date.now(); recBeepMark = 0;
+  window._recording = true;
+  document.getElementById("recIdle").classList.add("hidden");
+  document.getElementById("recActive").classList.remove("hidden");
+  document.querySelector(".rec-panel").classList.remove("paused");
+  document.getElementById("recStatus").textContent = "מקליט…";
+  document.getElementById("recPauseBtn").textContent = "⏸️ השהה";
+  updateRecTime();
+  recTimerId = setInterval(updateRecTime, 250);
+  requestRecWakeLock();
+}
+
+function updateRecTime() {
+  const secs = Math.floor(recElapsedMs() / 1000);
+  document.getElementById("recTime").textContent = fmtTime(secs);
+  // Beep at each completed 10-minute mark of recorded time.
+  const mark = Math.floor(secs / 600);
+  if (mark > recBeepMark && mediaRecorder && mediaRecorder.state === "recording") {
+    recBeepMark = mark;
+    playBeep();
+  }
+}
+
+function togglePauseRecording() {
+  if (!mediaRecorder) return;
+  if (mediaRecorder.state === "recording") {
+    mediaRecorder.pause();
+    recAccumMs += Date.now() - recStartMs; recStartMs = 0;
+    document.querySelector(".rec-panel").classList.add("paused");
+    document.getElementById("recStatus").textContent = "מושהה";
+    document.getElementById("recPauseBtn").textContent = "▶️ המשך";
+    releaseRecWakeLock();
+  } else if (mediaRecorder.state === "paused") {
+    mediaRecorder.resume();
+    recStartMs = Date.now();
+    document.querySelector(".rec-panel").classList.remove("paused");
+    document.getElementById("recStatus").textContent = "מקליט…";
+    document.getElementById("recPauseBtn").textContent = "⏸️ השהה";
+    requestRecWakeLock();
+  }
+}
+
+function stopRecording() {
+  if (!mediaRecorder) return;
+  if (mediaRecorder.state !== "recording" && mediaRecorder.state !== "paused") return;
+  if (recStartMs) { recAccumMs += Date.now() - recStartMs; recStartMs = 0; }
+  try { mediaRecorder.stop(); } catch (e) {}
+}
+
+function onRecordingStopped() {
+  clearInterval(recTimerId); recTimerId = null;
+  window._recording = false;
+  releaseRecWakeLock();
+  if (recStream) { recStream.getTracks().forEach(t => t.stop()); recStream = null; }
+
+  const ext = recExtForMime(recMime);
+  const blob = new Blob(recChunks, { type: recMime || ("audio/" + ext) });
+  recChunks = [];
+
+  document.getElementById("recActive").classList.add("hidden");
+  document.getElementById("recIdle").classList.remove("hidden");
+
+  if (!blob.size) { showToast("ההקלטה ריקה", "error"); return; }
+
+  const stamp = new Date().toLocaleDateString("he-IL").replace(/\//g, "-");
+  const file = new File([blob], `הקלטה_${stamp}.${ext}`, { type: blob.type });
+  onFileSelect(file);                       // → preview, badge, enable "start"
+  showToast("✓ ההקלטה מוכנה לתמלול", "success");
+}
+
+function playBeep() {
+  try {
+    if (!recAudioCtx) recAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (recAudioCtx.state === "suspended") recAudioCtx.resume();
+    const beepAt = (t0) => {
+      const osc = recAudioCtx.createOscillator();
+      const g = recAudioCtx.createGain();
+      osc.type = "sine"; osc.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.3, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+      osc.connect(g); g.connect(recAudioCtx.destination);
+      osc.start(t0); osc.stop(t0 + 0.2);
+    };
+    const now = recAudioCtx.currentTime;
+    beepAt(now); beepAt(now + 0.28);        // friendly double-beep
+  } catch (e) { /* audio unavailable — ignore */ }
+}
+
+async function requestRecWakeLock() {
+  try { if (navigator.wakeLock && !recWakeLock) recWakeLock = await navigator.wakeLock.request("screen"); }
+  catch (e) { /* best effort */ }
+}
+function releaseRecWakeLock() {
+  try { if (recWakeLock) { recWakeLock.release(); recWakeLock = null; } } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && window._recording &&
+      mediaRecorder && mediaRecorder.state === "recording") {
+    requestRecWakeLock();
+  }
+});
+
 window.addEventListener("beforeunload", function(e) {
-  if (window._transcribing) {
+  if (window._transcribing || window._recording) {
     e.preventDefault();
-    e.returnValue = "התמלול עדיין פעיל — האם אתם בטוחים שברצונכם לצאת?";
+    e.returnValue = window._recording
+      ? "ההקלטה עדיין פעילה — אם תצאו היא תאבד. להמשיך?"
+      : "התמלול עדיין פעיל — האם אתם בטוחים שברצונכם לצאת?";
   }
 });
 </script>
