@@ -1234,16 +1234,17 @@ function onFileSelect(file) {
 
   const badge = document.getElementById("fileTypeBadge");
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const extEsc = escHtml(info.ext.toUpperCase()); // escape: filename-derived, must not inject HTML
   if (info.needsConversion && info.sizeMB > 200) {
-    badge.innerHTML = `<span class="file-type-badge convert">🚫 ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — גדול מדי אפילו עם ממיר</span>`;
+    badge.innerHTML = `<span class="file-type-badge convert">🚫 ${extEsc} ${info.sizeMB.toFixed(0)}MB — גדול מדי אפילו עם ממיר</span>`;
   } else if (info.needsConversion && isMobile) {
-    badge.innerHTML = `<span class="file-type-badge convert">📱 ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — יומר אוטומטית (נייד: עשוי לקחת כמה דקות)</span>`;
+    badge.innerHTML = `<span class="file-type-badge convert">📱 ${extEsc} ${info.sizeMB.toFixed(0)}MB — יומר אוטומטית (נייד: עשוי לקחת כמה דקות)</span>`;
   } else if (info.needsConversion) {
-    badge.innerHTML = `<span class="file-type-badge convert">⚙ ${info.ext.toUpperCase()} ${info.sizeMB.toFixed(0)}MB — יומר אוטומטית ל-WAV</span>`;
+    badge.innerHTML = `<span class="file-type-badge convert">⚙ ${extEsc} ${info.sizeMB.toFixed(0)}MB — יומר אוטומטית ל-WAV</span>`;
   } else if (info.needsChunking) {
     badge.innerHTML = `<span class="file-type-badge convert">✂ קובץ גדול — יפוצל לחלקים</span>`;
   } else {
-    badge.innerHTML = `<span class="file-type-badge ok">✓ ${info.ext.toUpperCase()} — נתמך ישירות</span>`;
+    badge.innerHTML = `<span class="file-type-badge ok">✓ ${extEsc} — נתמך ישירות</span>`;
   }
 
   updateFilenameCombined();
@@ -1969,7 +1970,7 @@ function sendEmail() {
   if (body.length > MAX) {
     body = body.slice(0, MAX) + "\n\n[התמלול ארוך — לשליחת הקובץ המלא השתמשו בכפתור \"שתף\"]";
   }
-  window.open(`mailto:${email}?subject=${subject}&body=${encodeURIComponent(body)}`);
+  window.open(`mailto:${encodeURIComponent(email)}?subject=${subject}&body=${encodeURIComponent(body)}`);
   showToast("✓ פותח את אפליקציית המייל…", "success");
 }
 
