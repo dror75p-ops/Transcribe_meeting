@@ -587,6 +587,20 @@
   .clear-history-btn { font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 2px 0; text-decoration: underline; }
   .clear-history-btn:hover { color: var(--danger); }
 
+  /* ── DONATION ────────────────────────────── */
+  .donate-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-card);
+    padding: 1.5rem; margin-top: 1.25rem; text-align: center;
+  }
+  .donate-title { font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .donate-sub {
+    font-size: 13px; color: var(--muted); line-height: 1.7;
+    margin: 0 auto 1rem; max-width: 460px;
+  }
+  .donate-btn-wrap { display: flex; justify-content: center; }
+  .donate-btn-wrap img { max-width: 100%; height: auto; }
+
   /* ── TOAST ───────────────────────────────── */
   .toast-wrap {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -974,6 +988,20 @@
       <button class="clear-history-btn" id="clearHistoryBtn" onclick="clearHistory()" style="display:none;">נקה הכל</button>
     </div>
     <div id="historyList"><div class="empty-history">עדיין אין תמלולים שמורים</div></div>
+  </div>
+
+  <!-- DONATION (PayPal embedded payment link — no SDK) -->
+  <div class="donate-section">
+    <div class="donate-title">💚 אהבתם את הכלי?</div>
+    <div class="donate-sub">DoryAngel חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏</div>
+    <div class="donate-btn-wrap">
+      <style>.pp-NXAJTCXW9FUBY{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+      <form action="https://www.paypal.com/ncp/payment/NXAJTCXW9FUBY" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+        <input class="pp-NXAJTCXW9FUBY" type="submit" value="💚 לתרומה" />
+        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="כרטיסי אשראי" />
+        <section style="font-size:0.75rem;"> Powered by <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+      </form>
+    </div>
   </div>
 </div>
 
