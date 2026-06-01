@@ -16,14 +16,17 @@
     --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
   }
   html { overflow-x: hidden; }
-  body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; direction: rtl; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
-  nav { background: var(--navy); padding: 0 1.25rem; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
+  nav { background: var(--navy); padding: 0 1.25rem; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
   .logo { display: flex; align-items: center; gap: 9px; min-width: 0; }
   .brand-logo { height: 34px; width: auto; border-radius: 6px; flex-shrink: 0; display: block; }
-  .logo .brand-text { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .nav-back { color: #cbd5e1; font-size: 13px; text-decoration: none; background: rgba(255,255,255,0.12); padding: 6px 14px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; transition: background 0.15s; }
+  .brand-text { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .nav-back { color: #cbd5e1; font-size: 13px; text-decoration: none; background: rgba(255,255,255,0.12); padding: 5px 13px; border-radius: 99px; white-space: nowrap; transition: background 0.15s; }
   .nav-back:hover { background: rgba(255,255,255,0.22); color: #fff; }
+  .lang-select { background: rgba(255,255,255,0.12); color: #fff; border: none; border-radius: 99px; font-size: 13px; font-family: 'Heebo', sans-serif; padding: 5px 10px; cursor: pointer; outline: none; }
+  .lang-select option { color: #1a2744; background: #fff; }
 
   .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
   .page-title { font-size: 26px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
@@ -37,9 +40,9 @@
   .card a:hover { text-decoration: underline; }
 
   .steps { list-style: none; counter-reset: step; }
-  .steps li { position: relative; padding: 0 44px 16px 0; font-size: 14px; line-height: 1.7; }
+  .steps li { position: relative; padding-block: 0 16px; padding-inline: 44px 0; font-size: 14px; line-height: 1.7; }
   .steps li:last-child { padding-bottom: 0; }
-  .steps li::before { counter-increment: step; content: counter(step); position: absolute; right: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--cobalt); color: #fff; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .steps li::before { counter-increment: step; content: counter(step); position: absolute; inset-inline-start: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--cobalt); color: #fff; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; }
   .steps li strong { color: var(--navy); }
 
   .engine { padding: 12px 0; border-bottom: 1px solid #eef1f8; font-size: 14px; line-height: 1.7; }
@@ -51,18 +54,15 @@
   .faq dd { font-size: 14px; line-height: 1.7; color: var(--text); margin: 4px 0 0; }
 
   ul.bul { list-style: none; }
-  ul.bul li { font-size: 14px; line-height: 1.8; padding-right: 20px; position: relative; }
-  ul.bul li::before { content: "•"; color: var(--cobalt); position: absolute; right: 0; font-weight: 700; }
+  ul.bul li { font-size: 14px; line-height: 1.8; padding-inline-start: 20px; position: relative; }
+  ul.bul li::before { content: "•"; color: var(--cobalt); position: absolute; inset-inline-start: 0; font-weight: 700; }
 
   .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; color: #92400e; line-height: 1.7; margin-top: 10px; }
   .cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
   .cta { display: inline-flex; align-items: center; gap: 6px; padding: 11px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer; border: none; text-decoration: none; }
   .cta.primary { background: var(--navy); color: #fff; }
   .cta.primary:hover { background: #253360; }
-  .cta.ghost { background: #fff; color: var(--text); border: 1px solid var(--border); }
-  .cta.ghost:hover { background: var(--bg); }
 
-  /* Feedback */
   .fb-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 10px; text-align: center; }
   .fb-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .btn-fb { padding: 11px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); }
@@ -71,11 +71,11 @@
   .btn-fb.dislike:hover { background: var(--bg); }
   .fb-box { margin-top: 12px; }
   .fb-box.hidden { display: none; }
-  .fb-box textarea { width: 100%; min-height: 80px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: 'Heebo', sans-serif; direction: rtl; resize: vertical; outline: none; }
+  .fb-box textarea { width: 100%; min-height: 80px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: 'Heebo', sans-serif; resize: vertical; outline: none; }
   .btn-fb.send { width: 100%; margin-top: 8px; background: var(--cobalt); color: #fff; border-color: var(--cobalt); }
   .btn-fb.send:hover { background: #1d4ed8; }
-
   .donate-line { text-align: center; font-size: 13px; color: var(--muted); margin-top: 1rem; line-height: 1.7; }
+
   .toast-wrap { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
   .toast { background: var(--navy); color: #fff; padding: 10px 22px; border-radius: 18px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s; max-width: min(92vw, 440px); text-align: center; }
   .toast.show { opacity: 1; transform: translateY(0); }
@@ -87,25 +87,30 @@
 <body>
 
 <nav>
-  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="Teamnul" /><span class="brand-text">Teamnul &nbsp;|&nbsp; מדריך</span></div>
-  <a class="nav-back" href="index.html">→ חזרה לאפליקציה</a>
+  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="Teamnul" /><span class="brand-text">Teamnul</span></div>
+  <div class="nav-right">
+    <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+      <option value="he">🇮🇱 עברית</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="fr">🇫🇷 Français</option>
+    </select>
+    <a class="nav-back" href="index.html" data-i18n="nav_back">→ חזרה לאפליקציה</a>
+  </div>
 </nav>
 
 <div class="page">
-  <div class="page-title">📖 איך זה עובד</div>
-  <div class="page-sub">מדריך קצר ל-Teamnul — תמלול ישיבות לעברית, ישירות בדפדפן.</div>
+  <div class="page-title" data-i18n="h_title">📖 איך זה עובד</div>
+  <div class="page-sub" data-i18n="h_sub">מדריך קצר ל-Teamnul — תמלול ישיבות, ישירות בדפדפן.</div>
 
-  <!-- WHAT -->
   <div class="card">
-    <h2>🎙️ מה זה Teamnul?</h2>
-    <p>כלי חינמי שמתמלל הקלטות ישיבות לעברית — ישירות בדפדפן, בלי להתקין כלום. מעלים קובץ (או מקליטים במקום), והתמלול מוכן תוך דקות, כולל ייצוא ל-Word, שיתוף וזיהוי דוברים.</p>
-    <p>הכל רץ אצלך בדפדפן ומול OpenAI — אין שרת שאוסף את ההקלטות שלך.</p>
+    <h2 data-i18n="h_what_title">🎙️ מה זה Teamnul?</h2>
+    <div data-i18n-html="h_what_body"><p>כלי חינמי שמתמלל הקלטות ישיבות — ישירות בדפדפן, בלי להתקין כלום. מעלים קובץ (או מקליטים במקום), והתמלול מוכן תוך דקות, כולל ייצוא ל-Word, שיתוף וזיהוי דוברים.</p><p>הכל רץ אצלך בדפדפן ומול OpenAI — אין שרת שאוסף את ההקלטות שלך.</p></div>
   </div>
 
-  <!-- START -->
   <div class="card">
-    <h2>🚀 איך מתחילים</h2>
-    <ol class="steps">
+    <h2 data-i18n="h_start_title">🚀 איך מתחילים</h2>
+    <ol class="steps" data-i18n-html="h_start_body">
       <li><strong>מפתח OpenAI API</strong> — הדבק את המפתח שלך פעם אחת (נשמר רק בדפדפן). אין מפתח? צור אחד ב-<a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li>
       <li><strong>בחר מנוע תמלול</strong> — Whisper (ברירת מחדל) או GPT-4o. פירוט בהמשך.</li>
       <li><strong>העלה קובץ או הקלט</strong> — גרור קובץ אודיו/וידאו, או לחץ "הקלט ישיבה עכשיו".</li>
@@ -113,27 +118,24 @@
     </ol>
   </div>
 
-  <!-- ENGINES -->
   <div class="card">
-    <h2>🧠 מנועי התמלול</h2>
-    <div class="engine"><span class="ename">Whisper</span> — מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.</div>
-    <div class="engine"><span class="ename">GPT-4o mini</span> — דיוק גבוה יותר בעברית במחיר נמוך, <strong>ללא חותמות זמן</strong>.</div>
-    <div class="engine"><span class="ename">GPT-4o</span> — הדיוק הגבוה ביותר בעברית (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה או איכות נמוכה.</div>
-  </div>
-
-  <!-- RECORDING -->
-  <div class="card">
-    <h2>🎙️ הקלטה בתוך האפליקציה</h2>
-    <p>אפשר להקליט ישירות מהמיקרופון — עם טיימר וביפ כל 10 דקות. בסיום, ההקלטה עוברת אוטומטית לתמלול.</p>
-    <div class="note">
-      ⚠️ <strong>חשוב:</strong> בדפדפן בנייד, אם המסך נכבה או שעוברים לאפליקציה אחרת — ההקלטה עלולה להיעצר (מגבלת מערכת ההפעלה). השאירו את המסך דולק. <strong>לישיבות ארוכות</strong> מומלץ להקליט באפליקציית הטלפון ואז להעלות את הקובץ.
+    <h2 data-i18n="h_engines_title">🧠 מנועי התמלול</h2>
+    <div data-i18n-html="h_engines_body">
+      <div class="engine"><span class="ename">Whisper</span> — מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.</div>
+      <div class="engine"><span class="ename">GPT-4o mini</span> — דיוק גבוה יותר במחיר נמוך, <strong>ללא חותמות זמן</strong>.</div>
+      <div class="engine"><span class="ename">GPT-4o</span> — הדיוק הגבוה ביותר (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה או איכות נמוכה.</div>
     </div>
   </div>
 
-  <!-- RESULT -->
   <div class="card">
-    <h2>📄 תוצאה, ייצוא ושיתוף</h2>
-    <ul class="bul">
+    <h2 data-i18n="h_rec_title">🎙️ הקלטה בתוך האפליקציה</h2>
+    <p data-i18n="h_rec_p">אפשר להקליט ישירות מהמיקרופון — עם טיימר וביפ כל 10 דקות. בסיום, ההקלטה עוברת אוטומטית לתמלול.</p>
+    <div class="note" data-i18n-html="h_rec_note">⚠️ <strong>חשוב:</strong> בדפדפן בנייד, אם המסך נכבה או שעוברים לאפליקציה אחרת — ההקלטה עלולה להיעצר (מגבלת מערכת ההפעלה). השאירו את המסך דולק. <strong>לישיבות ארוכות</strong> מומלץ להקליט באפליקציית הטלפון ואז להעלות את הקובץ.</div>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="h_result_title">📄 תוצאה, ייצוא ושיתוף</h2>
+    <ul class="bul" data-i18n-html="h_result_body">
       <li><strong>ייצוא:</strong> Word, TXT, או שמירה לתיקייה (כולל Google Drive). אם הכתיבה הישירה נכשלת — הקובץ יורד אוטומטית.</li>
       <li><strong>שיתוף:</strong> מייל, או שיתוף הקובץ לוואטסאפ/Gmail.</li>
       <li><strong>זיהוי דוברים:</strong> לחיצה על "🏷️ זהה דוברים" מסדרת את התמלול לפי דובר (פועל עם כל מנוע).</li>
@@ -141,51 +143,47 @@
     </ul>
   </div>
 
-  <!-- PRIVACY -->
   <div class="card">
-    <h2>🔒 פרטיות ואבטחה</h2>
-    <ul class="bul">
+    <h2 data-i18n="h_privacy_title">🔒 פרטיות ואבטחה</h2>
+    <ul class="bul" data-i18n-html="h_privacy_body">
       <li>מפתח ה-API וההיסטוריה נשמרים <strong>רק בדפדפן שלך</strong> (localStorage), לא בשום שרת.</li>
       <li>קובץ האודיו נשלח ל-OpenAI לצורך התמלול בלבד.</li>
       <li>אפשר למחוק את ההיסטוריה בכל רגע בכפתור "נקה הכל".</li>
     </ul>
   </div>
 
-  <!-- COST -->
   <div class="card">
-    <h2>💰 עלות</h2>
-    <p>הכלי עצמו חינמי. התמלול מחויב ישירות בחשבון ה-OpenAI שלך לפי דקות אודיו — בדרך כלל סנטים בודדים לישיבה. האפליקציה מציגה הערכת עלות אחרי כל תמלול.</p>
+    <h2 data-i18n="h_cost_title">💰 עלות</h2>
+    <p data-i18n="h_cost_p">הכלי עצמו חינמי. התמלול מחויב ישירות בחשבון ה-OpenAI שלך לפי דקות אודיו — בדרך כלל סנטים בודדים לישיבה. האפליקציה מציגה הערכת עלות אחרי כל תמלול.</p>
   </div>
 
-  <!-- FAQ -->
   <div class="card">
-    <h2>❓ שאלות נפוצות</h2>
-    <dl class="faq">
+    <h2 data-i18n="h_faq_title">❓ שאלות נפוצות</h2>
+    <dl class="faq" data-i18n-html="h_faq_body">
       <dt>אילו פורמטים נתמכים?</dt>
       <dd>MP4, MP3, WAV, M4A, OGG ועוד. קבצי וידאו וקבצים שדורשים המרה — עד ~200MB; אודיו גדול מפוצל אוטומטית.</dd>
       <dt>הקובץ גדול מדי?</dt>
       <dd>האפליקציה מפצלת קבצים גדולים אוטומטית, וממירה פורמטים לא נתמכים — שקוף לחלוטין.</dd>
       <dt>זה עובד טוב בעברית?</dt>
-      <dd>כן. לדיוק מרבי בעברית בחר GPT-4o; לחותמות זמן בחר Whisper.</dd>
+      <dd>כן. לדיוק מרבי בחר GPT-4o; לחותמות זמן בחר Whisper.</dd>
       <dt>המידע שלי בטוח?</dt>
       <dd>הכל נשאר בדפדפן שלך; רק האודיו נשלח ל-OpenAI לתמלול.</dd>
     </dl>
   </div>
 
-  <!-- FEEDBACK + DONATE -->
   <div class="card">
-    <div class="fb-title">💬 יש לך דקה? נשמח למשוב</div>
+    <div class="fb-title" data-i18n="fb_title">💬 יש לך דקה? נשמח למשוב</div>
     <div class="fb-row">
-      <button class="btn-fb like" onclick="shareApp()">👍 אהבתי — שתף</button>
-      <button class="btn-fb dislike" onclick="toggleFeedback()">👎 יש מה לשפר</button>
+      <button class="btn-fb like" onclick="shareApp()" data-i18n="fb_like">👍 אהבתי — שתף</button>
+      <button class="btn-fb dislike" onclick="toggleFeedback()" data-i18n="fb_dislike">👎 יש מה לשפר</button>
     </div>
     <div id="feedbackBox" class="fb-box hidden">
-      <textarea id="feedbackText" placeholder="מה אפשר לשפר? (יישלח למפתח במייל)"></textarea>
-      <button class="btn-fb send" onclick="sendFeedback()">📨 שלח משוב</button>
+      <textarea id="feedbackText" data-i18n-ph="fb_ph" placeholder="מה אפשר לשפר? (יישלח למפתח במייל)"></textarea>
+      <button class="btn-fb send" onclick="sendFeedback()" data-i18n="fb_send">📨 שלח משוב</button>
     </div>
-    <div class="donate-line">הכלי עזר לך? אפשר לתמוך 💚 — מתוך האפליקציה, בתחתית הדף.</div>
+    <div class="donate-line" data-i18n="h_donate_line">הכלי עזר לך? אפשר לתמוך 💚 — מתוך האפליקציה, בתחתית הדף.</div>
     <div class="cta-row" style="justify-content:center;margin-top:1rem;">
-      <a class="cta primary" href="index.html">→ חזרה לאפליקציה</a>
+      <a class="cta primary" href="index.html" data-i18n="back_to_app">→ חזרה לאפליקציה</a>
     </div>
   </div>
 </div>
@@ -194,22 +192,114 @@
 
 <script>
   const FEEDBACK_EMAIL = "dror75p@gmail.com";
+  const LANG_KEY = "da_lang";
+  const LANGS = ["he", "en", "es", "fr"];
+  let currentLang = "he";
+
+  const I18N = {
+    nav_back:  { he: "→ חזרה לאפליקציה", en: "→ Back to the app", es: "→ Volver a la app", fr: "→ Retour à l'appli" },
+    back_to_app:{ he: "→ חזרה לאפליקציה", en: "→ Back to the app", es: "→ Volver a la app", fr: "→ Retour à l'appli" },
+    h_title:   { he: "📖 איך זה עובד", en: "📖 How it works", es: "📖 Cómo funciona", fr: "📖 Comment ça marche" },
+    h_sub:     { he: "מדריך קצר ל-Teamnul — תמלול ישיבות, ישירות בדפדפן.", en: "A short guide to Teamnul — meeting transcription, right in your browser.", es: "Una breve guía de Teamnul — transcripción de reuniones, en tu navegador.", fr: "Petit guide de Teamnul — transcription de réunions, directement dans le navigateur." },
+    h_what_title: { he: "🎙️ מה זה Teamnul?", en: "🎙️ What is Teamnul?", es: "🎙️ ¿Qué es Teamnul?", fr: "🎙️ Qu'est-ce que Teamnul ?" },
+    h_what_body: {
+      he: "<p>כלי חינמי שמתמלל הקלטות ישיבות — ישירות בדפדפן, בלי להתקין כלום. מעלים קובץ (או מקליטים במקום), והתמלול מוכן תוך דקות, כולל ייצוא ל-Word, שיתוף וזיהוי דוברים.</p><p>הכל רץ אצלך בדפדפן ומול OpenAI — אין שרת שאוסף את ההקלטות שלך.</p>",
+      en: "<p>A free tool that transcribes meeting recordings — right in your browser, with nothing to install. Upload a file (or record on the spot), and the transcript is ready in minutes, with Word export, sharing and speaker labels.</p><p>Everything runs in your browser and against OpenAI — no server collects your recordings.</p>",
+      es: "<p>Una herramienta gratuita que transcribe grabaciones de reuniones — en tu navegador, sin instalar nada. Sube un archivo (o graba en el momento) y la transcripción está lista en minutos, con exportación a Word, compartir e identificación de hablantes.</p><p>Todo se ejecuta en tu navegador y con OpenAI — ningún servidor guarda tus grabaciones.</p>",
+      fr: "<p>Un outil gratuit qui transcrit des enregistrements de réunions — directement dans le navigateur, sans rien installer. Téléversez un fichier (ou enregistrez sur place) et la transcription est prête en quelques minutes, avec export Word, partage et identification des intervenants.</p><p>Tout s'exécute dans votre navigateur et avec OpenAI — aucun serveur ne collecte vos enregistrements.</p>",
+    },
+    h_start_title: { he: "🚀 איך מתחילים", en: "🚀 Getting started", es: "🚀 Cómo empezar", fr: "🚀 Pour commencer" },
+    h_start_body: {
+      he: '<li><strong>מפתח OpenAI API</strong> — הדבק את המפתח שלך פעם אחת (נשמר רק בדפדפן). אין מפתח? צור אחד ב-<a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li><li><strong>בחר מנוע תמלול</strong> — Whisper (ברירת מחדל) או GPT-4o.</li><li><strong>העלה קובץ או הקלט</strong> — גרור קובץ אודיו/וידאו, או לחץ "הקלט ישיבה עכשיו".</li><li><strong>פרטי הישיבה (אופציונלי)</strong> — נושא, משתתפים והנחיות עוזרים לדיוק. ואז "התחל תמלול".</li>',
+      en: '<li><strong>OpenAI API key</strong> — paste your key once (stored only in your browser). No key? Create one at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li><li><strong>Choose an engine</strong> — Whisper (default) or GPT-4o.</li><li><strong>Upload or record</strong> — drag an audio/video file, or click "Record a meeting now".</li><li><strong>Meeting details (optional)</strong> — subject, participants and instructions improve accuracy. Then "Start transcription".</li>',
+      es: '<li><strong>Clave de OpenAI</strong> — pega tu clave una vez (se guarda solo en el navegador). ¿Sin clave? Crea una en <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li><li><strong>Elige un motor</strong> — Whisper (predeterminado) o GPT-4o.</li><li><strong>Sube o graba</strong> — arrastra un archivo de audio/vídeo o pulsa "Grabar una reunión".</li><li><strong>Detalles (opcional)</strong> — asunto, participantes e instrucciones mejoran la precisión. Luego "Iniciar transcripción".</li>',
+      fr: '<li><strong>Clé OpenAI</strong> — collez votre clé une fois (stockée uniquement dans le navigateur). Pas de clé ? Créez-en une sur <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li><li><strong>Choisissez un moteur</strong> — Whisper (par défaut) ou GPT-4o.</li><li><strong>Téléversez ou enregistrez</strong> — glissez un fichier audio/vidéo ou cliquez "Enregistrer une réunion".</li><li><strong>Détails (facultatif)</strong> — sujet, participants et instructions améliorent la précision. Puis "Démarrer la transcription".</li>',
+    },
+    h_engines_title: { he: "🧠 מנועי התמלול", en: "🧠 Transcription engines", es: "🧠 Motores de transcripción", fr: "🧠 Moteurs de transcription" },
+    h_engines_body: {
+      he: '<div class="engine"><span class="ename">Whisper</span> — מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.</div><div class="engine"><span class="ename">GPT-4o mini</span> — דיוק גבוה יותר במחיר נמוך, <strong>ללא חותמות זמן</strong>.</div><div class="engine"><span class="ename">GPT-4o</span> — הדיוק הגבוה ביותר (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה או איכות נמוכה.</div>',
+      en: '<div class="engine"><span class="ename">Whisper</span> — fast and cheap, <strong>with [mm:ss] timestamps</strong>. Best for long meetings and time-based review. The default.</div><div class="engine"><span class="ename">GPT-4o mini</span> — higher accuracy at low cost, <strong>no timestamps</strong>.</div><div class="engine"><span class="ename">GPT-4o</span> — highest accuracy (accent, terms, names), <strong>no timestamps</strong>. For hard or low-quality audio.</div>',
+      es: '<div class="engine"><span class="ename">Whisper</span> — rápido y económico, <strong>con marcas de tiempo [mm:ss]</strong>. Ideal para reuniones largas. Predeterminado.</div><div class="engine"><span class="ename">GPT-4o mini</span> — mayor precisión a bajo costo, <strong>sin marcas de tiempo</strong>.</div><div class="engine"><span class="ename">GPT-4o</span> — máxima precisión (acento, términos, nombres), <strong>sin marcas de tiempo</strong>. Para audio difícil.</div>',
+      fr: '<div class="engine"><span class="ename">Whisper</span> — rapide et économique, <strong>avec horodatage [mm:ss]</strong>. Idéal pour les longues réunions. Par défaut.</div><div class="engine"><span class="ename">GPT-4o mini</span> — meilleure précision à bas coût, <strong>sans horodatage</strong>.</div><div class="engine"><span class="ename">GPT-4o</span> — précision maximale (accent, termes, noms), <strong>sans horodatage</strong>. Pour audio difficile.</div>',
+    },
+    h_rec_title: { he: "🎙️ הקלטה בתוך האפליקציה", en: "🎙️ Recording in the app", es: "🎙️ Grabar en la app", fr: "🎙️ Enregistrer dans l'appli" },
+    h_rec_p: { he: "אפשר להקליט ישירות מהמיקרופון — עם טיימר וביפ כל 10 דקות. בסיום, ההקלטה עוברת אוטומטית לתמלול.", en: "You can record straight from the mic — with a timer and a beep every 10 minutes. When you stop, the recording flows automatically into transcription.", es: "Puedes grabar desde el micrófono — con temporizador y un pitido cada 10 minutos. Al detener, la grabación pasa automáticamente a transcripción.", fr: "Vous pouvez enregistrer directement depuis le micro — avec minuteur et bip toutes les 10 minutes. À l'arrêt, l'enregistrement passe automatiquement à la transcription." },
+    h_rec_note: {
+      he: "⚠️ <strong>חשוב:</strong> בדפדפן בנייד, אם המסך נכבה או שעוברים לאפליקציה אחרת — ההקלטה עלולה להיעצר (מגבלת מערכת ההפעלה). השאירו את המסך דולק. <strong>לישיבות ארוכות</strong> מומלץ להקליט באפליקציית הטלפון ואז להעלות את הקובץ.",
+      en: "⚠️ <strong>Important:</strong> in a mobile browser, if the screen turns off or you switch apps, recording may stop (an OS limitation). Keep the screen on. <strong>For long meetings</strong>, record with your phone's app and then upload the file.",
+      es: "⚠️ <strong>Importante:</strong> en un navegador móvil, si la pantalla se apaga o cambias de app, la grabación puede detenerse (limitación del sistema). Mantén la pantalla encendida. <strong>Para reuniones largas</strong>, graba con la app del teléfono y sube el archivo.",
+      fr: "⚠️ <strong>Important :</strong> dans un navigateur mobile, si l'écran s'éteint ou que vous changez d'appli, l'enregistrement peut s'arrêter (limite du système). Gardez l'écran allumé. <strong>Pour les longues réunions</strong>, enregistrez avec l'appli du téléphone puis téléversez le fichier.",
+    },
+    h_result_title: { he: "📄 תוצאה, ייצוא ושיתוף", en: "📄 Result, export & share", es: "📄 Resultado, exportar y compartir", fr: "📄 Résultat, export & partage" },
+    h_result_body: {
+      he: '<li><strong>ייצוא:</strong> Word, TXT, או שמירה לתיקייה (כולל Google Drive). אם הכתיבה הישירה נכשלת — הקובץ יורד אוטומטית.</li><li><strong>שיתוף:</strong> מייל, או שיתוף הקובץ לוואטסאפ/Gmail.</li><li><strong>זיהוי דוברים:</strong> לחיצה על "🏷️ זהה דוברים" מסדרת את התמלול לפי דובר (פועל עם כל מנוע).</li><li><strong>היסטוריה:</strong> 20 התמלולים האחרונים נשמרים בדפדפן לשליפה מהירה.</li>',
+      en: '<li><strong>Export:</strong> Word, TXT, or save to a folder (incl. Google Drive). If a direct write fails, the file downloads automatically.</li><li><strong>Share:</strong> email, or share the file via WhatsApp/Gmail.</li><li><strong>Speaker labels:</strong> click "🏷️ Label speakers" to organize the transcript by speaker (works with any engine).</li><li><strong>History:</strong> the last 20 transcripts are kept in your browser for quick access.</li>',
+      es: '<li><strong>Exportar:</strong> Word, TXT o guardar en una carpeta (incl. Google Drive). Si la escritura directa falla, el archivo se descarga automáticamente.</li><li><strong>Compartir:</strong> correo o el archivo por WhatsApp/Gmail.</li><li><strong>Identificar hablantes:</strong> pulsa "🏷️ Identificar hablantes" para organizar por hablante (con cualquier motor).</li><li><strong>Historial:</strong> las últimas 20 transcripciones se guardan en tu navegador.</li>',
+      fr: '<li><strong>Export :</strong> Word, TXT ou enregistrement dans un dossier (dont Google Drive). Si l\'écriture directe échoue, le fichier se télécharge automatiquement.</li><li><strong>Partage :</strong> e-mail, ou le fichier via WhatsApp/Gmail.</li><li><strong>Intervenants :</strong> cliquez "🏷️ Identifier les intervenants" pour organiser par intervenant (tout moteur).</li><li><strong>Historique :</strong> les 20 dernières transcriptions sont conservées dans le navigateur.</li>',
+    },
+    h_privacy_title: { he: "🔒 פרטיות ואבטחה", en: "🔒 Privacy & security", es: "🔒 Privacidad y seguridad", fr: "🔒 Confidentialité & sécurité" },
+    h_privacy_body: {
+      he: '<li>מפתח ה-API וההיסטוריה נשמרים <strong>רק בדפדפן שלך</strong> (localStorage), לא בשום שרת.</li><li>קובץ האודיו נשלח ל-OpenAI לצורך התמלול בלבד.</li><li>אפשר למחוק את ההיסטוריה בכל רגע בכפתור "נקה הכל".</li>',
+      en: '<li>Your API key and history are stored <strong>only in your browser</strong> (localStorage), on no server.</li><li>The audio file is sent to OpenAI for transcription only.</li><li>You can clear the history anytime with "Clear all".</li>',
+      es: '<li>Tu clave e historial se guardan <strong>solo en tu navegador</strong> (localStorage), en ningún servidor.</li><li>El archivo de audio se envía a OpenAI solo para transcribir.</li><li>Puedes borrar el historial cuando quieras con "Borrar todo".</li>',
+      fr: '<li>Votre clé et votre historique sont stockés <strong>uniquement dans votre navigateur</strong> (localStorage), sur aucun serveur.</li><li>Le fichier audio est envoyé à OpenAI uniquement pour la transcription.</li><li>Vous pouvez effacer l\'historique à tout moment via "Tout effacer".</li>',
+    },
+    h_cost_title: { he: "💰 עלות", en: "💰 Cost", es: "💰 Coste", fr: "💰 Coût" },
+    h_cost_p: { he: "הכלי עצמו חינמי. התמלול מחויב ישירות בחשבון ה-OpenAI שלך לפי דקות אודיו — בדרך כלל סנטים בודדים לישיבה. האפליקציה מציגה הערכת עלות אחרי כל תמלול.", en: "The tool itself is free. Transcription is billed directly to your OpenAI account by audio minutes — usually a few cents per meeting. The app shows an estimated cost after each transcription.", es: "La herramienta es gratis. La transcripción se cobra directamente en tu cuenta de OpenAI por minutos de audio — normalmente unos céntimos por reunión. La app muestra un coste estimado tras cada transcripción.", fr: "L'outil est gratuit. La transcription est facturée directement sur votre compte OpenAI selon les minutes d'audio — généralement quelques centimes par réunion. L'appli affiche un coût estimé après chaque transcription." },
+    h_faq_title: { he: "❓ שאלות נפוצות", en: "❓ FAQ", es: "❓ Preguntas frecuentes", fr: "❓ FAQ" },
+    h_faq_body: {
+      he: '<dt>אילו פורמטים נתמכים?</dt><dd>MP4, MP3, WAV, M4A, OGG ועוד. וידאו וקבצים שדורשים המרה — עד ~200MB; אודיו גדול מפוצל אוטומטית.</dd><dt>הקובץ גדול מדי?</dt><dd>האפליקציה מפצלת קבצים גדולים אוטומטית וממירה פורמטים לא נתמכים — שקוף לחלוטין.</dd><dt>זה עובד טוב בשפה שלי?</dt><dd>כן. לדיוק מרבי בחר GPT-4o; לחותמות זמן בחר Whisper. שפת התמלול עוקבת אחרי שפת הממשק.</dd><dt>המידע שלי בטוח?</dt><dd>הכל נשאר בדפדפן שלך; רק האודיו נשלח ל-OpenAI לתמלול.</dd>',
+      en: '<dt>Which formats are supported?</dt><dd>MP4, MP3, WAV, M4A, OGG and more. Video and files that need conversion — up to ~200MB; large audio is split automatically.</dd><dt>File too large?</dt><dd>The app splits large files automatically and converts unsupported formats — fully transparent.</dd><dt>Does it work well in my language?</dt><dd>Yes. For best accuracy pick GPT-4o; for timestamps pick Whisper. The transcription language follows the UI language.</dd><dt>Is my data safe?</dt><dd>Everything stays in your browser; only the audio is sent to OpenAI for transcription.</dd>',
+      es: '<dt>¿Qué formatos admite?</dt><dd>MP4, MP3, WAV, M4A, OGG y más. Vídeo y archivos que requieren conversión — hasta ~200MB; el audio grande se divide automáticamente.</dd><dt>¿Archivo demasiado grande?</dt><dd>La app divide archivos grandes y convierte formatos no compatibles — totalmente transparente.</dd><dt>¿Funciona bien en mi idioma?</dt><dd>Sí. Para máxima precisión elige GPT-4o; para marcas de tiempo elige Whisper. El idioma de transcripción sigue al de la interfaz.</dd><dt>¿Mis datos están seguros?</dt><dd>Todo permanece en tu navegador; solo el audio se envía a OpenAI.</dd>',
+      fr: '<dt>Quels formats sont pris en charge ?</dt><dd>MP4, MP3, WAV, M4A, OGG et plus. Vidéo et fichiers à convertir — jusqu\'à ~200 Mo ; l\'audio volumineux est découpé automatiquement.</dd><dt>Fichier trop volumineux ?</dt><dd>L\'appli découpe les gros fichiers et convertit les formats non pris en charge — totalement transparent.</dd><dt>Fonctionne-t-il bien dans ma langue ?</dt><dd>Oui. Pour une précision maximale, choisissez GPT-4o ; pour l\'horodatage, Whisper. La langue de transcription suit celle de l\'interface.</dd><dt>Mes données sont-elles en sécurité ?</dt><dd>Tout reste dans votre navigateur ; seul l\'audio est envoyé à OpenAI.</dd>',
+    },
+    fb_title:  { he: "💬 יש לך דקה? נשמח למשוב", en: "💬 Got a minute? We'd love feedback", es: "💬 ¿Tienes un minuto? Tu opinión cuenta", fr: "💬 Une minute ? Votre avis compte" },
+    fb_like:   { he: "👍 אהבתי — שתף", en: "👍 I like it — share", es: "👍 Me gusta — compartir", fr: "👍 J'aime — partager" },
+    fb_dislike:{ he: "👎 יש מה לשפר", en: "👎 Could be better", es: "👎 Se puede mejorar", fr: "👎 À améliorer" },
+    fb_ph:     { he: "מה אפשר לשפר? (יישלח למפתח במייל)", en: "What could be better? (sent to the developer by email)", es: "¿Qué se puede mejorar? (se envía al desarrollador)", fr: "Qu'améliorer ? (envoyé au développeur par e-mail)" },
+    fb_send:   { he: "📨 שלח משוב", en: "📨 Send feedback", es: "📨 Enviar opinión", fr: "📨 Envoyer l'avis" },
+    h_donate_line: { he: "הכלי עזר לך? אפשר לתמוך 💚 — מתוך האפליקציה, בתחתית הדף.", en: "Did it help? You can donate 💚 — from the app, at the bottom of the page.", es: "¿Te ayudó? Puedes donar 💚 — desde la app, al final de la página.", fr: "Ça vous a aidé ? Vous pouvez faire un don 💚 — depuis l'appli, en bas de page." },
+    t_fb_empty:{ he: "נא לכתוב משוב קצר", en: "Please write a short note", es: "Escribe una nota breve", fr: "Écrivez un court message" },
+    t_link_copied:{ he: "✓ הקישור הועתק — אפשר לשתף", en: "✓ Link copied — ready to share", es: "✓ Enlace copiado — listo para compartir", fr: "✓ Lien copié — prêt à partager" },
+    t_share_cancel:{ he: "השיתוף בוטל", en: "Sharing cancelled", es: "Compartir cancelado", fr: "Partage annulé" },
+    t_mail_opening:{ he: "✓ פותח את אפליקציית המייל…", en: "✓ Opening your mail app…", es: "✓ Abriendo tu app de correo…", fr: "✓ Ouverture de votre messagerie…" },
+  };
+
+  function t(k) { const e = I18N[k]; return e ? (e[currentLang] || e.he || k) : k; }
+  function detectLang() {
+    const s = localStorage.getItem(LANG_KEY);
+    if (s && LANGS.includes(s)) return s;
+    const n = (navigator.language || "he").slice(0, 2).toLowerCase();
+    return LANGS.includes(n) ? n : "he";
+  }
+  function setLang(lang) {
+    if (!LANGS.includes(lang)) lang = "he";
+    currentLang = lang;
+    localStorage.setItem(LANG_KEY, lang);
+    document.documentElement.lang = lang;
+    document.documentElement.dir = (lang === "he") ? "rtl" : "ltr";
+    const sel = document.getElementById("langSelect"); if (sel) sel.value = lang;
+    document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+    document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  }
+
   function showToast(msg, type) {
     const wrap = document.getElementById("toastWrap");
-    const t = document.createElement("div");
-    t.className = "toast" + (type ? " " + type : "");
-    t.textContent = msg; wrap.appendChild(t);
-    requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add("show")));
-    setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 250); }, 2600);
+    const el = document.createElement("div");
+    el.className = "toast" + (type ? " " + type : "");
+    el.textContent = msg; wrap.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("show")));
+    setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 250); }, 2600);
   }
   async function shareApp() {
     const url = location.origin + location.pathname.replace(/help\.html$/, "index.html");
-    const data = { title: "Teamnul — תמלול ישיבות", text: "כלי חינמי לתמלול ישיבות בעברית 🎙️", url };
+    const data = { title: "Teamnul", text: "Free meeting transcription 🎙️", url };
     try {
       if (navigator.share) { await navigator.share(data); }
-      else { await navigator.clipboard.writeText(url); showToast("✓ הקישור הועתק — אפשר לשתף", "success"); }
+      else { await navigator.clipboard.writeText(url); showToast(t("t_link_copied"), "success"); }
     } catch (e) {
-      if (e.name !== "AbortError") { try { await navigator.clipboard.writeText(url); showToast("✓ הקישור הועתק", "success"); } catch (_) {} }
+      if (e.name !== "AbortError") { try { await navigator.clipboard.writeText(url); showToast(t("t_link_copied"), "success"); } catch (_) {} }
     }
   }
   function toggleFeedback() {
@@ -219,12 +309,12 @@
   }
   function sendFeedback() {
     const txt = document.getElementById("feedbackText").value.trim();
-    if (!txt) { showToast("נא לכתוב משוב קצר", "error"); return; }
-    const subject = encodeURIComponent("משוב על Teamnul");
-    const body = encodeURIComponent(txt);
-    window.open(`mailto:${encodeURIComponent(FEEDBACK_EMAIL)}?subject=${subject}&body=${body}`);
-    showToast("✓ פותח את אפליקציית המייל…", "success");
+    if (!txt) { showToast(t("t_fb_empty"), "error"); return; }
+    window.open(`mailto:${encodeURIComponent(FEEDBACK_EMAIL)}?subject=${encodeURIComponent("Teamnul feedback")}&body=${encodeURIComponent(txt)}`);
+    showToast(t("t_mail_opening"), "success");
   }
+
+  setLang(detectLang());
 </script>
 </body>
 </html>
