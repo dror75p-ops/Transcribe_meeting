@@ -78,6 +78,8 @@
   .logo { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .logo span { color: #93c5fd; }
   .nav-tag { background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 11px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.3px; }
+  .nav-help { color: #cbd5e1; font-size: 13px; text-decoration: none; background: rgba(255,255,255,0.12); padding: 5px 13px; border-radius: 99px; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+  .nav-help:hover { background: rgba(255,255,255,0.22); color: #fff; }
 
   /* ── LAYOUT ──────────────────────────────── */
   .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
@@ -607,6 +609,36 @@
   .donate-btn-wrap { display: flex; justify-content: center; }
   .donate-btn-wrap img { max-width: 100%; height: auto; }
 
+  /* ── FEEDBACK ────────────────────────────── */
+  .feedback-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-card);
+    padding: 1.5rem; margin-top: 1.25rem; text-align: center;
+  }
+  .feedback-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 12px; }
+  .feedback-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .btn-fb {
+    padding: 11px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+    font-family: 'Heebo', sans-serif; cursor: pointer; border: 1px solid var(--border);
+    background: #fff; color: var(--text); transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-fb.like { background: var(--success); color: #fff; border-color: var(--success); }
+  .btn-fb.like:hover { background: #047857; }
+  .btn-fb.dislike:hover { background: var(--bg); border-color: #b0b8c8; }
+  .feedback-box { margin-top: 12px; }
+  .feedback-box.hidden { display: none; }
+  .feedback-box textarea {
+    width: 100%; min-height: 80px; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 13px; font-family: 'Heebo', sans-serif;
+    direction: rtl; resize: vertical; outline: none;
+  }
+  .feedback-box textarea:focus { border-color: var(--cobalt); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+  .btn-fb.send { width: 100%; margin-top: 8px; background: var(--cobalt); color: #fff; border-color: var(--cobalt); }
+  .btn-fb.send:hover { background: #1d4ed8; }
+  .feedback-help { margin-top: 12px; font-size: 12px; }
+  .feedback-help a { color: var(--cobalt); text-decoration: none; }
+  .feedback-help a:hover { text-decoration: underline; }
+
   /* ── TOAST ───────────────────────────────── */
   .toast-wrap {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -753,7 +785,10 @@
 
 <nav>
   <div class="logo">Dory<span>Angel</span> &nbsp;|&nbsp; תמלול ישיבות</div>
-  <div class="nav-tag">כלי פנימי · v4</div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <a class="nav-help" href="help.html">❓ הסבר</a>
+    <div class="nav-tag">v4</div>
+  </div>
 </nav>
 
 <div class="page">
@@ -1012,6 +1047,20 @@
         <section style="font-size:0.75rem;"> Powered by <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
       </form>
     </div>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div class="feedback-section">
+    <div class="feedback-title">💬 יש לך דקה? נשמח למשוב</div>
+    <div class="feedback-row">
+      <button class="btn-fb like" onclick="shareApp()">👍 אהבתי — שתף</button>
+      <button class="btn-fb dislike" onclick="toggleFeedback()">👎 יש מה לשפר</button>
+    </div>
+    <div id="feedbackBox" class="feedback-box hidden">
+      <textarea id="feedbackText" placeholder="מה אפשר לשפר? (יישלח למפתח במייל)"></textarea>
+      <button class="btn-fb send" onclick="sendFeedback()">📨 שלח משוב</button>
+    </div>
+    <div class="feedback-help"><a href="help.html">📖 לא בטוח איך מתחילים? עבור למדריך</a></div>
   </div>
 </div>
 
@@ -2029,6 +2078,32 @@ async function shareTranscript() {
   } catch (e) {
     if (e.name !== "AbortError") showToast("השיתוף בוטל", "error");
   }
+}
+
+/* ---- Feedback ---- */
+const FEEDBACK_EMAIL = "dror75p@gmail.com";
+async function shareApp() {
+  const url = location.origin + location.pathname; // the app's own URL
+  const data = { title: "DoryAngel — תמלול ישיבות", text: "כלי חינמי לתמלול ישיבות בעברית 🎙️", url };
+  try {
+    if (navigator.share) { await navigator.share(data); }
+    else { await navigator.clipboard.writeText(url); showToast("✓ הקישור הועתק — אפשר לשתף", "success"); }
+  } catch (e) {
+    if (e.name !== "AbortError") { try { await navigator.clipboard.writeText(url); showToast("✓ הקישור הועתק", "success"); } catch (_) {} }
+  }
+}
+function toggleFeedback() {
+  const box = document.getElementById("feedbackBox");
+  box.classList.toggle("hidden");
+  if (!box.classList.contains("hidden")) document.getElementById("feedbackText").focus();
+}
+function sendFeedback() {
+  const txt = document.getElementById("feedbackText").value.trim();
+  if (!txt) { showToast("נא לכתוב משוב קצר", "error"); return; }
+  const subject = encodeURIComponent("משוב על DoryAngel");
+  const body = encodeURIComponent(txt);
+  window.open(`mailto:${encodeURIComponent(FEEDBACK_EMAIL)}?subject=${subject}&body=${body}`);
+  showToast("✓ פותח את אפליקציית המייל…", "success");
 }
 
 /* ---- Google Drive Panel ---- */
