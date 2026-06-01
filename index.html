@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DoryAngel v4 — תמלול ישיבות</title>
+<title>Teamnul — תמלול ישיבות</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <!-- Patch Worker constructor BEFORE FFmpeg loads.
@@ -75,8 +75,9 @@
     z-index: 50;
     box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   }
-  .logo { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .logo span { color: #93c5fd; }
+  .logo { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .brand-logo { height: 34px; width: auto; border-radius: 6px; flex-shrink: 0; display: block; }
+  .logo .brand-text { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nav-tag { background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 11px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.3px; }
   .nav-help { color: #cbd5e1; font-size: 13px; text-decoration: none; background: rgba(255,255,255,0.12); padding: 5px 13px; border-radius: 99px; white-space: nowrap; transition: background 0.15s, color 0.15s; }
   .nav-help:hover { background: rgba(255,255,255,0.22); color: #fff; }
@@ -784,7 +785,7 @@
 <body>
 
 <nav>
-  <div class="logo">Dory<span>Angel</span> &nbsp;|&nbsp; תמלול ישיבות</div>
+  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="Teamnul" /><span class="brand-text">Teamnul &nbsp;|&nbsp; תמלול ישיבות</span></div>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
     <a class="nav-help" href="help.html">❓ הסבר</a>
     <div class="nav-tag">v4</div>
@@ -1038,7 +1039,7 @@
   <!-- DONATION (PayPal embedded payment link — no SDK) -->
   <div class="donate-section">
     <div class="donate-title">💚 אהבתם את הכלי?</div>
-    <div class="donate-sub">DoryAngel חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏</div>
+    <div class="donate-sub">Teamnul חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏</div>
     <div class="donate-btn-wrap">
       <style>.pp-NXAJTCXW9FUBY{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
       <form action="https://www.paypal.com/ncp/payment/NXAJTCXW9FUBY" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
@@ -2084,7 +2085,7 @@ async function shareTranscript() {
 const FEEDBACK_EMAIL = "dror75p@gmail.com";
 async function shareApp() {
   const url = location.origin + location.pathname; // the app's own URL
-  const data = { title: "DoryAngel — תמלול ישיבות", text: "כלי חינמי לתמלול ישיבות בעברית 🎙️", url };
+  const data = { title: "Teamnul — תמלול ישיבות", text: "כלי חינמי לתמלול ישיבות בעברית 🎙️", url };
   try {
     if (navigator.share) { await navigator.share(data); }
     else { await navigator.clipboard.writeText(url); showToast("✓ הקישור הועתק — אפשר לשתף", "success"); }
@@ -2100,7 +2101,7 @@ function toggleFeedback() {
 function sendFeedback() {
   const txt = document.getElementById("feedbackText").value.trim();
   if (!txt) { showToast("נא לכתוב משוב קצר", "error"); return; }
-  const subject = encodeURIComponent("משוב על DoryAngel");
+  const subject = encodeURIComponent("משוב על Teamnul");
   const body = encodeURIComponent(txt);
   window.open(`mailto:${encodeURIComponent(FEEDBACK_EMAIL)}?subject=${subject}&body=${body}`);
   showToast("✓ פותח את אפליקציית המייל…", "success");

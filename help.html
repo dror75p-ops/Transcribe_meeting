@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DoryAngel — מדריך והסבר</title>
+<title>Teamnul — מדריך והסבר</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <style>
@@ -19,8 +19,9 @@
   body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; direction: rtl; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
   nav { background: var(--navy); padding: 0 1.25rem; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
-  .logo { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .logo span { color: #93c5fd; }
+  .logo { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .brand-logo { height: 34px; width: auto; border-radius: 6px; flex-shrink: 0; display: block; }
+  .logo .brand-text { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nav-back { color: #cbd5e1; font-size: 13px; text-decoration: none; background: rgba(255,255,255,0.12); padding: 6px 14px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; transition: background 0.15s; }
   .nav-back:hover { background: rgba(255,255,255,0.22); color: #fff; }
 
@@ -86,17 +87,17 @@
 <body>
 
 <nav>
-  <div class="logo">Dory<span>Angel</span> &nbsp;|&nbsp; מדריך</div>
+  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="Teamnul" /><span class="brand-text">Teamnul &nbsp;|&nbsp; מדריך</span></div>
   <a class="nav-back" href="index.html">→ חזרה לאפליקציה</a>
 </nav>
 
 <div class="page">
   <div class="page-title">📖 איך זה עובד</div>
-  <div class="page-sub">מדריך קצר ל-DoryAngel — תמלול ישיבות לעברית, ישירות בדפדפן.</div>
+  <div class="page-sub">מדריך קצר ל-Teamnul — תמלול ישיבות לעברית, ישירות בדפדפן.</div>
 
   <!-- WHAT -->
   <div class="card">
-    <h2>🎙️ מה זה DoryAngel?</h2>
+    <h2>🎙️ מה זה Teamnul?</h2>
     <p>כלי חינמי שמתמלל הקלטות ישיבות לעברית — ישירות בדפדפן, בלי להתקין כלום. מעלים קובץ (או מקליטים במקום), והתמלול מוכן תוך דקות, כולל ייצוא ל-Word, שיתוף וזיהוי דוברים.</p>
     <p>הכל רץ אצלך בדפדפן ומול OpenAI — אין שרת שאוסף את ההקלטות שלך.</p>
   </div>
@@ -203,7 +204,7 @@
   }
   async function shareApp() {
     const url = location.origin + location.pathname.replace(/help\.html$/, "index.html");
-    const data = { title: "DoryAngel — תמלול ישיבות", text: "כלי חינמי לתמלול ישיבות בעברית 🎙️", url };
+    const data = { title: "Teamnul — תמלול ישיבות", text: "כלי חינמי לתמלול ישיבות בעברית 🎙️", url };
     try {
       if (navigator.share) { await navigator.share(data); }
       else { await navigator.clipboard.writeText(url); showToast("✓ הקישור הועתק — אפשר לשתף", "success"); }
@@ -219,7 +220,7 @@
   function sendFeedback() {
     const txt = document.getElementById("feedbackText").value.trim();
     if (!txt) { showToast("נא לכתוב משוב קצר", "error"); return; }
-    const subject = encodeURIComponent("משוב על DoryAngel");
+    const subject = encodeURIComponent("משוב על Teamnul");
     const body = encodeURIComponent(txt);
     window.open(`mailto:${encodeURIComponent(FEEDBACK_EMAIL)}?subject=${subject}&body=${body}`);
     showToast("✓ פותח את אפליקציית המייל…", "success");
