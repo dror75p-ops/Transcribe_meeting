@@ -375,6 +375,12 @@
   .rec-controls { display: flex; gap: 8px; margin-inline-start: auto; }
   .btn-sm.rec-stop { background: var(--danger); color: #fff; border-color: var(--danger); }
   .btn-sm.rec-stop:hover { background: #b91c1c; border-color: #b91c1c; }
+  .rec-warning {
+    margin-top: 10px; padding: 10px 12px;
+    background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm);
+    font-size: 12px; color: #92400e; line-height: 1.7; text-align: center;
+  }
+  .rec-warning strong { color: #78350f; }
 
   /* ── FILE TYPE BADGE ─────────────────────── */
   .file-type-badge {
@@ -852,7 +858,11 @@
             <button class="btn-sm rec-stop" onclick="stopRecording()">⏹️ עצור וסיים</button>
           </div>
         </div>
-        <div class="field-hint" style="text-align:center;margin-top:8px;">🔔 ביפ קצר יישמע כל 10 דקות · השאירו את המסך דולק</div>
+        <div class="rec-warning">
+          🔔 ביפ כל 10 דקות.<br/>
+          ⚠️ <strong>השאירו את המסך דולק ואל תעברו לאפליקציה אחרת</strong> — בדפדפן ההקלטה עלולה להיעצר כשהמסך ננעל.<br/>
+          לישיבות ארוכות מומלץ להקליט באפליקציית הטלפון ואז להעלות את הקובץ למעלה ⬆️
+        </div>
       </div>
     </div>
   </div>
@@ -2260,6 +2270,23 @@ function escHtml(s) {
 let mediaRecorder = null, recChunks = [], recStream = null;
 let recTimerId = null, recStartMs = 0, recAccumMs = 0, recBeepMark = 0;
 let recWakeLock = null, recMime = "", recAudioCtx = null;
+let recKeepAlive = null; // silent looping audio to discourage the OS from suspending the tab
+
+// Play inaudible looping audio so the browser treats the tab as "playing media"
+// — on Android this markedly reduces tab suspension when the screen turns off.
+function startKeepAlive() {
+  try {
+    if (!recKeepAlive) {
+      const silent = pcmToWav(new Uint8Array(16000 * 2), 16000); // 1s of 16kHz silence
+      recKeepAlive = new Audio(URL.createObjectURL(silent));
+      recKeepAlive.loop = true;
+    }
+    recKeepAlive.play().catch(() => {});
+  } catch (e) { /* ignore */ }
+}
+function stopKeepAlive() {
+  try { if (recKeepAlive) recKeepAlive.pause(); } catch (e) {}
+}
 
 function pickRecorderMime() {
   const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
@@ -2312,6 +2339,7 @@ async function startRecording() {
   updateRecTime();
   recTimerId = setInterval(updateRecTime, 250);
   requestRecWakeLock();
+  startKeepAlive();
 }
 
 function updateRecTime() {
@@ -2334,6 +2362,7 @@ function togglePauseRecording() {
     document.getElementById("recStatus").textContent = "מושהה";
     document.getElementById("recPauseBtn").textContent = "▶️ המשך";
     releaseRecWakeLock();
+    stopKeepAlive();
   } else if (mediaRecorder.state === "paused") {
     mediaRecorder.resume();
     recStartMs = Date.now();
@@ -2341,6 +2370,7 @@ function togglePauseRecording() {
     document.getElementById("recStatus").textContent = "מקליט…";
     document.getElementById("recPauseBtn").textContent = "⏸️ השהה";
     requestRecWakeLock();
+    startKeepAlive();
   }
 }
 
@@ -2355,6 +2385,7 @@ function onRecordingStopped() {
   clearInterval(recTimerId); recTimerId = null;
   window._recording = false;
   releaseRecWakeLock();
+  stopKeepAlive();
   if (recStream) { recStream.getTracks().forEach(t => t.stop()); recStream = null; }
 
   const ext = recExtForMime(recMime);
@@ -2392,8 +2423,16 @@ function playBeep() {
 }
 
 async function requestRecWakeLock() {
-  try { if (navigator.wakeLock && !recWakeLock) recWakeLock = await navigator.wakeLock.request("screen"); }
-  catch (e) { /* best effort */ }
+  try {
+    if (navigator.wakeLock && !recWakeLock) {
+      recWakeLock = await navigator.wakeLock.request("screen");
+      recWakeLock.addEventListener("release", () => {
+        recWakeLock = null;
+        // The OS dropped it (e.g. tab briefly hidden) — re-acquire if still recording.
+        if (window._recording && document.visibilityState === "visible") requestRecWakeLock();
+      });
+    }
+  } catch (e) { /* best effort */ }
 }
 function releaseRecWakeLock() {
   try { if (recWakeLock) { recWakeLock.release(); recWakeLock = null; } } catch (e) {}
