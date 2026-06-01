@@ -56,7 +56,6 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    direction: rtl;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
     max-width: 100%;
@@ -81,6 +80,8 @@
   .nav-tag { background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 11px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.3px; }
   .nav-help { color: #cbd5e1; font-size: 13px; text-decoration: none; background: rgba(255,255,255,0.12); padding: 5px 13px; border-radius: 99px; white-space: nowrap; transition: background 0.15s, color 0.15s; }
   .nav-help:hover { background: rgba(255,255,255,0.22); color: #fff; }
+  .lang-select { background: rgba(255,255,255,0.12); color: #fff; border: none; border-radius: 99px; font-size: 13px; font-family: 'Heebo', sans-serif; padding: 5px 10px; cursor: pointer; outline: none; }
+  .lang-select option { color: #1a2744; background: #fff; }
 
   /* ── LAYOUT ──────────────────────────────── */
   .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
@@ -504,8 +505,7 @@
     font-size: 14px;
     line-height: 1.9;
     color: var(--text);
-    direction: rtl;
-    text-align: right;
+    text-align: start;
     min-height: 140px;
     max-height: 400px;
     overflow-y: auto;
@@ -766,6 +766,15 @@
 
   .hidden { display: none !important; }
 
+  /* ── LTR overrides (en / es / fr) ────────── */
+  html[dir="ltr"] textarea.field-input,
+  html[dir="ltr"] input.field-input,
+  html[dir="ltr"] .claude-instructions,
+  html[dir="ltr"] #driveFileName { direction: ltr; }
+  html[dir="ltr"] .subject-row-label,
+  html[dir="ltr"] .field-label,
+  html[dir="ltr"] #tabWarning { text-align: left; }
+
   /* ── RESPONSIVE ──────────────────────────── */
   @media (max-width: 520px) {
     .page { padding: 1.5rem 1rem 4rem; }
@@ -785,16 +794,21 @@
 <body>
 
 <nav>
-  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="Teamnul" /><span class="brand-text">Teamnul &nbsp;|&nbsp; תמלול ישיבות</span></div>
+  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="Teamnul" /><span class="brand-text">Teamnul</span></div>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-    <a class="nav-help" href="help.html">❓ הסבר</a>
-    <div class="nav-tag">v4</div>
+    <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+      <option value="he">🇮🇱 עברית</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="fr">🇫🇷 Français</option>
+    </select>
+    <a class="nav-help" href="help.html" data-i18n="nav_help">❓ הסבר</a>
   </div>
 </nav>
 
 <div class="page">
-  <div class="page-title">🎙️ תמלול ישיבות לעברית</div>
-  <div class="page-sub">העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI</div>
+  <div class="page-title" data-i18n="page_title">🎙️ תמלול ישיבות לעברית</div>
+  <div class="page-sub" data-i18n="page_sub">העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI</div>
 
   <!-- API KEY -->
   <div class="card">
@@ -804,9 +818,9 @@
     <div id="apiKeySaved" class="hidden">
       <div class="api-saved-bar">
         <span class="check">✓</span>
-        <span class="label">מפתח שמור</span>
+        <span class="label" data-i18n="apikey_saved">מפתח שמור</span>
         <span class="mono" id="apiKeyHint"></span>
-        <span class="api-edit-link" onclick="expandApiKey()">✎ שנה</span>
+        <span class="api-edit-link" onclick="expandApiKey()" data-i18n="apikey_edit">✎ שנה</span>
       </div>
     </div>
 
@@ -814,10 +828,10 @@
     <div id="apiKeyForm">
       <div class="api-row">
         <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
-        <button class="btn-sm" onclick="toggleKey()">הצג</button>
-        <button class="btn-sm success" onclick="saveKey()">שמור</button>
+        <button class="btn-sm" onclick="toggleKey()" data-i18n="btn_show">הצג</button>
+        <button class="btn-sm success" onclick="saveKey()" data-i18n="btn_save">שמור</button>
       </div>
-      <div class="key-hint">
+      <div class="key-hint" data-i18n-html="apikey_hint">
         המפתח נשמר רק בדפדפן שלך (localStorage).<br/>
         אין מפתח? &rarr;
         <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">צור מפתח חדש ב-platform.openai.com ↗</a>
@@ -827,7 +841,7 @@
 
   <!-- STEP 1: MODEL -->
   <div class="card">
-    <div class="card-title step-title"><span class="step-num">1</span>בחירת מנוע תמלול</div>
+    <div class="card-title step-title"><span class="step-num">1</span><span data-i18n="step1_title">בחירת מנוע תמלול</span></div>
     <div class="field-group" style="margin-bottom:0;">
       <select id="modelSelect" class="field-input" style="height:40px;" onchange="onModelChange()">
         <option value="whisper-1">Whisper (ברירת מחדל)</option>
@@ -837,24 +851,24 @@
       <div class="model-guide">
         <div class="model-guide-row">
           <span class="mg-name">Whisper</span>
-          <span class="mg-desc">מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.</span>
+          <span class="mg-desc" data-i18n-html="mg_whisper">מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.</span>
         </div>
         <div class="model-guide-row">
           <span class="mg-name">GPT-4o mini</span>
-          <span class="mg-desc">דיוק גבוה יותר בעברית במחיר נמוך, <strong>ללא חותמות זמן</strong>. מתאים כשהדיוק חשוב והעלות חשובה.</span>
+          <span class="mg-desc" data-i18n-html="mg_mini">דיוק גבוה יותר בעברית במחיר נמוך, <strong>ללא חותמות זמן</strong>. מתאים כשהדיוק חשוב והעלות חשובה.</span>
         </div>
         <div class="model-guide-row">
           <span class="mg-name">GPT-4o</span>
-          <span class="mg-desc">הדיוק הגבוה ביותר בעברית (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה או איכות נמוכה.</span>
+          <span class="mg-desc" data-i18n-html="mg_gpt">הדיוק הגבוה ביותר בעברית (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה או איכות נמוכה.</span>
         </div>
-        <div class="field-hint" style="margin-top:8px;">💡 לזיהוי דוברים — הריצו תמלול ואז לחצו "🏷️ זהה דוברים" בתוצאה (פועל עם כל מנוע).</div>
+        <div class="field-hint" style="margin-top:8px;" data-i18n="mg_tip">💡 לזיהוי דוברים — הריצו תמלול ואז לחצו "🏷️ זהה דוברים" בתוצאה (פועל עם כל מנוע).</div>
       </div>
     </div>
   </div>
 
   <!-- STEP 2: FILE UPLOAD -->
   <div class="card">
-    <div class="card-title step-title"><span class="step-num">2</span>העלאת קובץ הקלטה</div>
+    <div class="card-title step-title"><span class="step-num">2</span><span data-i18n="step2_title">העלאת קובץ הקלטה</span></div>
 
     <div class="drop-zone" id="dropZone"
       onclick="document.getElementById('fileInput').click()"
@@ -862,8 +876,8 @@
       ondragleave="onDragLeave(event)"
       ondrop="onDrop(event)">
       <div class="drop-icon">📤</div>
-      <div class="drop-title">לחץ להעלאת קובץ או גרור לכאן</div>
-      <div class="drop-sub">MP4 · MP3 · WAV · M4A · OGG — עד 500MB (וידאו/המרה: עד ~200MB)</div>
+      <div class="drop-title" data-i18n="drop_title">לחץ להעלאת קובץ או גרור לכאן</div>
+      <div class="drop-sub" data-i18n="drop_sub">MP4 · MP3 · WAV · M4A · OGG — עד 500MB (וידאו/המרה: עד ~200MB)</div>
     </div>
     <input type="file" id="fileInput" accept="video/mp4,audio/*,.mp4,.mp3,.wav,.m4a,.ogg" onchange="onFileSelect(this.files[0])" />
 
@@ -874,27 +888,27 @@
         <div class="file-size" id="fileSize"></div>
         <div id="fileTypeBadge"></div>
       </div>
-      <button class="btn-remove" onclick="removeFile()" title="הסר קובץ">✕</button>
+      <button class="btn-remove" onclick="removeFile()" data-i18n-title="file_remove" title="הסר קובץ">✕</button>
     </div>
 
     <!-- In-app recorder -->
     <div id="recorderBlock">
-      <div class="rec-divider"><span>או</span></div>
+      <div class="rec-divider"><span data-i18n="rec_or">או</span></div>
       <div id="recIdle">
-        <button class="btn-record" onclick="startRecording()">🎙️ הקלט ישיבה עכשיו</button>
-        <div class="field-hint" style="text-align:center;margin-top:8px;">הקלטה מהמיקרופון של המכשיר · ביפ כל 10 דקות · מתאים לישיבות בחדר (לא לשיחות זום/טלפון)</div>
+        <button class="btn-record" onclick="startRecording()" data-i18n="rec_start">🎙️ הקלט ישיבה עכשיו</button>
+        <div class="field-hint" style="text-align:center;margin-top:8px;" data-i18n="rec_idle_hint">הקלטה מהמיקרופון של המכשיר · ביפ כל 10 דקות · מתאים לישיבות בחדר (לא לשיחות זום/טלפון)</div>
       </div>
       <div id="recActive" class="hidden">
         <div class="rec-panel">
           <span class="rec-dot"></span>
           <span class="rec-time" id="recTime">0:00</span>
-          <span class="rec-status" id="recStatus">מקליט…</span>
+          <span class="rec-status" id="recStatus" data-i18n="rec_status">מקליט…</span>
           <div class="rec-controls">
-            <button class="btn-sm" id="recPauseBtn" onclick="togglePauseRecording()">⏸️ השהה</button>
-            <button class="btn-sm rec-stop" onclick="stopRecording()">⏹️ עצור וסיים</button>
+            <button class="btn-sm" id="recPauseBtn" onclick="togglePauseRecording()" data-i18n="rec_pause">⏸️ השהה</button>
+            <button class="btn-sm rec-stop" onclick="stopRecording()" data-i18n="rec_stop">⏹️ עצור וסיים</button>
           </div>
         </div>
-        <div class="rec-warning">
+        <div class="rec-warning" data-i18n-html="rec_warning">
           🔔 ביפ כל 10 דקות.<br/>
           ⚠️ <strong>השאירו את המסך דולק ואל תעברו לאפליקציה אחרת</strong> — בדפדפן ההקלטה עלולה להיעצר כשהמסך ננעל.<br/>
           לישיבות ארוכות מומלץ להקליט באפליקציית הטלפון ואז להעלות את הקובץ למעלה ⬆️
@@ -905,59 +919,59 @@
 
   <!-- STEP 3: DETAILS -->
   <div class="card">
-    <div class="card-title step-title"><span class="step-num">3</span>פרטי הישיבה <span class="step-optional">(אופציונלי)</span></div>
+    <div class="card-title step-title"><span class="step-num">3</span><span data-i18n="step3_title">פרטי הישיבה</span> <span class="step-optional" data-i18n="optional">(אופציונלי)</span></div>
 
     <!-- Subject + filename row -->
     <div class="field-group" id="subjectGroup">
       <div class="subject-row">
         <div>
-          <div class="subject-row-label">📁 שם קובץ מקורי</div>
-          <div class="filename-fixed" id="originalFileName">לא נבחר קובץ</div>
+          <div class="subject-row-label" data-i18n="lbl_origname">📁 שם קובץ מקורי</div>
+          <div class="filename-fixed" id="originalFileName" data-i18n="origname_none">לא נבחר קובץ</div>
         </div>
         <div>
-          <div class="subject-row-label">✏️ נושא הישיבה</div>
+          <div class="subject-row-label" data-i18n="lbl_subject">✏️ נושא הישיבה</div>
           <input type="text" id="meetingSubjectInput" class="field-input" style="height:40px;resize:none;"
-            placeholder='לדוגמה: ישיבת פיתוח Q3'
+            data-i18n-ph="subject_ph" placeholder='לדוגמה: ישיבת פיתוח Q3'
             oninput="onSubjectChange()" />
         </div>
       </div>
       <div class="filename-combined" id="filenameCombined">
-        <span class="fc-label">שם לשמירה:</span>
+        <span class="fc-label" data-i18n="save_as">שם לשמירה:</span>
         <strong id="filenameCombinedText"></strong>
       </div>
     </div>
 
     <!-- Participants -->
     <div class="field-group">
-      <div class="field-label">👥 משתתפים (עוזר למנוע לזהות שמות)</div>
+      <div class="field-label" data-i18n="lbl_participants">👥 משתתפים (עוזר למנוע לזהות שמות)</div>
       <div style="display:flex;gap:8px;">
         <input type="text" id="participantInput" class="field-input" style="flex:1;min-width:0;"
-          placeholder='הוסף שם ולחץ Enter — למשל: "דרור", "מיכל"'
+          data-i18n-ph="participant_ph" placeholder='הוסף שם ולחץ Enter — למשל: "דרור", "מיכל"'
           onkeydown="onParticipantKey(event)" />
-        <button class="btn-sm cobalt" onclick="addParticipant()">+ הוסף</button>
+        <button class="btn-sm cobalt" onclick="addParticipant()" data-i18n="btn_add">+ הוסף</button>
       </div>
       <div class="participant-tags" id="participantTags"></div>
     </div>
 
     <!-- Instructions + preset chips -->
     <div class="field-group" style="margin-bottom:0;">
-      <div class="field-label">📝 הנחיות לתמלול</div>
+      <div class="field-label" data-i18n="lbl_instructions">📝 הנחיות לתמלול</div>
       <div class="chip-row">
-        <span class="chip" onclick="applyChip(this,'ישיבת פיתוח')">💻 ישיבת פיתוח</span>
-        <span class="chip" onclick="applyChip(this,'ישיבת צוות')">👥 ישיבת צוות</span>
-        <span class="chip" onclick="applyChip(this,'שיחת מכירות')">💼 שיחת מכירות</span>
-        <span class="chip" onclick="applyChip(this,'ראיון עבודה')">🎤 ראיון עבודה</span>
-        <span class="chip" onclick="applyChip(this,'ישיבת הנהלה')">🏛️ ישיבת הנהלה</span>
-        <span class="chip" onclick="applyChip(this,'שיחת לקוח')">📞 שיחת לקוח</span>
+        <span class="chip" onclick="applyChip(this,'dev')" data-i18n="chip_dev">💻 ישיבת פיתוח</span>
+        <span class="chip" onclick="applyChip(this,'team')" data-i18n="chip_team">👥 ישיבת צוות</span>
+        <span class="chip" onclick="applyChip(this,'sales')" data-i18n="chip_sales">💼 שיחת מכירות</span>
+        <span class="chip" onclick="applyChip(this,'interview')" data-i18n="chip_interview">🎤 ראיון עבודה</span>
+        <span class="chip" onclick="applyChip(this,'exec')" data-i18n="chip_exec">🏛️ ישיבת הנהלה</span>
+        <span class="chip" onclick="applyChip(this,'customer')" data-i18n="chip_customer">📞 שיחת לקוח</span>
       </div>
       <textarea id="instructions" class="field-input"
-        placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira."></textarea>
-      <div class="field-hint">לחץ על ניחוש מהיר למעלה, או כתוב הנחיות מותאמות למנוע התמלול</div>
+        data-i18n-ph="instructions_ph" placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira."></textarea>
+      <div class="field-hint" data-i18n="instructions_hint">לחץ על ניחוש מהיר למעלה, או כתוב הנחיות מותאמות למנוע התמלול</div>
     </div>
   </div>
 
   <!-- STEP 4: RUN -->
-  <button class="btn-primary" id="runBtn" onclick="startTranscription()" disabled>
+  <button class="btn-primary" id="runBtn" onclick="startTranscription()" data-i18n-html="btn_run" disabled>
     ▶&nbsp; התחל תמלול
   </button>
 
@@ -968,7 +982,7 @@
   </div>
 
   <!-- TAB WARNING -->
-  <div id="tabWarning" style="display:none;margin-top:.75rem;padding:.75rem 1rem;background:#dbeafe;border-right:3px solid #2563eb;border-radius:8px;font-size:.85rem;color:#1a2744;text-align:right;line-height:1.6;">
+  <div id="tabWarning" data-i18n="tab_warning" style="display:none;margin-top:.75rem;padding:.75rem 1rem;background:#dbeafe;border-inline-start:3px solid #2563eb;border-radius:8px;font-size:.85rem;color:#1a2744;text-align:start;line-height:1.6;">
     ⏳ התמלול פועל ברקע — ניתן לעבור לאפליקציות אחרות. אל תסגרו את הטאב או תרעננו את הדף.
   </div>
 
@@ -978,12 +992,12 @@
   <!-- RESULT -->
   <div class="card result-card" id="resultCard" style="margin-top:1.25rem;">
     <div class="result-header">
-      <div class="result-title">📄 תמלול</div>
+      <div class="result-title" data-i18n="result_title">📄 תמלול</div>
       <div class="action-row">
-        <button class="btn-drive" onclick="openDrivePanel()">📁 שמור ל-Drive</button>
-        <button class="btn-action" onclick="labelSpeakers(this)">🏷️ זהה דוברים</button>
-        <button class="btn-action" id="undoLabelBtn" onclick="undoLabelSpeakers()" style="display:none;">↩︎ בטל</button>
-        <button class="btn-action" onclick="copyText(this)">📋 העתק</button>
+        <button class="btn-drive" onclick="openDrivePanel()" data-i18n="btn_drive">📁 שמור ל-Drive</button>
+        <button class="btn-action" onclick="labelSpeakers(this)" data-i18n="btn_label_spk">🏷️ זהה דוברים</button>
+        <button class="btn-action" id="undoLabelBtn" onclick="undoLabelSpeakers()" data-i18n="btn_undo" style="display:none;">↩︎ בטל</button>
+        <button class="btn-action" onclick="copyText(this)" data-i18n="btn_copy">📋 העתק</button>
         <button class="btn-action" onclick="downloadTxt()">💾 TXT</button>
         <button class="btn-action secondary" onclick="downloadWord()">📝 Word</button>
       </div>
@@ -991,55 +1005,55 @@
 
     <!-- Failed-chunk retry banner -->
     <div id="retryBanner" style="display:none;margin-bottom:12px;padding:11px 14px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;font-size:13px;color:#92400e;line-height:1.6;">
-      ⚠️ <span id="retryCount">0</span> חלקים לא תומללו (שאר התמלול תקין).
-      <button onclick="retryFailedChunks()" style="margin-right:8px;background:#92400e;color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-family:'Heebo',sans-serif;font-size:12px;">🔄 נסה שוב את החלקים שנכשלו</button>
+      ⚠️ <span id="retryCount">0</span> <span data-i18n="retry_failed">חלקים לא תומללו (שאר התמלול תקין).</span>
+      <button onclick="retryFailedChunks()" data-i18n="retry_btn" style="margin-inline-start:8px;background:#92400e;color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-family:'Heebo',sans-serif;font-size:12px;">🔄 נסה שוב את החלקים שנכשלו</button>
     </div>
 
-    <div class="transcript-box" id="transcriptBox" dir="rtl"></div>
+    <div class="transcript-box" id="transcriptBox" dir="auto"></div>
     <div class="stats">
-      <div class="stat"><div class="stat-val" id="s1">—</div><div class="stat-lbl">מילים</div></div>
-      <div class="stat"><div class="stat-val" id="s2">—</div><div class="stat-lbl">משך</div></div>
-      <div class="stat"><div class="stat-val" id="s3">—</div><div class="stat-lbl">עלות</div></div>
+      <div class="stat"><div class="stat-val" id="s1">—</div><div class="stat-lbl" data-i18n="stat_words">מילים</div></div>
+      <div class="stat"><div class="stat-val" id="s2">—</div><div class="stat-lbl" data-i18n="stat_duration">משך</div></div>
+      <div class="stat"><div class="stat-val" id="s3">—</div><div class="stat-lbl" data-i18n="stat_cost">עלות</div></div>
     </div>
 
     <!-- EMAIL / SHARE -->
     <div class="email-section">
-      <div class="card-title">✉️ שליחה / שיתוף</div>
+      <div class="card-title" data-i18n="share_title">✉️ שליחה / שיתוף</div>
       <div class="email-row">
         <input type="email" id="emailTo" placeholder="name@example.com" oninput="onEmailInput()" />
-        <button class="btn-email" onclick="sendEmail()">✉️ שלח במייל</button>
+        <button class="btn-email" onclick="sendEmail()" data-i18n="btn_email">✉️ שלח במייל</button>
       </div>
-      <button class="btn-share" id="shareBtn" onclick="shareTranscript()">📤 שתף (וואטסאפ / Gmail)</button>
-      <div class="email-hint" id="emailHint">"שלח במייל" פותח את אפליקציית המייל עם התמלול מוכן · "שתף" שולח את קובץ התמלול דרך וואטסאפ/Gmail</div>
+      <button class="btn-share" id="shareBtn" onclick="shareTranscript()" data-i18n="btn_share_wa">📤 שתף (וואטסאפ / Gmail)</button>
+      <div class="email-hint" id="emailHint" data-i18n="email_hint">"שלח במייל" פותח את אפליקציית המייל עם התמלול מוכן · "שתף" שולח את קובץ התמלול דרך וואטסאפ/Gmail</div>
     </div>
 
     <!-- CLAUDE SUMMARY -->
     <div class="claude-section">
-      <div class="card-title">🤖 סיכום חכם עם Claude</div>
-      <textarea class="claude-instructions" id="claudeInstructions" placeholder="הנחיות לסיכום (אופציונלי)...">אנא סכם את ישיבה זו בצורה מסודרת:
+      <div class="card-title" data-i18n="claude_title">🤖 סיכום חכם עם Claude</div>
+      <textarea class="claude-instructions" id="claudeInstructions" data-i18n-ph="claude_ph" oninput="this.dataset.userEdited='1'" placeholder="הנחיות לסיכום (אופציונלי)...">אנא סכם את ישיבה זו בצורה מסודרת:
 - כותרת הישיבה
 - משתתפים (אם מוזכרים)
 - נושאים עיקריים שנדונו
 - החלטות שהתקבלו
 - משימות להמשך ואחראים</textarea>
-      <button class="btn-claude" onclick="openInClaude()">✨ פתח ב-Claude לסיכום</button>
-      <div class="email-hint" style="margin-top:7px;">מעתיק את התמלול + ההנחיות ופותח Claude — הדבק ושלח</div>
+      <button class="btn-claude" onclick="openInClaude()" data-i18n="btn_claude">✨ פתח ב-Claude לסיכום</button>
+      <div class="email-hint" style="margin-top:7px;" data-i18n="claude_hint">מעתיק את התמלול + ההנחיות ופותח Claude — הדבק ושלח</div>
     </div>
   </div>
 
   <!-- HISTORY -->
   <div class="card" style="margin-top:1.25rem;">
     <div class="card-header">
-      <div class="card-title">🕘 היסטוריה</div>
-      <button class="clear-history-btn" id="clearHistoryBtn" onclick="clearHistory()" style="display:none;">נקה הכל</button>
+      <div class="card-title" data-i18n="history_title">🕘 היסטוריה</div>
+      <button class="clear-history-btn" id="clearHistoryBtn" onclick="clearHistory()" data-i18n="clear_all" style="display:none;">נקה הכל</button>
     </div>
-    <div id="historyList"><div class="empty-history">עדיין אין תמלולים שמורים</div></div>
+    <div id="historyList"><div class="empty-history" data-i18n="empty_history">עדיין אין תמלולים שמורים</div></div>
   </div>
 
   <!-- DONATION (PayPal embedded payment link — no SDK) -->
   <div class="donate-section">
-    <div class="donate-title">💚 אהבתם את הכלי?</div>
-    <div class="donate-sub">Teamnul חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏</div>
+    <div class="donate-title" data-i18n="donate_title">💚 אהבתם את הכלי?</div>
+    <div class="donate-sub" data-i18n="donate_sub">Teamnul חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏</div>
     <div class="donate-btn-wrap">
       <style>.pp-NXAJTCXW9FUBY{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
       <form action="https://www.paypal.com/ncp/payment/NXAJTCXW9FUBY" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
@@ -1052,16 +1066,16 @@
 
   <!-- FEEDBACK -->
   <div class="feedback-section">
-    <div class="feedback-title">💬 יש לך דקה? נשמח למשוב</div>
+    <div class="feedback-title" data-i18n="fb_title">💬 יש לך דקה? נשמח למשוב</div>
     <div class="feedback-row">
-      <button class="btn-fb like" onclick="shareApp()">👍 אהבתי — שתף</button>
-      <button class="btn-fb dislike" onclick="toggleFeedback()">👎 יש מה לשפר</button>
+      <button class="btn-fb like" onclick="shareApp()" data-i18n="fb_like">👍 אהבתי — שתף</button>
+      <button class="btn-fb dislike" onclick="toggleFeedback()" data-i18n="fb_dislike">👎 יש מה לשפר</button>
     </div>
     <div id="feedbackBox" class="feedback-box hidden">
-      <textarea id="feedbackText" placeholder="מה אפשר לשפר? (יישלח למפתח במייל)"></textarea>
-      <button class="btn-fb send" onclick="sendFeedback()">📨 שלח משוב</button>
+      <textarea id="feedbackText" data-i18n-ph="fb_ph" placeholder="מה אפשר לשפר? (יישלח למפתח במייל)"></textarea>
+      <button class="btn-fb send" onclick="sendFeedback()" data-i18n="fb_send">📨 שלח משוב</button>
     </div>
-    <div class="feedback-help"><a href="help.html">📖 לא בטוח איך מתחילים? עבור למדריך</a></div>
+    <div class="feedback-help"><a href="help.html" data-i18n="fb_help_link">📖 לא בטוח איך מתחילים? עבור למדריך</a></div>
   </div>
 </div>
 
@@ -1070,40 +1084,40 @@
   <div class="drive-panel" id="drivePanel">
     <div class="panel-drag"></div>
     <div class="panel-header">
-      <div class="panel-title">📁 שמור תמלול</div>
+      <div class="panel-title" data-i18n="drive_panel_title">📁 שמור תמלול</div>
       <button class="panel-close" onclick="closeDrivePanel()">✕</button>
     </div>
 
     <!-- Filename -->
     <div class="drive-name-group">
-      <div class="field-label">📄 שם הקובץ</div>
-      <input type="text" id="driveFileName" placeholder="שם הקובץ..." />
+      <div class="field-label" data-i18n="drive_filename">📄 שם הקובץ</div>
+      <input type="text" id="driveFileName" data-i18n-ph="drive_filename_ph" placeholder="שם הקובץ..." />
     </div>
 
     <!-- Format -->
-    <div class="field-label" style="margin-bottom:8px;">פורמט</div>
+    <div class="field-label" style="margin-bottom:8px;" data-i18n="format_label">פורמט</div>
     <div class="format-tabs" style="margin-bottom:1.25rem;">
       <button class="format-tab active" data-fmt="word" onclick="selectFormat(this)">📝 Word</button>
       <button class="format-tab" data-fmt="txt" onclick="selectFormat(this)">💾 TXT</button>
-      <button class="format-tab" data-fmt="both" onclick="selectFormat(this)">📦 שניהם</button>
+      <button class="format-tab" data-fmt="both" onclick="selectFormat(this)" data-i18n="format_both">📦 שניהם</button>
     </div>
 
     <!-- Folder selector -->
     <div class="folder-section">
-      <div class="folder-section-title">📂 תיקיית יעד</div>
+      <div class="folder-section-title" data-i18n="folder_label">📂 תיקיית יעד</div>
 
       <!-- FS API supported -->
       <div id="fsFolderUI">
         <div id="recentFolders"></div>
-        <button class="btn-pick-folder" onclick="pickFolder()">＋ בחר תיקייה...</button>
-        <div class="field-hint" style="margin-top:8px;">
+        <button class="btn-pick-folder" onclick="pickFolder()" data-i18n="btn_pick_folder">＋ בחר תיקייה...</button>
+        <div class="field-hint" style="margin-top:8px;" data-i18n="folder_hint">
           💡 בחר תיקייה מקומית. אם Google Drive for Desktop מותקן — הקובץ יסונכרן אוטומטית לענן.
         </div>
       </div>
 
       <!-- FS API not supported -->
       <div id="fsFallbackUI" class="hidden">
-        <div class="drive-fallback">
+        <div class="drive-fallback" data-i18n-html="fs_fallback">
           <strong>הדפדפן שלך אינו תומך בשמירה ישירה לתיקייה.</strong><br/>
           הורד את הקובץ ואז גרור אותו לתיקיית Google Drive שלך.
         </div>
@@ -1111,8 +1125,8 @@
     </div>
 
     <div class="panel-footer">
-      <button class="btn-panel-cancel" onclick="closeDrivePanel()">ביטול</button>
-      <button class="btn-panel-save" id="btnPanelSave" onclick="executeDriveSave()">💾 שמור כאן</button>
+      <button class="btn-panel-cancel" onclick="closeDrivePanel()" data-i18n="btn_cancel">ביטול</button>
+      <button class="btn-panel-save" id="btnPanelSave" onclick="executeDriveSave()" data-i18n="btn_panel_save">💾 שמור כאן</button>
     </div>
   </div>
 </div>
@@ -1141,6 +1155,207 @@ let selectedModel = "whisper-1";
 const HISTORY_KEY = "da_transcripts";
 const DRIVE_FOLDER_KEY = "da_drive_folders"; // stores [{name, path}]
 const MODEL_KEY = "da_model";
+const LANG_KEY = "da_lang";
+
+/* ===== i18n ===== */
+const LANGS = ["he", "en", "es", "fr"];
+let currentLang = "he";
+let transcribeLang = "he"; // OpenAI `language` param — follows the UI language
+
+const I18N = {
+  nav_help:        { he: "❓ הסבר", en: "❓ Help", es: "❓ Ayuda", fr: "❓ Aide" },
+  page_title:      { he: "🎙️ תמלול ישיבות", en: "🎙️ Meeting Transcription", es: "🎙️ Transcripción de reuniones", fr: "🎙️ Transcription de réunions" },
+  page_sub:        { he: "העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI", en: "Upload a recording — get a Word transcript in minutes · Powered by OpenAI", es: "Sube una grabación — obtén una transcripción Word en minutos · Powered by OpenAI", fr: "Téléversez un enregistrement — transcription Word en quelques minutes · Powered by OpenAI" },
+  apikey_saved:    { he: "מפתח שמור", en: "Key saved", es: "Clave guardada", fr: "Clé enregistrée" },
+  apikey_edit:     { he: "✎ שנה", en: "✎ Edit", es: "✎ Editar", fr: "✎ Modifier" },
+  btn_show:        { he: "הצג", en: "Show", es: "Mostrar", fr: "Afficher" },
+  btn_save:        { he: "שמור", en: "Save", es: "Guardar", fr: "Enregistrer" },
+  apikey_hint:     { he: 'המפתח נשמר רק בדפדפן שלך (localStorage).<br/>אין מפתח? &rarr; <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">צור מפתח חדש ב-platform.openai.com ↗</a>', en: 'The key is stored only in your browser (localStorage).<br/>No key? &rarr; <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Create one at platform.openai.com ↗</a>', es: 'La clave se guarda solo en tu navegador (localStorage).<br/>¿Sin clave? &rarr; <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Crea una en platform.openai.com ↗</a>', fr: 'La clé est stockée uniquement dans votre navigateur (localStorage).<br/>Pas de clé ? &rarr; <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Créez-en une sur platform.openai.com ↗</a>' },
+  step1_title:     { he: "בחירת מנוע תמלול", en: "Choose a transcription engine", es: "Elige el motor de transcripción", fr: "Choisir le moteur de transcription" },
+  model_whisper:   { he: "Whisper (ברירת מחדל)", en: "Whisper (default)", es: "Whisper (predeterminado)", fr: "Whisper (par défaut)" },
+  mg_whisper:      { he: "מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.", en: "Fast and cheap, <strong>with [mm:ss] timestamps</strong>. Best for long meetings and time-based review. The default.", es: "Rápido y económico, <strong>con marcas de tiempo [mm:ss]</strong>. Ideal para reuniones largas. Predeterminado.", fr: "Rapide et économique, <strong>avec horodatage [mm:ss]</strong>. Idéal pour les longues réunions. Par défaut." },
+  mg_mini:         { he: "דיוק גבוה יותר במחיר נמוך, <strong>ללא חותמות זמן</strong>. מתאים כשהדיוק חשוב והעלות חשובה.", en: "Higher accuracy at low cost, <strong>no timestamps</strong>. When accuracy and price both matter.", es: "Mayor precisión a bajo costo, <strong>sin marcas de tiempo</strong>. Cuando importan precisión y precio.", fr: "Meilleure précision à bas coût, <strong>sans horodatage</strong>. Quand précision et prix comptent." },
+  mg_gpt:          { he: "הדיוק הגבוה ביותר (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה או איכות נמוכה.", en: "Highest accuracy (accent, terms, names), <strong>no timestamps</strong>. For hard or low-quality audio.", es: "Máxima precisión (acento, términos, nombres), <strong>sin marcas de tiempo</strong>. Para audio difícil.", fr: "Précision maximale (accent, termes, noms), <strong>sans horodatage</strong>. Pour audio difficile." },
+  mg_tip:          { he: '💡 לזיהוי דוברים — הריצו תמלול ואז לחצו "🏷️ זהה דוברים" בתוצאה (פועל עם כל מנוע).', en: '💡 For speaker labels — transcribe, then click "🏷️ Label speakers" in the result (works with any engine).', es: '💡 Para identificar hablantes — transcribe y pulsa "🏷️ Identificar hablantes" en el resultado.', fr: '💡 Pour identifier les intervenants — transcrivez, puis cliquez "🏷️ Identifier les intervenants".' },
+  step2_title:     { he: "העלאת קובץ הקלטה", en: "Upload a recording", es: "Subir una grabación", fr: "Téléverser un enregistrement" },
+  drop_title:      { he: "לחץ להעלאת קובץ או גרור לכאן", en: "Click to upload or drag a file here", es: "Haz clic para subir o arrastra aquí", fr: "Cliquez pour téléverser ou glissez ici" },
+  drop_sub:        { he: "MP4 · MP3 · WAV · M4A · OGG — עד 500MB (וידאו/המרה: עד ~200MB)", en: "MP4 · MP3 · WAV · M4A · OGG — up to 500MB (video/convert: up to ~200MB)", es: "MP4 · MP3 · WAV · M4A · OGG — hasta 500MB (vídeo/conversión: ~200MB)", fr: "MP4 · MP3 · WAV · M4A · OGG — jusqu'à 500 Mo (vidéo/conversion : ~200 Mo)" },
+  file_remove:     { he: "הסר קובץ", en: "Remove file", es: "Quitar archivo", fr: "Retirer le fichier" },
+  rec_or:          { he: "או", en: "or", es: "o", fr: "ou" },
+  rec_start:       { he: "🎙️ הקלט ישיבה עכשיו", en: "🎙️ Record a meeting now", es: "🎙️ Grabar una reunión", fr: "🎙️ Enregistrer une réunion" },
+  rec_idle_hint:   { he: "הקלטה מהמיקרופון של המכשיר · ביפ כל 10 דקות · מתאים לישיבות בחדר (לא לשיחות זום/טלפון)", en: "Records from the device mic · beep every 10 min · for in-room meetings (not Zoom/phone calls)", es: "Graba del micrófono · pitido cada 10 min · para reuniones presenciales (no Zoom/llamadas)", fr: "Enregistre via le micro · bip toutes les 10 min · pour réunions en présentiel (pas Zoom/appels)" },
+  rec_status:      { he: "מקליט…", en: "Recording…", es: "Grabando…", fr: "Enregistrement…" },
+  rec_paused:      { he: "מושהה", en: "Paused", es: "Pausado", fr: "En pause" },
+  rec_pause:       { he: "⏸️ השהה", en: "⏸️ Pause", es: "⏸️ Pausar", fr: "⏸️ Pause" },
+  rec_resume:      { he: "▶️ המשך", en: "▶️ Resume", es: "▶️ Reanudar", fr: "▶️ Reprendre" },
+  rec_stop:        { he: "⏹️ עצור וסיים", en: "⏹️ Stop & finish", es: "⏹️ Detener y finalizar", fr: "⏹️ Arrêter et terminer" },
+  rec_warning:     { he: "🔔 ביפ כל 10 דקות.<br/>⚠️ <strong>השאירו את המסך דולק ואל תעברו לאפליקציה אחרת</strong> — בדפדפן ההקלטה עלולה להיעצר כשהמסך ננעל.<br/>לישיבות ארוכות מומלץ להקליט באפליקציית הטלפון ואז להעלות את הקובץ למעלה ⬆️", en: "🔔 Beep every 10 min.<br/>⚠️ <strong>Keep the screen on and don't switch apps</strong> — in a browser, recording may stop when the screen locks.<br/>For long meetings, record with your phone's app and upload the file above ⬆️", es: "🔔 Pitido cada 10 min.<br/>⚠️ <strong>Mantén la pantalla encendida y no cambies de app</strong> — en el navegador la grabación puede detenerse al bloquear la pantalla.<br/>Para reuniones largas, graba con la app del teléfono y sube el archivo ⬆️", fr: "🔔 Bip toutes les 10 min.<br/>⚠️ <strong>Gardez l'écran allumé et ne changez pas d'appli</strong> — dans un navigateur, l'enregistrement peut s'arrêter quand l'écran se verrouille.<br/>Pour les longues réunions, enregistrez avec l'appli du téléphone et téléversez le fichier ⬆️" },
+  step3_title:     { he: "פרטי הישיבה", en: "Meeting details", es: "Detalles de la reunión", fr: "Détails de la réunion" },
+  optional:        { he: "(אופציונלי)", en: "(optional)", es: "(opcional)", fr: "(facultatif)" },
+  lbl_origname:    { he: "📁 שם קובץ מקורי", en: "📁 Original file name", es: "📁 Nombre del archivo", fr: "📁 Nom du fichier" },
+  origname_none:   { he: "לא נבחר קובץ", en: "No file selected", es: "Sin archivo", fr: "Aucun fichier" },
+  lbl_subject:     { he: "✏️ נושא הישיבה", en: "✏️ Meeting subject", es: "✏️ Asunto", fr: "✏️ Sujet" },
+  subject_ph:      { he: "לדוגמה: ישיבת פיתוח Q3", en: "e.g. Q3 dev meeting", es: "ej. Reunión Q3", fr: "ex. Réunion Q3" },
+  save_as:         { he: "שם לשמירה:", en: "Save as:", es: "Guardar como:", fr: "Nom :" },
+  lbl_participants:{ he: "👥 משתתפים (עוזר למנוע לזהות שמות)", en: "👥 Participants (helps the engine with names)", es: "👥 Participantes (ayuda con los nombres)", fr: "👥 Participants (aide à reconnaître les noms)" },
+  participant_ph:  { he: 'הוסף שם ולחץ Enter — למשל: "דרור", "מיכל"', en: 'Add a name and press Enter — e.g. "Alex", "Sam"', es: 'Añade un nombre y pulsa Enter — ej. "Ana", "Luis"', fr: 'Ajoutez un nom puis Entrée — ex. "Marie", "Paul"' },
+  btn_add:         { he: "+ הוסף", en: "+ Add", es: "+ Añadir", fr: "+ Ajouter" },
+  lbl_instructions:{ he: "📝 הנחיות לתמלול", en: "📝 Transcription instructions", es: "📝 Instrucciones", fr: "📝 Instructions" },
+  instructions_ph: { he: "לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira.", en: "e.g. Dev team meeting — technical discussion. Terms: API, backend, sprint, Jira.", es: "ej. Reunión de desarrollo — debate técnico. Términos: API, backend, sprint, Jira.", fr: "ex. Réunion équipe dev — discussion technique. Termes : API, backend, sprint, Jira." },
+  instructions_hint:{ he: "לחץ על ניחוש מהיר למעלה, או כתוב הנחיות מותאמות למנוע התמלול", en: "Tap a quick preset above, or write custom instructions for the engine", es: "Pulsa un preajuste arriba o escribe instrucciones personalizadas", fr: "Cliquez un préréglage ci-dessus ou écrivez des instructions personnalisées" },
+  chip_dev:        { he: "💻 ישיבת פיתוח", en: "💻 Dev meeting", es: "💻 Reunión de desarrollo", fr: "💻 Réunion dev" },
+  chip_team:       { he: "👥 ישיבת צוות", en: "👥 Team meeting", es: "👥 Reunión de equipo", fr: "👥 Réunion d'équipe" },
+  chip_sales:      { he: "💼 שיחת מכירות", en: "💼 Sales call", es: "💼 Llamada de ventas", fr: "💼 Appel commercial" },
+  chip_interview:  { he: "🎤 ראיון עבודה", en: "🎤 Job interview", es: "🎤 Entrevista de trabajo", fr: "🎤 Entretien d'embauche" },
+  chip_exec:       { he: "🏛️ ישיבת הנהלה", en: "🏛️ Exec meeting", es: "🏛️ Reunión directiva", fr: "🏛️ Réunion de direction" },
+  chip_customer:   { he: "📞 שיחת לקוח", en: "📞 Customer call", es: "📞 Llamada de cliente", fr: "📞 Appel client" },
+  btn_run:         { he: "▶&nbsp; התחל תמלול", en: "▶&nbsp; Start transcription", es: "▶&nbsp; Iniciar transcripción", fr: "▶&nbsp; Démarrer la transcription" },
+  tab_warning:     { he: "⏳ התמלול פועל ברקע — ניתן לעבור לאפליקציות אחרות. אל תסגרו את הטאב או תרעננו את הדף.", en: "⏳ Transcription is running in the background — you can switch apps. Don't close the tab or refresh.", es: "⏳ La transcripción se ejecuta en segundo plano — puedes cambiar de app. No cierres la pestaña ni recargues.", fr: "⏳ La transcription tourne en arrière-plan — vous pouvez changer d'appli. Ne fermez pas l'onglet et ne rechargez pas." },
+  result_title:    { he: "📄 תמלול", en: "📄 Transcript", es: "📄 Transcripción", fr: "📄 Transcription" },
+  btn_drive:       { he: "📁 שמור ל-Drive", en: "📁 Save to Drive", es: "📁 Guardar en Drive", fr: "📁 Enregistrer sur Drive" },
+  btn_label_spk:   { he: "🏷️ זהה דוברים", en: "🏷️ Label speakers", es: "🏷️ Identificar hablantes", fr: "🏷️ Identifier les intervenants" },
+  btn_undo:        { he: "↩︎ בטל", en: "↩︎ Undo", es: "↩︎ Deshacer", fr: "↩︎ Annuler" },
+  btn_copy:        { he: "📋 העתק", en: "📋 Copy", es: "📋 Copiar", fr: "📋 Copier" },
+  stat_words:      { he: "מילים", en: "Words", es: "Palabras", fr: "Mots" },
+  stat_duration:   { he: "משך", en: "Duration", es: "Duración", fr: "Durée" },
+  stat_cost:       { he: "עלות", en: "Cost", es: "Coste", fr: "Coût" },
+  retry_failed:    { he: "חלקים לא תומללו (שאר התמלול תקין).", en: "parts weren't transcribed (the rest is fine).", es: "partes no se transcribieron (el resto está bien).", fr: "parties non transcrites (le reste est correct)." },
+  retry_btn:       { he: "🔄 נסה שוב את החלקים שנכשלו", en: "🔄 Retry failed parts", es: "🔄 Reintentar partes fallidas", fr: "🔄 Réessayer les parties échouées" },
+  share_title:     { he: "✉️ שליחה / שיתוף", en: "✉️ Send / Share", es: "✉️ Enviar / Compartir", fr: "✉️ Envoyer / Partager" },
+  btn_email:       { he: "✉️ שלח במייל", en: "✉️ Send email", es: "✉️ Enviar correo", fr: "✉️ Envoyer un e-mail" },
+  btn_share_wa:    { he: "📤 שתף (וואטסאפ / Gmail)", en: "📤 Share (WhatsApp / Gmail)", es: "📤 Compartir (WhatsApp / Gmail)", fr: "📤 Partager (WhatsApp / Gmail)" },
+  email_hint:      { he: '"שלח במייל" פותח את אפליקציית המייל עם התמלול מוכן · "שתף" שולח את קובץ התמלול דרך וואטסאפ/Gmail', en: '"Send email" opens your mail app with the transcript ready · "Share" sends the transcript file via WhatsApp/Gmail', es: '"Enviar correo" abre tu app de correo con la transcripción · "Compartir" envía el archivo por WhatsApp/Gmail', fr: '"Envoyer un e-mail" ouvre votre messagerie avec la transcription · "Partager" envoie le fichier via WhatsApp/Gmail' },
+  claude_title:    { he: "🤖 סיכום חכם עם Claude", en: "🤖 Smart summary with Claude", es: "🤖 Resumen inteligente con Claude", fr: "🤖 Résumé intelligent avec Claude" },
+  claude_ph:       { he: "הנחיות לסיכום (אופציונלי)...", en: "Summary instructions (optional)...", es: "Instrucciones de resumen (opcional)...", fr: "Instructions de résumé (facultatif)..." },
+  claude_default:  { he: "אנא סכם את ישיבה זו בצורה מסודרת:\n- כותרת הישיבה\n- משתתפים (אם מוזכרים)\n- נושאים עיקריים שנדונו\n- החלטות שהתקבלו\n- משימות להמשך ואחראים", en: "Please summarize this meeting clearly:\n- Meeting title\n- Participants (if mentioned)\n- Main topics discussed\n- Decisions made\n- Action items and owners", es: "Resume esta reunión de forma clara:\n- Título de la reunión\n- Participantes (si se mencionan)\n- Temas principales\n- Decisiones tomadas\n- Tareas y responsables", fr: "Résumez clairement cette réunion :\n- Titre de la réunion\n- Participants (si mentionnés)\n- Sujets principaux\n- Décisions prises\n- Actions et responsables" },
+  btn_claude:      { he: "✨ פתח ב-Claude לסיכום", en: "✨ Open in Claude to summarize", es: "✨ Abrir en Claude para resumir", fr: "✨ Ouvrir dans Claude pour résumer" },
+  claude_hint:     { he: "מעתיק את התמלול + ההנחיות ופותח Claude — הדבק ושלח", en: "Copies the transcript + instructions and opens Claude — paste and send", es: "Copia la transcripción + instrucciones y abre Claude — pega y envía", fr: "Copie la transcription + instructions et ouvre Claude — collez et envoyez" },
+  history_title:   { he: "🕘 היסטוריה", en: "🕘 History", es: "🕘 Historial", fr: "🕘 Historique" },
+  clear_all:       { he: "נקה הכל", en: "Clear all", es: "Borrar todo", fr: "Tout effacer" },
+  empty_history:   { he: "עדיין אין תמלולים שמורים", en: "No saved transcripts yet", es: "Aún no hay transcripciones", fr: "Aucune transcription enregistrée" },
+  donate_title:    { he: "💚 אהבתם את הכלי?", en: "💚 Enjoying the tool?", es: "💚 ¿Te gusta la herramienta?", fr: "💚 Vous aimez l'outil ?" },
+  donate_sub:      { he: "Teamnul חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏", en: "Teamnul is completely free. If it helped you, a small donation keeps it free and available for everyone 🙏", es: "Teamnul es totalmente gratis. Si te ayudó, una donación lo mantiene gratis para todos 🙏", fr: "Teamnul est entièrement gratuit. Si l'outil vous a aidé, un don le garde gratuit pour tous 🙏" },
+  donate_btn:      { he: "💚 לתרומה", en: "💚 Donate", es: "💚 Donar", fr: "💚 Faire un don" },
+  fb_title:        { he: "💬 יש לך דקה? נשמח למשוב", en: "💬 Got a minute? We'd love feedback", es: "💬 ¿Tienes un minuto? Tu opinión cuenta", fr: "💬 Une minute ? Votre avis compte" },
+  fb_like:         { he: "👍 אהבתי — שתף", en: "👍 I like it — share", es: "👍 Me gusta — compartir", fr: "👍 J'aime — partager" },
+  fb_dislike:      { he: "👎 יש מה לשפר", en: "👎 Could be better", es: "👎 Se puede mejorar", fr: "👎 À améliorer" },
+  fb_ph:           { he: "מה אפשר לשפר? (יישלח למפתח במייל)", en: "What could be better? (sent to the developer by email)", es: "¿Qué se puede mejorar? (se envía al desarrollador)", fr: "Qu'améliorer ? (envoyé au développeur par e-mail)" },
+  fb_send:         { he: "📨 שלח משוב", en: "📨 Send feedback", es: "📨 Enviar opinión", fr: "📨 Envoyer l'avis" },
+  fb_help_link:    { he: "📖 לא בטוח איך מתחילים? עבור למדריך", en: "📖 Not sure how to start? Open the guide", es: "📖 ¿No sabes cómo empezar? Abre la guía", fr: "📖 Besoin d'aide pour démarrer ? Ouvrez le guide" },
+  drive_panel_title:{ he: "📁 שמור תמלול", en: "📁 Save transcript", es: "📁 Guardar transcripción", fr: "📁 Enregistrer la transcription" },
+  drive_filename:  { he: "📄 שם הקובץ", en: "📄 File name", es: "📄 Nombre del archivo", fr: "📄 Nom du fichier" },
+  drive_filename_ph:{ he: "שם הקובץ...", en: "File name...", es: "Nombre del archivo...", fr: "Nom du fichier..." },
+  format_label:    { he: "פורמט", en: "Format", es: "Formato", fr: "Format" },
+  format_both:     { he: "📦 שניהם", en: "📦 Both", es: "📦 Ambos", fr: "📦 Les deux" },
+  folder_label:    { he: "📂 תיקיית יעד", en: "📂 Target folder", es: "📂 Carpeta destino", fr: "📂 Dossier cible" },
+  btn_pick_folder: { he: "＋ בחר תיקייה...", en: "＋ Choose folder...", es: "＋ Elegir carpeta...", fr: "＋ Choisir un dossier..." },
+  folder_hint:     { he: "💡 בחר תיקייה מקומית. אם Google Drive for Desktop מותקן — הקובץ יסונכרן אוטומטית לענן.", en: "💡 Pick a local folder. If Google Drive for Desktop is installed, the file syncs to the cloud automatically.", es: "💡 Elige una carpeta local. Si tienes Google Drive para escritorio, el archivo se sincroniza automáticamente.", fr: "💡 Choisissez un dossier local. Si Google Drive pour ordinateur est installé, le fichier se synchronise automatiquement." },
+  fs_fallback:     { he: "<strong>הדפדפן שלך אינו תומך בשמירה ישירה לתיקייה.</strong><br/>הורד את הקובץ ואז גרור אותו לתיקיית Google Drive שלך.", en: "<strong>Your browser doesn't support saving directly to a folder.</strong><br/>Download the file, then drag it into your Google Drive folder.", es: "<strong>Tu navegador no admite guardar directamente en una carpeta.</strong><br/>Descarga el archivo y arrástralo a tu carpeta de Google Drive.", fr: "<strong>Votre navigateur ne permet pas l'enregistrement direct dans un dossier.</strong><br/>Téléchargez le fichier puis glissez-le dans votre dossier Google Drive." },
+  btn_cancel:      { he: "ביטול", en: "Cancel", es: "Cancelar", fr: "Annuler" },
+  btn_panel_save:  { he: "💾 שמור כאן", en: "💾 Save here", es: "💾 Guardar aquí", fr: "💾 Enregistrer ici" },
+  btn_download:    { he: "⬇️ הורד קובץ", en: "⬇️ Download file", es: "⬇️ Descargar archivo", fr: "⬇️ Télécharger le fichier" },
+
+  /* dynamic (JS) strings */
+  t_key_invalid:   { he: "נא להזין OpenAI API Key תקין (מתחיל ב-sk-)", en: "Please enter a valid OpenAI API key (starts with sk-)", es: "Introduce una clave de OpenAI válida (empieza por sk-)", fr: "Saisissez une clé OpenAI valide (commence par sk-)" },
+  t_no_file:       { he: "נא לבחור קובץ", en: "Please choose a file", es: "Elige un archivo", fr: "Choisissez un fichier" },
+  t_key_saved:     { he: "✓ מפתח נשמר בדפדפן", en: "✓ Key saved in your browser", es: "✓ Clave guardada en el navegador", fr: "✓ Clé enregistrée dans le navigateur" },
+  t_key_enter:     { he: "נא להזין מפתח API", en: "Please enter an API key", es: "Introduce una clave API", fr: "Saisissez une clé API" },
+  t_copied:        { he: "✓ הועתק!", en: "✓ Copied!", es: "✓ ¡Copiado!", fr: "✓ Copié !" },
+  t_no_transcript: { he: "אין תמלול", en: "No transcript", es: "Sin transcripción", fr: "Aucune transcription" },
+  t_mail_opening:  { he: "✓ פותח את אפליקציית המייל…", en: "✓ Opening your mail app…", es: "✓ Abriendo tu app de correo…", fr: "✓ Ouverture de votre messagerie…" },
+  t_email_invalid: { he: "נא להזין כתובת מייל תקינה", en: "Please enter a valid email", es: "Introduce un correo válido", fr: "Saisissez un e-mail valide" },
+  t_link_copied:   { he: "✓ הקישור הועתק — אפשר לשתף", en: "✓ Link copied — ready to share", es: "✓ Enlace copiado — listo para compartir", fr: "✓ Lien copié — prêt à partager" },
+  t_share_cancel:  { he: "השיתוף בוטל", en: "Sharing cancelled", es: "Compartir cancelado", fr: "Partage annulé" },
+  t_fb_empty:      { he: "נא לכתוב משוב קצר", en: "Please write a short note", es: "Escribe una nota breve", fr: "Écrivez un court message" },
+  t_spk_working:   { he: "⏳ מזהה דוברים...", en: "⏳ Labeling speakers...", es: "⏳ Identificando hablantes...", fr: "⏳ Identification des intervenants..." },
+  t_spk_done:      { he: "✓ דוברים זוהו", en: "✓ Speakers labeled", es: "✓ Hablantes identificados", fr: "✓ Intervenants identifiés" },
+  t_spk_err:       { he: "שגיאה בזיהוי דוברים: ", en: "Speaker labeling error: ", es: "Error al identificar hablantes: ", fr: "Erreur d'identification : " },
+  t_restored:      { he: "התמלול שוחזר", en: "Transcript restored", es: "Transcripción restaurada", fr: "Transcription restaurée" },
+  t_mic_denied:    { he: "הגישה למיקרופון נדחתה", en: "Microphone access denied", es: "Acceso al micrófono denegado", fr: "Accès au micro refusé" },
+  t_mic_err:       { he: "שגיאה בגישה למיקרופון", en: "Microphone error", es: "Error de micrófono", fr: "Erreur de micro" },
+  t_rec_unsupported:{ he: "הדפדפן אינו תומך בהקלטה", en: "Recording not supported in this browser", es: "La grabación no es compatible", fr: "Enregistrement non pris en charge" },
+  t_rec_empty:     { he: "ההקלטה ריקה", en: "The recording is empty", es: "La grabación está vacía", fr: "L'enregistrement est vide" },
+  t_rec_ready:     { he: "✓ ההקלטה מוכנה לתמלול", en: "✓ Recording ready to transcribe", es: "✓ Grabación lista para transcribir", fr: "✓ Enregistrement prêt à transcrire" },
+  t_pick_folder:   { he: "נא לבחור תיקייה תחילה", en: "Please choose a folder first", es: "Elige una carpeta primero", fr: "Choisissez d'abord un dossier" },
+  t_folder_picked: { he: "✓ תיקייה נבחרה: ", en: "✓ Folder selected: ", es: "✓ Carpeta seleccionada: ", fr: "✓ Dossier sélectionné : " },
+  t_folder_err:    { he: "שגיאה בבחירת תיקייה", en: "Folder selection error", es: "Error al elegir carpeta", fr: "Erreur de sélection de dossier" },
+  t_saved_to:      { he: "✓ נשמר בהצלחה ל: ", en: "✓ Saved to: ", es: "✓ Guardado en: ", fr: "✓ Enregistré dans : " },
+  t_no_perm_dl:    { he: "אין הרשאת כתיבה לתיקייה — הקובץ ירד למכשיר במקום", en: "No write permission — the file was downloaded instead", es: "Sin permiso de escritura — el archivo se descargó", fr: "Pas d'autorisation d'écriture — le fichier a été téléchargé" },
+  t_write_fail_dl: { he: "לא ניתן לכתוב לתיקייה במכשיר זה — הקובץ ירד למכשיר במקום", en: "Couldn't write to the folder on this device — the file was downloaded instead", es: "No se pudo escribir en la carpeta — el archivo se descargó", fr: "Impossible d'écrire dans le dossier — le fichier a été téléchargé" },
+  t_history_removed:{ he: "הוסר מההיסטוריה", en: "Removed from history", es: "Eliminado del historial", fr: "Supprimé de l'historique" },
+  t_history_cleared:{ he: "ההיסטוריה נמחקה", en: "History cleared", es: "Historial borrado", fr: "Historique effacé" },
+  c_history_clear: { he: "למחוק את כל ההיסטוריה?", en: "Clear all history?", es: "¿Borrar todo el historial?", fr: "Effacer tout l'historique ?" },
+  prog_prep:       { he: "מכין...", en: "Preparing...", es: "Preparando...", fr: "Préparation..." },
+  prog_done:       { he: "✓ הושלם!", en: "✓ Done!", es: "✓ ¡Listo!", fr: "✓ Terminé !" },
+  badge_too_big:   { he: " — גדול מדי אפילו עם ממיר", en: " — too large even with conversion", es: " — demasiado grande", fr: " — trop volumineux" },
+  badge_convert_mob:{ he: " — יומר אוטומטית (נייד: עשוי לקחת כמה דקות)", en: " — will convert automatically (mobile: may take a few minutes)", es: " — se convertirá (móvil: puede tardar)", fr: " — conversion auto (mobile : peut prendre du temps)" },
+  badge_convert:   { he: " — יומר אוטומטית ל-WAV", en: " — will convert to WAV automatically", es: " — se convertirá a WAV", fr: " — conversion auto en WAV" },
+  badge_chunk:     { he: "✂ קובץ גדול — יפוצל לחלקים", en: "✂ Large file — will be split into parts", es: "✂ Archivo grande — se dividirá", fr: "✂ Fichier volumineux — sera découpé" },
+  badge_ok:        { he: " — נתמך ישירות", en: " — supported directly", es: " — compatible directamente", fr: " — pris en charge directement" },
+  t_claude_copied: { he: "✓ הועתק — הדבק בחלון Claude שנפתח", en: "✓ Copied — paste into the Claude window", es: "✓ Copiado — pégalo en la ventana de Claude", fr: "✓ Copié — collez dans la fenêtre Claude" },
+  t_copy_err:      { he: "שגיאה בהעתקה — נסה שוב", en: "Copy failed — try again", es: "Error al copiar — inténtalo de nuevo", fr: "Échec de la copie — réessayez" },
+  t_error_prefix:  { he: "שגיאה: ", en: "Error: ", es: "Error: ", fr: "Erreur : " },
+  t_share_unsupported:{ he: "שיתוף לא נתמך במכשיר — הקובץ ירד למכשיר", en: "Sharing not supported — the file was downloaded", es: "Compartir no compatible — el archivo se descargó", fr: "Partage non pris en charge — fichier téléchargé" },
+  prog_sending:    { he: "שולח לתמלול...", en: "Sending to transcription...", es: "Enviando a transcripción...", fr: "Envoi à la transcription..." },
+  prog_processing: { he: "מעבד...", en: "Processing...", es: "Procesando...", fr: "Traitement..." },
+  prog_large_split:{ he: "קובץ גדול — מפצל לחלקים...", en: "Large file — splitting into parts...", es: "Archivo grande — dividiendo...", fr: "Fichier volumineux — découpage..." },
+  prog_dl_wasm:    { he: "מוריד ממיר (WASM ~25MB)...", en: "Downloading converter (WASM ~25MB)...", es: "Descargando conversor (WASM ~25MB)...", fr: "Téléchargement du convertisseur (WASM ~25 Mo)..." },
+  prog_init_conv:  { he: "מאתחל ממיר...", en: "Initializing converter...", es: "Inicializando conversor...", fr: "Initialisation du convertisseur..." },
+  prog_reading:    { he: "קורא קובץ...", en: "Reading file...", es: "Leyendo archivo...", fr: "Lecture du fichier..." },
+  prog_loading_conv:{ he: "טוען קובץ לממיר...", en: "Loading file into converter...", es: "Cargando archivo...", fr: "Chargement du fichier..." },
+  prog_converting: { he: "ממיר לפורמט WAV 16kHz...", en: "Converting to WAV 16kHz...", es: "Convirtiendo a WAV 16kHz...", fr: "Conversion en WAV 16 kHz..." },
+  prog_reading_audio:{ he: "קורא נתוני אודיו...", en: "Reading audio data...", es: "Leyendo datos de audio...", fr: "Lecture des données audio..." },
+  prog_finding_splits:{ he: "מוצא נקודות חלוקה אופטימליות...", en: "Finding optimal split points...", es: "Buscando puntos de corte óptimos...", fr: "Recherche des points de découpe..." },
+  claude_prefix:   { he: "להלן תמלול הישיבה:", en: "Here is the meeting transcript:", es: "Aquí está la transcripción de la reunión:", fr: "Voici la transcription de la réunion :" },
+  prog_transcribing:{ he: "מתמלל...", en: "Transcribing...", es: "Transcribiendo...", fr: "Transcription en cours..." },
+  prog_preparing:  { he: "מכין חלקים לשליחה...", en: "Preparing parts...", es: "Preparando partes...", fr: "Préparation des parties..." },
+  err_too_big:     { he: "הקובץ גדול מדי. פצל אותו לחלקים קטנים יותר לפני ההעלאה.", en: "The file is too large. Split it into smaller parts before uploading.", es: "El archivo es demasiado grande. Divídelo antes de subirlo.", fr: "Le fichier est trop volumineux. Divisez-le avant de le téléverser." },
+  h_words:         { he: "מילים", en: "words", es: "palabras", fr: "mots" },
+  h_load:          { he: "טען", en: "Load", es: "Cargar", fr: "Charger" },
+  h_delete:        { he: "מחק", en: "Delete", es: "Eliminar", fr: "Supprimer" },
+  h_meeting:       { he: "ישיבה", en: "Meeting", es: "Reunión", fr: "Réunion" },
+};
+
+function t(key) {
+  const e = I18N[key];
+  if (!e) return key;
+  return e[currentLang] || e.he || key;
+}
+function detectLang() {
+  const saved = localStorage.getItem(LANG_KEY);
+  if (saved && LANGS.includes(saved)) return saved;
+  const nav = (navigator.language || "he").slice(0, 2).toLowerCase();
+  return LANGS.includes(nav) ? nav : "he";
+}
+function setLang(lang) {
+  if (!LANGS.includes(lang)) lang = "he";
+  currentLang = lang;
+  transcribeLang = lang;
+  localStorage.setItem(LANG_KEY, lang);
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === "he") ? "rtl" : "ltr";
+  const sel = document.getElementById("langSelect");
+  if (sel) sel.value = lang;
+  // text nodes
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  // innerHTML (trusted translation strings only)
+  document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  // placeholders
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  // title attributes
+  document.querySelectorAll("[data-i18n-title]").forEach(el => { el.title = t(el.dataset.i18nTitle); });
+  // special cases
+  const ms = document.getElementById("modelSelect");
+  if (ms && ms.options[0]) ms.options[0].textContent = t("model_whisper");
+  const dfn = document.getElementById("driveFileName");
+  const claudeTa = document.getElementById("claudeInstructions");
+  if (claudeTa && !claudeTa.dataset.userEdited) claudeTa.value = t("claude_default");
+  const ppBtn = document.querySelector(".pp-NXAJTCXW9FUBY");
+  if (ppBtn) ppBtn.value = t("donate_btn");
+  const save = document.getElementById("btnPanelSave");
+  if (save && !("showDirectoryPicker" in window)) save.textContent = t("btn_download");
+  if (typeof renderHistory === "function") renderHistory();
+}
 
 /* ---- Init ---- */
 window.onload = () => {
@@ -1171,6 +1386,7 @@ window.onload = () => {
     document.getElementById("fsFallbackUI").classList.remove("hidden");
     document.getElementById("btnPanelSave").textContent = "⬇️ הורד קובץ";
   }
+  setLang(detectLang()); // apply UI language (auto-detect or saved)
 };
 
 /* ---- Toast ---- */
@@ -1194,10 +1410,10 @@ function toggleKey() {
 }
 function saveKey() {
   const k = document.getElementById("apiKey").value.trim();
-  if (!k) { showToast("נא להזין מפתח API", "error"); return; }
+  if (!k) { showToast(t("t_key_enter"), "error"); return; }
   localStorage.setItem("da_api_key", k);
   collapseApiKey(k);
-  showToast("✓ מפתח נשמר בדפדפן", "success");
+  showToast(t("t_key_saved"), "success");
 }
 function collapseApiKey(key) {
   const hint = key.length > 8 ? key.slice(0, 5) + "..." + key.slice(-4) : "•••";
@@ -1233,17 +1449,19 @@ function updateFilenameCombined() {
 
 /* ---- Preset chips ---- */
 const CHIP_PRESETS = {
-  "ישיבת פיתוח": "ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira, PR, release.",
-  "ישיבת צוות":  "ישיבת צוות שבועית. דיון על התקדמות, חסימות ומשימות הבאות.",
-  "שיחת מכירות": "שיחת מכירות עם לקוח. הצגת מוצר, שאלות ותשובות, סיכום עסקה.",
-  "ראיון עבודה":  "ראיון עבודה — שאלות מקצועיות ותשובות מועמד.",
-  "ישיבת הנהלה": "ישיבת הנהלה בכירה. דיון אסטרטגי, תקציב ויעדים.",
-  "שיחת לקוח":   "שיחת שירות לקוחות. בירור בעיה, פתרון ומעקב.",
+  dev:       { he: "ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira, PR, release.", en: "Dev team meeting — technical discussion. Terms: API, backend, sprint, Jira, PR, release.", es: "Reunión de desarrollo — debate técnico. Términos: API, backend, sprint, Jira, PR, release.", fr: "Réunion équipe dev — discussion technique. Termes : API, backend, sprint, Jira, PR, release." },
+  team:      { he: "ישיבת צוות שבועית. דיון על התקדמות, חסימות ומשימות הבאות.", en: "Weekly team meeting. Progress, blockers and next tasks.", es: "Reunión semanal de equipo. Progreso, bloqueos y próximas tareas.", fr: "Réunion d'équipe hebdomadaire. Avancement, blocages et prochaines tâches." },
+  sales:     { he: "שיחת מכירות עם לקוח. הצגת מוצר, שאלות ותשובות, סיכום עסקה.", en: "Sales call with a client. Product pitch, Q&A, deal close.", es: "Llamada de ventas. Presentación de producto, preguntas y cierre.", fr: "Appel commercial. Présentation produit, questions-réponses, clôture." },
+  interview: { he: "ראיון עבודה — שאלות מקצועיות ותשובות מועמד.", en: "Job interview — professional questions and candidate answers.", es: "Entrevista de trabajo — preguntas y respuestas del candidato.", fr: "Entretien d'embauche — questions et réponses du candidat." },
+  exec:      { he: "ישיבת הנהלה בכירה. דיון אסטרטגי, תקציב ויעדים.", en: "Executive meeting. Strategy, budget and goals.", es: "Reunión directiva. Estrategia, presupuesto y objetivos.", fr: "Réunion de direction. Stratégie, budget et objectifs." },
+  customer:  { he: "שיחת שירות לקוחות. בירור בעיה, פתרון ומעקב.", en: "Customer support call. Issue, resolution and follow-up.", es: "Llamada de soporte. Problema, solución y seguimiento.", fr: "Appel de support client. Problème, solution et suivi." },
 };
-function applyChip(el, label) {
+function applyChip(el, key) {
   document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
   el.classList.add("active");
-  document.getElementById("instructions").value = CHIP_PRESETS[label] || "";
+  const preset = CHIP_PRESETS[key];
+  document.getElementById("instructions").value = preset ? (preset[currentLang] || preset.he) : "";
+  document.getElementById("instructions").dataset.userEdited = "1";
 }
 
 /* ---- Participants ---- */
@@ -1282,7 +1500,8 @@ function onModelChange() {
 function buildPrompt() {
   const instructions = document.getElementById("instructions").value.trim();
   const parts = [];
-  if (participants.length) parts.push("המשתתפים: " + participants.join(", ") + ".");
+  const pfx = { he: "המשתתפים: ", en: "Participants: ", es: "Participantes: ", fr: "Participants : " }[currentLang] || "Participants: ";
+  if (participants.length) parts.push(pfx + participants.join(", ") + ".");
   if (instructions) parts.push(instructions);
   return parts.join(" ");
 }
@@ -1323,16 +1542,17 @@ function onFileSelect(file) {
   const badge = document.getElementById("fileTypeBadge");
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const extEsc = escHtml(info.ext.toUpperCase()); // escape: filename-derived, must not inject HTML
+  const mb = info.sizeMB.toFixed(0);
   if (info.needsConversion && info.sizeMB > 200) {
-    badge.innerHTML = `<span class="file-type-badge convert">🚫 ${extEsc} ${info.sizeMB.toFixed(0)}MB — גדול מדי אפילו עם ממיר</span>`;
+    badge.innerHTML = `<span class="file-type-badge convert">🚫 ${extEsc} ${mb}MB${escHtml(t("badge_too_big"))}</span>`;
   } else if (info.needsConversion && isMobile) {
-    badge.innerHTML = `<span class="file-type-badge convert">📱 ${extEsc} ${info.sizeMB.toFixed(0)}MB — יומר אוטומטית (נייד: עשוי לקחת כמה דקות)</span>`;
+    badge.innerHTML = `<span class="file-type-badge convert">📱 ${extEsc} ${mb}MB${escHtml(t("badge_convert_mob"))}</span>`;
   } else if (info.needsConversion) {
-    badge.innerHTML = `<span class="file-type-badge convert">⚙ ${extEsc} ${info.sizeMB.toFixed(0)}MB — יומר אוטומטית ל-WAV</span>`;
+    badge.innerHTML = `<span class="file-type-badge convert">⚙ ${extEsc} ${mb}MB${escHtml(t("badge_convert"))}</span>`;
   } else if (info.needsChunking) {
-    badge.innerHTML = `<span class="file-type-badge convert">✂ קובץ גדול — יפוצל לחלקים</span>`;
+    badge.innerHTML = `<span class="file-type-badge convert">${escHtml(t("badge_chunk"))}</span>`;
   } else {
-    badge.innerHTML = `<span class="file-type-badge ok">✓ ${extEsc} — נתמך ישירות</span>`;
+    badge.innerHTML = `<span class="file-type-badge ok">✓ ${extEsc}${escHtml(t("badge_ok"))}</span>`;
   }
 
   updateFilenameCombined();
@@ -1368,7 +1588,7 @@ function readFileWithProgress(file, fromPct, toPct) {
     reader.onprogress = (e) => {
       if (e.lengthComputable) {
         const pct = Math.round(fromPct + (e.loaded / e.total) * (toPct - fromPct));
-        setProgress(pct, `קורא קובץ... ${Math.round((e.loaded / e.total) * 100)}%`);
+        setProgress(pct, `${t("prog_reading")} ${Math.round((e.loaded / e.total) * 100)}%`);
       }
     };
     reader.onload = () => resolve(new Uint8Array(reader.result));
@@ -1381,10 +1601,10 @@ function readFileWithProgress(file, fromPct, toPct) {
 async function startTranscription() {
   const apiKey = document.getElementById("apiKey").value.trim();
   if (!apiKey.startsWith("sk-")) {
-    showError("נא להזין OpenAI API Key תקין (מתחיל ב-sk-)");
+    showError(t("t_key_invalid"));
     return;
   }
-  if (!currentFile) { showError("נא לבחור קובץ"); return; }
+  if (!currentFile) { showError(t("t_no_file")); return; }
 
   document.getElementById("errorBox").style.display = "none";
   document.getElementById("resultCard").style.display = "none";
@@ -1392,14 +1612,14 @@ async function startTranscription() {
   document.getElementById("runBtn").disabled = true;
   document.getElementById("tabWarning").style.display = "block";
   window._transcribing = true;
-  setProgress(5, "מכין...");
+  setProgress(5, t("prog_prep"));
 
   const doWork = async () => {
     const info = analyzeFileType(currentFile);
     if (info.needsConversion) {
       await transcribeWithConversion(apiKey);
     } else if (info.needsChunking) {
-      setProgress(10, "קובץ גדול — מפצל לחלקים...");
+      setProgress(10, t("prog_large_split"));
       await transcribeLarge(apiKey);
     } else {
       await transcribeSingle(apiKey);
@@ -1407,7 +1627,7 @@ async function startTranscription() {
   };
 
   const onError = (err) => {
-    showError("שגיאה: " + err.message);
+    showError(t("t_error_prefix") + err.message);
     document.getElementById("progressWrap").classList.add("hidden");
     document.getElementById("runBtn").disabled = false;
     document.getElementById("tabWarning").style.display = "none";
@@ -1422,21 +1642,21 @@ async function startTranscription() {
 }
 
 async function transcribeSingle(apiKey) {
-  setProgress(30, "שולח לתמלול...");
+  setProgress(30, t("prog_sending"));
   const wantTs = !!(MODELS[selectedModel] && MODELS[selectedModel].timestamps);
   const fd = new FormData();
   fd.append("file", currentFile, currentFile.name);
   fd.append("model", selectedModel);
-  fd.append("language", "he");
+  fd.append("language", transcribeLang);
   fd.append("response_format", wantTs ? "verbose_json" : "json");
   if (wantTs) fd.append("timestamp_granularities[]", "segment");
   const prompt = buildPrompt();
   if (prompt) fd.append("prompt", prompt);
 
   const data = await whisperFetch(fd, apiKey, (attempt) =>
-    setProgress(30, attempt > 1 ? `שולח לתמלול (ניסיון ${attempt})...` : "שולח לתמלול...")
+    setProgress(30, attempt > 1 ? `${t("prog_sending")} (${attempt})` : t("prog_sending"))
   );
-  setProgress(80, "מעבד...");
+  setProgress(80, t("prog_processing"));
   audioDuration = data.duration || 0;
   if (wantTs) {
     const lines = (data.segments || []).map(s => "[" + fmtTime(s.start) + "]  " + s.text.trim());
@@ -1526,7 +1746,7 @@ async function sendChunk(job, i, tail, apiKey) {
   const fd = new FormData();
   fd.append("file", new File([c.blob], c.name, { type: c.type || c.blob.type || "audio/wav" }), c.name);
   fd.append("model", job.model);
-  fd.append("language", "he");
+  fd.append("language", transcribeLang);
   fd.append("response_format", job.wantTs ? "verbose_json" : "text");
   if (job.wantTs) fd.append("timestamp_granularities[]", "segment");
   const prompt = [tail, job.basePrompt].filter(Boolean).join(" ").trim();
@@ -1548,7 +1768,7 @@ async function processChunks(job, indices, apiKey, fromPct, toPct) {
   let done = 0;
   const tick = () => setProgress(
     Math.round(fromPct + (done / total) * (toPct - fromPct)),
-    `מתמלל... ${done} / ${total} חלקים`
+    `${t("prog_transcribing")} ${done} / ${total}`
   );
 
   if (job.chaining) {
@@ -1621,11 +1841,11 @@ async function retryFailedChunks() {
   if (!failed.length) return;
 
   const apiKey = document.getElementById("apiKey").value.trim();
-  if (!apiKey.startsWith("sk-")) { showToast("נא להזין מפתח API תקין", "error"); return; }
+  if (!apiKey.startsWith("sk-")) { showToast(t("t_key_enter"), "error"); return; }
 
   document.getElementById("retryBanner").style.display = "none";
   document.getElementById("progressWrap").classList.remove("hidden");
-  setProgress(10, `מנסה שוב ${failed.length} חלקים...`);
+  setProgress(10, `${t("prog_transcribing")} (${failed.length})`);
   try {
     await processChunks(job, failed, apiKey, 10, 95);
   } catch (e) { /* per-chunk failures already isolated */ }
@@ -1633,7 +1853,7 @@ async function retryFailedChunks() {
   const a = assembleChunks(job.results, job.wantTs);
   transcriptText = a.text;
   if (a.duration) audioDuration = a.duration;
-  setProgress(100, "✓ הושלם!");
+  setProgress(100, t("prog_done"));
   setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
   renderResult(a.failures);
   showToast(a.failures.length ? `נותרו ${a.failures.length} חלקים שנכשלו` : "✓ כל החלקים תומללו", a.failures.length ? "error" : "success");
@@ -1719,7 +1939,7 @@ async function transcribeLarge(apiKey) {
       const hdr = parseWavHeader(probe, currentFile.size);
       if (hdr) {
         const ranges = planWavChunks(hdr.dataOffset, hdr.dataSize, hdr.blockAlign, CHUNK);
-        setProgress(15, `מכין ${ranges.length} חלקים לשליחה מקבילית...`);
+        setProgress(15, `${t("prog_preparing")} (${ranges.length})`);
         chunks = ranges.map((r, i) => ({
           blob: new Blob([makeWavHeader(hdr.fmtChunkBytes, r.len), currentFile.slice(r.start, r.start + r.len)], { type: "audio/wav" }),
           name: `chunk_${i}.wav`,
@@ -1735,7 +1955,7 @@ async function transcribeLarge(apiKey) {
   // Original path — unchanged slicing — for mp3/webm/etc. and as the WAV fallback.
   if (!chunks) {
     const total = Math.ceil(currentFile.size / CHUNK);
-    setProgress(15, `מכין ${total} חלקים לשליחה מקבילית...`);
+    setProgress(15, `${t("prog_preparing")} (${total})`);
     chunks = [];
     for (let i = 0; i < total; i++) {
       chunks.push({
@@ -1785,18 +2005,18 @@ async function ensureFFmpeg(isMobile = false) {
   let coreURL, wasmURL;
   try {
     coreURL = await fetchToBlobURL(`${BASE}/ffmpeg-core.js`, "text/javascript");
-    setProgress(10, "מוריד ממיר (WASM ~25MB)...");
+    setProgress(10, t("prog_dl_wasm"));
     wasmURL = await fetchToBlobURL(
       `${BASE}/ffmpeg-core.wasm`, "application/wasm",
-      (p) => setProgress(Math.round(10 + p * 8), `מוריד ממיר... ${Math.round(p * 100)}%`)
+      (p) => setProgress(Math.round(10 + p * 8), `${t("prog_dl_wasm")} ${Math.round(p * 100)}%`)
     );
   } catch (e) {
     throw new Error("שגיאה בהורדת הממיר. בדוק חיבור לאינטרנט ונסה שנית.");
   }
 
-  setProgress(18, "מאתחל ממיר...");
+  setProgress(18, t("prog_init_conv"));
   ff.on("progress", ({ progress }) => {
-    if (progress > 0) setProgress(Math.round(34 + progress * 28), `ממיר קובץ... ${Math.round(progress * 100)}%`);
+    if (progress > 0) setProgress(Math.round(34 + progress * 28), `${t("prog_converting")} ${Math.round(progress * 100)}%`);
   });
 
   await ff.load({ coreURL, wasmURL });
@@ -1807,7 +2027,7 @@ async function ensureFFmpeg(isMobile = false) {
 async function transcribeWithConversion(apiKey) {
   const sizeMB = currentFile.size / 1024 / 1024;
   if (sizeMB > 200) {
-    throw new Error(`הקובץ (${sizeMB.toFixed(0)}MB) גדול מדי. פצל אותו לחלקים קטנים יותר לפני ההעלאה.`);
+    throw new Error(`${t("err_too_big")} (${sizeMB.toFixed(0)}MB)`);
   }
 
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -1822,12 +2042,12 @@ async function transcribeWithConversion(apiKey) {
   const ext = currentFile.name.split(".").pop().toLowerCase();
   const inputName = `input.${ext}`;
 
-  setProgress(20, "קורא קובץ...");
+  setProgress(20, t("prog_reading"));
   const fileData = await readFileWithProgress(currentFile, 20, 32);
-  setProgress(32, "טוען קובץ לממיר...");
+  setProgress(32, t("prog_loading_conv"));
   await ff.writeFile(inputName, fileData);
 
-  setProgress(34, "ממיר לפורמט WAV 16kHz...");
+  setProgress(34, t("prog_converting"));
   let exitCode;
   try {
     exitCode = await ff.exec([
@@ -1847,7 +2067,7 @@ async function transcribeWithConversion(apiKey) {
 
   await ff.deleteFile(inputName).catch(() => {});
 
-  setProgress(62, "קורא נתוני אודיו...");
+  setProgress(62, t("prog_reading_audio"));
   const pcmData = await ff.readFile("output.pcm");
   await ff.deleteFile("output.pcm").catch(() => {});
 
@@ -1855,10 +2075,10 @@ async function transcribeWithConversion(apiKey) {
 
   const prompt = buildPrompt();
 
-  setProgress(65, "מוצא נקודות חלוקה אופטימליות...");
+  setProgress(65, t("prog_finding_splits"));
   const chunkBlobs = buildSilenceChunks(pcmData);
 
-  setProgress(66, `שולח ${chunkBlobs.length} חלקים לתמלול...`);
+  setProgress(66, `${t("prog_preparing")} (${chunkBlobs.length})`);
   const chunks = chunkBlobs.map((b, i) => ({ blob: b, name: `chunk_${i}.wav`, type: "audio/wav" }));
   const a = await transcribeChunks(chunks, apiKey, prompt, true, 66, 97);
   transcriptText = a.text;
@@ -1900,7 +2120,7 @@ function renderResult(failures) {
 }
 
 function finish(failures) {
-  setProgress(100, "✓ הושלם!");
+  setProgress(100, t("prog_done"));
   setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
   document.getElementById("runBtn").disabled = false;
   document.getElementById("tabWarning").style.display = "none";
@@ -1922,7 +2142,7 @@ function finish(failures) {
 function copyText(btn) {
   navigator.clipboard.writeText(transcriptText).then(() => {
     const orig = btn.textContent;
-    btn.textContent = "✓ הועתק!";
+    btn.textContent = t("t_copied");
     setTimeout(() => btn.textContent = orig, 1500);
   });
 }
@@ -1935,21 +2155,28 @@ function downloadTxt() {
 }
 
 function buildWordBlob() {
-  const date = new Date().toLocaleDateString("he-IL");
+  const rtl = (currentLang === "he");
+  const dir = rtl ? "rtl" : "ltr";
+  const align = rtl ? "right" : "left";
+  const font = rtl ? "David,Arial" : "Arial";
+  const dateLocale = { he: "he-IL", en: "en-US", es: "es-ES", fr: "fr-FR" }[currentLang] || "en-US";
+  const dateLbl = { he: "תאריך: ", en: "Date: ", es: "Fecha: ", fr: "Date : " }[currentLang] || "Date: ";
+  const partLbl = { he: "משתתפים: ", en: "Participants: ", es: "Participantes: ", fr: "Participants : " }[currentLang] || "Participants: ";
+  const date = new Date().toLocaleDateString(dateLocale);
   const rows = transcriptText.split("\n").filter(l => l.trim()).map(l =>
-    `<p style="direction:rtl;text-align:right;font-family:David,Arial;font-size:12pt;margin:4pt 0;">${escHtml(l)}</p>`
+    `<p style="direction:${dir};text-align:${align};font-family:${font};font-size:12pt;margin:4pt 0;">${escHtml(l)}</p>`
   ).join("");
   const participantLine = participants.length
-    ? `<p style="direction:rtl;text-align:right;font-size:10pt;color:#2563eb;font-family:David,Arial;">משתתפים: ${escHtml(participants.join(", "))}</p>`
+    ? `<p style="direction:${dir};text-align:${align};font-size:10pt;color:#2563eb;font-family:${font};">${partLbl}${escHtml(participants.join(", "))}</p>`
     : "";
   const titleLine = meetingSubject
     ? escHtml(meetingSubject + (currentFile ? " — " + stem() : ""))
     : escHtml(stem());
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><title>תמלול</title></head>
-<body style="direction:rtl;font-family:David,Arial;">
-<h1 style="direction:rtl;text-align:right;font-size:16pt;font-family:David,Arial;color:#1a2744;">${titleLine}</h1>
-<p style="direction:rtl;text-align:right;font-size:10pt;color:#6b7280;font-family:David,Arial;">תאריך: ${date}</p>
+<head><meta charset="utf-8"><title>${escHtml(t("result_title").replace(/^📄\s*/, ""))}</title></head>
+<body style="direction:${dir};font-family:${font};">
+<h1 style="direction:${dir};text-align:${align};font-size:16pt;font-family:${font};color:#1a2744;">${titleLine}</h1>
+<p style="direction:${dir};text-align:${align};font-size:10pt;color:#6b7280;font-family:${font};">${dateLbl}${date}</p>
 ${participantLine}
 <hr/>${rows}</body></html>`;
   return new Blob(["﻿" + html], { type: "application/msword;charset=utf-8" });
@@ -1964,34 +2191,39 @@ function downloadWord() {
 
 /* ---- Claude Summary ---- */
 function openInClaude() {
-  if (!transcriptText) { showToast("אין תמלול לשליחה", "error"); return; }
+  if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
   const instructions = document.getElementById("claudeInstructions").value.trim();
   const prompt = (instructions ? instructions + "\n\n" : "") +
-    "להלן תמלול הישיבה:\n\n" + transcriptText;
+    t("claude_prefix") + "\n\n" + transcriptText;
   navigator.clipboard.writeText(prompt).then(() => {
     window.open("https://claude.ai/new", "_blank");
-    showToast("✓ הועתק — הדבק בחלון Claude שנפתח", "success");
+    showToast(t("t_claude_copied"), "success");
   }).catch(() => {
-    showToast("שגיאה בהעתקה — נסה שוב", "error");
+    showToast(t("t_copy_err"), "error");
   });
 }
 
 /* ---- Speaker labelling (uses the same OpenAI key) ---- */
 async function labelSpeakers(btn) {
-  if (!transcriptText) { showToast("אין תמלול לעיבוד", "error"); return; }
+  if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
   const apiKey = document.getElementById("apiKey").value.trim();
-  if (!apiKey.startsWith("sk-")) { showToast("נא להזין מפתח API תקין", "error"); return; }
+  if (!apiKey.startsWith("sk-")) { showToast(t("t_key_enter"), "error"); return; }
 
   const orig = btn.textContent;
   btn.disabled = true;
-  btn.textContent = "⏳ מזהה דוברים...";
+  btn.textContent = t("t_spk_working");
 
-  const sys = "אתה עורך תמלולים. קבל תמלול ישיבה בעברית וסדר אותו מחדש לפי דוברים. " +
-    "סמן כל מעבר דובר בשורה חדשה בפורמט 'דובר: טקסט'. אם קיימות חותמות זמן בפורמט [mm:ss] בתחילת שורות — שמר אותן. " +
-    "השתמש בשמות המשתתפים אם סופקו; אחרת סמן 'דובר 1', 'דובר 2' וכו'. " +
-    "אל תמציא תוכן, אל תתרגם ואל תסכם — רק שייך את הטקסט הקיים לדוברים.";
-  const usr = (participants.length ? "המשתתפים: " + participants.join(", ") + ".\n\n" : "") +
-    "התמלול:\n\n" + transcriptText;
+  const SYS = {
+    he: "אתה עורך תמלולים. קבל תמלול ישיבה וסדר אותו מחדש לפי דוברים. סמן כל מעבר דובר בשורה חדשה בפורמט 'דובר: טקסט'. אם קיימות חותמות זמן [mm:ss] בתחילת שורות — שמר אותן. השתמש בשמות המשתתפים אם סופקו; אחרת סמן 'דובר 1', 'דובר 2' וכו'. אל תמציא תוכן, אל תתרגם ואל תסכם — רק שייך את הטקסט הקיים לדוברים.",
+    en: "You are a transcript editor. Reorganize the meeting transcript by speaker. Mark each speaker change on a new line as 'Speaker: text'. If [mm:ss] timestamps appear at line starts, keep them. Use the participant names if provided; otherwise label 'Speaker 1', 'Speaker 2', etc. Do not invent content, translate, or summarize — only attribute the existing text to speakers.",
+    es: "Eres un editor de transcripciones. Reorganiza la transcripción por hablante. Marca cada cambio de hablante en una línea nueva como 'Hablante: texto'. Si hay marcas de tiempo [mm:ss] al inicio de las líneas, consérvalas. Usa los nombres de los participantes si se proporcionan; si no, usa 'Hablante 1', 'Hablante 2', etc. No inventes contenido, no traduzcas ni resumas — solo atribuye el texto existente.",
+    fr: "Vous êtes un éditeur de transcriptions. Réorganisez la transcription par intervenant. Marquez chaque changement d'intervenant sur une nouvelle ligne : 'Intervenant : texte'. Si des horodatages [mm:ss] apparaissent en début de ligne, conservez-les. Utilisez les noms des participants si fournis ; sinon 'Intervenant 1', 'Intervenant 2', etc. N'inventez rien, ne traduisez pas et ne résumez pas — attribuez seulement le texte existant.",
+  };
+  const partLbl = { he: "המשתתפים: ", en: "Participants: ", es: "Participantes: ", fr: "Participants : " }[currentLang] || "Participants: ";
+  const trLbl = { he: "התמלול:", en: "Transcript:", es: "Transcripción:", fr: "Transcription :" }[currentLang] || "Transcript:";
+  const sys = SYS[currentLang] || SYS.en;
+  const usr = (participants.length ? partLbl + participants.join(", ") + ".\n\n" : "") +
+    trLbl + "\n\n" + transcriptText;
 
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -2017,9 +2249,9 @@ async function labelSpeakers(btn) {
     document.getElementById("s1").textContent =
       transcriptText.split(/\s+/).filter(Boolean).length.toLocaleString("he-IL");
     document.getElementById("undoLabelBtn").style.display = "inline-flex";
-    showToast("✓ דוברים זוהו", "success");
+    showToast(t("t_spk_done"), "success");
   } catch (e) {
-    showToast("שגיאה בזיהוי דוברים: " + e.message, "error");
+    showToast(t("t_spk_err") + e.message, "error");
   } finally {
     btn.disabled = false;
     btn.textContent = orig;
@@ -2033,7 +2265,7 @@ function undoLabelSpeakers() {
   document.getElementById("s1").textContent =
     transcriptText.split(/\s+/).filter(Boolean).length.toLocaleString("he-IL");
   document.getElementById("undoLabelBtn").style.display = "none";
-  showToast("התמלול שוחזר");
+  showToast(t("t_restored"));
 }
 
 /* ---- Email / Share ---- */
@@ -2048,9 +2280,9 @@ function onEmailInput() {
 // send mail itself). mailto bodies are length-limited, so very long transcripts
 // are trimmed with a pointer to the Share button (which attaches the full file).
 function sendEmail() {
-  if (!transcriptText) { showToast("אין תמלול לשליחה", "error"); return; }
+  if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
   const email = document.getElementById("emailTo").value.trim();
-  if (!email || !email.includes("@")) { showToast("נא להזין כתובת מייל תקינה", "error"); return; }
+  if (!email || !email.includes("@")) { showToast(t("t_email_invalid"), "error"); return; }
   saveEmailAddr(email);
   const subject = encodeURIComponent("תמלול ישיבה — " + combinedStem());
   const MAX = 1800;
@@ -2059,12 +2291,12 @@ function sendEmail() {
     body = body.slice(0, MAX) + "\n\n[התמלול ארוך — לשליחת הקובץ המלא השתמשו בכפתור \"שתף\"]";
   }
   window.open(`mailto:${encodeURIComponent(email)}?subject=${subject}&body=${encodeURIComponent(body)}`);
-  showToast("✓ פותח את אפליקציית המייל…", "success");
+  showToast(t("t_mail_opening"), "success");
 }
 
 // Shares the transcript file via the OS share sheet (WhatsApp/Gmail/etc.).
 async function shareTranscript() {
-  if (!transcriptText) { showToast("אין תמלול לשיתוף", "error"); return; }
+  if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
   const title = "תמלול ישיבה — " + combinedStem();
   const file = new File([transcriptText], combinedStem() + ".txt", { type: "text/plain" });
   try {
@@ -2074,10 +2306,10 @@ async function shareTranscript() {
       await navigator.share({ title, text: transcriptText });
     } else {
       downloadTxt();
-      showToast("שיתוף לא נתמך במכשיר — הקובץ ירד למכשיר", "");
+      showToast(t("t_share_unsupported"), "");
     }
   } catch (e) {
-    if (e.name !== "AbortError") showToast("השיתוף בוטל", "error");
+    if (e.name !== "AbortError") showToast(t("t_share_cancel"), "error");
   }
 }
 
@@ -2088,9 +2320,9 @@ async function shareApp() {
   const data = { title: "Teamnul — תמלול ישיבות", text: "כלי חינמי לתמלול ישיבות בעברית 🎙️", url };
   try {
     if (navigator.share) { await navigator.share(data); }
-    else { await navigator.clipboard.writeText(url); showToast("✓ הקישור הועתק — אפשר לשתף", "success"); }
+    else { await navigator.clipboard.writeText(url); showToast(t("t_link_copied"), "success"); }
   } catch (e) {
-    if (e.name !== "AbortError") { try { await navigator.clipboard.writeText(url); showToast("✓ הקישור הועתק", "success"); } catch (_) {} }
+    if (e.name !== "AbortError") { try { await navigator.clipboard.writeText(url); showToast(t("t_link_copied"), "success"); } catch (_) {} }
   }
 }
 function toggleFeedback() {
@@ -2100,16 +2332,16 @@ function toggleFeedback() {
 }
 function sendFeedback() {
   const txt = document.getElementById("feedbackText").value.trim();
-  if (!txt) { showToast("נא לכתוב משוב קצר", "error"); return; }
+  if (!txt) { showToast(t("t_fb_empty"), "error"); return; }
   const subject = encodeURIComponent("משוב על Teamnul");
   const body = encodeURIComponent(txt);
   window.open(`mailto:${encodeURIComponent(FEEDBACK_EMAIL)}?subject=${subject}&body=${body}`);
-  showToast("✓ פותח את אפליקציית המייל…", "success");
+  showToast(t("t_mail_opening"), "success");
 }
 
 /* ---- Google Drive Panel ---- */
 function openDrivePanel() {
-  if (!transcriptText) { showToast("אין תמלול לשמירה", "error"); return; }
+  if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
   const dfn = document.getElementById("driveFileName");
   dfn.value = combinedStem();
   dfn.dataset.userEdited = "";
@@ -2173,9 +2405,9 @@ async function pickFolder() {
     driveDirectoryHandle = handle;
     saveFolderToHistory(handle.name, handle.name);
     renderRecentFolders();
-    showToast("✓ תיקייה נבחרה: " + handle.name, "success");
+    showToast(t("t_folder_picked") + handle.name, "success");
   } catch (e) {
-    if (e.name !== "AbortError") showToast("שגיאה בבחירת תיקייה", "error");
+    if (e.name !== "AbortError") showToast(t("t_folder_err"), "error");
   }
 }
 
@@ -2217,13 +2449,13 @@ async function executeDriveSave() {
   }
 
   if (!driveDirectoryHandle) {
-    showToast("נא לבחור תיקייה תחילה", "error");
+    showToast(t("t_pick_folder"), "error");
     return;
   }
 
   // Make sure we can still write; if not, deliver the file via download.
   if (!(await ensureFolderPermission(driveDirectoryHandle))) {
-    showToast("אין הרשאת כתיבה לתיקייה — הקובץ ירד למכשיר במקום", "error");
+    showToast(t("t_no_perm_dl"), "error");
     downloadSelected();
     closeDrivePanel();
     return;
@@ -2237,12 +2469,12 @@ async function executeDriveSave() {
       const blob = new Blob([transcriptText], { type: "text/plain;charset=utf-8" });
       await writeToFolder(driveDirectoryHandle, name + ".txt", blob);
     }
-    showToast("✓ נשמר בהצלחה ל: " + driveDirectoryHandle.name, "success");
+    showToast(t("t_saved_to") + driveDirectoryHandle.name, "success");
     closeDrivePanel();
   } catch (e) {
     // Any write failure (incl. Android's stale-state InvalidStateError on
     // cloud-synced folders) → fall back to a download so the file is never lost.
-    showToast("לא ניתן לכתוב לתיקייה במכשיר זה — הקובץ ירד למכשיר במקום", "error");
+    showToast(t("t_write_fail_dl"), "error");
     downloadSelected();
     closeDrivePanel();
   }
@@ -2270,7 +2502,7 @@ function renderHistory() {
   const el = document.getElementById("historyList");
   const btn = document.getElementById("clearHistoryBtn");
   if (!hist.length) {
-    el.innerHTML = '<div class="empty-history">עדיין אין תמלולים שמורים</div>';
+    el.innerHTML = `<div class="empty-history">${escHtml(t("empty_history"))}</div>`;
     btn.style.display = "none";
     return;
   }
@@ -2278,16 +2510,16 @@ function renderHistory() {
   el.innerHTML = hist.map((h, i) => {
     const displayName = h.subject
       ? h.subject + (h.name ? " — " + h.name.replace(/\.[^.]+$/, "") : "")
-      : (h.name || "ישיבה");
+      : (h.name || t("h_meeting"));
     return `
     <div class="history-item">
       <div class="history-main" onclick="loadHistory(${i})">
         <div class="h-name">${escHtml(displayName)}</div>
-        <div class="h-meta">${escHtml(h.date)} · ${(h.words || 0).toLocaleString("he-IL")} מילים · ${fmtTime(h.dur || 0)}</div>
+        <div class="h-meta">${escHtml(h.date)} · ${(h.words || 0).toLocaleString()} ${escHtml(t("h_words"))} · ${fmtTime(h.dur || 0)}</div>
       </div>
       <div class="history-actions">
-        <span class="h-badge" onclick="loadHistory(${i})">טען</span>
-        <button class="h-delete" onclick="deleteHistory(${i})" title="מחק">🗑</button>
+        <span class="h-badge" onclick="loadHistory(${i})">${escHtml(t("h_load"))}</span>
+        <button class="h-delete" onclick="deleteHistory(${i})" title="${escHtml(t("h_delete"))}">🗑</button>
       </div>
     </div>`;
   }).join("");
@@ -2317,14 +2549,14 @@ function deleteHistory(i) {
   hist.splice(i, 1);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
   renderHistory();
-  showToast("הוסר מההיסטוריה");
+  showToast(t("t_history_removed"));
 }
 
 function clearHistory() {
-  if (!confirm("למחוק את כל ההיסטוריה?")) return;
+  if (!confirm(t("c_history_clear"))) return;
   localStorage.removeItem(HISTORY_KEY);
   renderHistory();
-  showToast("ההיסטוריה נמחקה");
+  showToast(t("t_history_cleared"));
 }
 
 /* ---- Utils ---- */
@@ -2382,7 +2614,7 @@ function recElapsedMs() {
 
 async function startRecording() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    showToast("הדפדפן אינו תומך בהקלטה", "error"); return;
+    showToast(t("t_rec_unsupported"), "error"); return;
   }
   let stream;
   try {
@@ -2390,7 +2622,7 @@ async function startRecording() {
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
     });
   } catch (e) {
-    showToast(e.name === "NotAllowedError" ? "הגישה למיקרופון נדחתה" : "שגיאה בגישה למיקרופון", "error");
+    showToast(e.name === "NotAllowedError" ? t("t_mic_denied") : t("t_mic_err"), "error");
     return;
   }
   recMime = pickRecorderMime();
@@ -2410,8 +2642,8 @@ async function startRecording() {
   document.getElementById("recIdle").classList.add("hidden");
   document.getElementById("recActive").classList.remove("hidden");
   document.querySelector(".rec-panel").classList.remove("paused");
-  document.getElementById("recStatus").textContent = "מקליט…";
-  document.getElementById("recPauseBtn").textContent = "⏸️ השהה";
+  document.getElementById("recStatus").textContent = t("rec_status");
+  document.getElementById("recPauseBtn").textContent = t("rec_pause");
   updateRecTime();
   recTimerId = setInterval(updateRecTime, 250);
   requestRecWakeLock();
@@ -2435,16 +2667,16 @@ function togglePauseRecording() {
     mediaRecorder.pause();
     recAccumMs += Date.now() - recStartMs; recStartMs = 0;
     document.querySelector(".rec-panel").classList.add("paused");
-    document.getElementById("recStatus").textContent = "מושהה";
-    document.getElementById("recPauseBtn").textContent = "▶️ המשך";
+    document.getElementById("recStatus").textContent = t("rec_paused");
+    document.getElementById("recPauseBtn").textContent = t("rec_resume");
     releaseRecWakeLock();
     stopKeepAlive();
   } else if (mediaRecorder.state === "paused") {
     mediaRecorder.resume();
     recStartMs = Date.now();
     document.querySelector(".rec-panel").classList.remove("paused");
-    document.getElementById("recStatus").textContent = "מקליט…";
-    document.getElementById("recPauseBtn").textContent = "⏸️ השהה";
+    document.getElementById("recStatus").textContent = t("rec_status");
+    document.getElementById("recPauseBtn").textContent = t("rec_pause");
     requestRecWakeLock();
     startKeepAlive();
   }
@@ -2471,12 +2703,12 @@ function onRecordingStopped() {
   document.getElementById("recActive").classList.add("hidden");
   document.getElementById("recIdle").classList.remove("hidden");
 
-  if (!blob.size) { showToast("ההקלטה ריקה", "error"); return; }
+  if (!blob.size) { showToast(t("t_rec_empty"), "error"); return; }
 
   const stamp = new Date().toLocaleDateString("he-IL").replace(/\//g, "-");
   const file = new File([blob], `הקלטה_${stamp}.${ext}`, { type: blob.type });
   onFileSelect(file);                       // → preview, badge, enable "start"
-  showToast("✓ ההקלטה מוכנה לתמלול", "success");
+  showToast(t("t_rec_ready"), "success");
 }
 
 function playBeep() {
