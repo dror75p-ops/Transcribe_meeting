@@ -349,6 +349,8 @@
   }
   .file-icon { font-size: 28px; flex-shrink: 0; }
   .file-details { flex: 1; min-width: 0; }
+  .file-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .file-actions.hidden { display: none; }
   .file-name { font-size: 14px; font-weight: 500; color: var(--navy); direction: ltr; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .file-size { font-size: 12px; color: var(--muted); margin-top: 3px; }
   .btn-remove { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--muted); padding: 6px; flex-shrink: 0; transition: color 0.15s; border-radius: 6px; }
@@ -376,7 +378,8 @@
   @keyframes recPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.8); } }
   .rec-time { font-size: 22px; font-weight: 600; color: var(--navy); font-variant-numeric: tabular-nums; direction: ltr; }
   .rec-status { font-size: 13px; color: var(--danger); font-weight: 500; }
-  .rec-controls { display: flex; gap: 8px; margin-inline-start: auto; }
+  .rec-controls { display: flex; gap: 8px; margin-inline-start: auto; flex-wrap: wrap; justify-content: flex-end; }
+  .rec-controls .btn-sm { flex: 0 1 auto; }
   .btn-sm.rec-stop { background: var(--danger); color: #fff; border-color: var(--danger); }
   .btn-sm.rec-stop:hover { background: #b91c1c; border-color: #b91c1c; }
   /* Camera capture */
@@ -898,9 +901,11 @@
         <div class="file-size" id="fileSize"></div>
         <div id="fileTypeBadge"></div>
       </div>
-      <button class="btn-sm" id="saveRecBtn" onclick="saveRecordingToDevice()" data-i18n="btn_save_rec" style="display:none;flex-shrink:0;">💾 שמור הקלטה</button>
-      <button class="btn-sm" id="savePhotosBtn" onclick="savePhotosToDevice()" data-i18n="btn_save_photos" style="display:none;flex-shrink:0;">🖼️ שמור תמונות</button>
       <button class="btn-remove" onclick="removeFile()" data-i18n-title="file_remove" title="הסר קובץ">✕</button>
+    </div>
+    <div class="file-actions hidden" id="fileActions">
+      <button class="btn-sm" id="saveRecBtn" onclick="saveRecordingToDevice()" data-i18n="btn_save_rec" style="display:none;">💾 שמור הקלטה</button>
+      <button class="btn-sm" id="savePhotosBtn" onclick="savePhotosToDevice()" data-i18n="btn_save_photos" style="display:none;">🖼️ שמור תמונות</button>
     </div>
 
     <!-- In-app recorder -->
@@ -1604,6 +1609,8 @@ function onFileSelect(file) {
   if (srb) srb.style.display = isRec ? "inline-flex" : "none";
   const spb = document.getElementById("savePhotosBtn");
   if (spb) spb.style.display = (isRec && recPhotos.length) ? "inline-flex" : "none";
+  const fa = document.getElementById("fileActions");
+  if (fa) fa.classList.toggle("hidden", !isRec);
 }
 
 function removeFile() {
@@ -1613,8 +1620,10 @@ function removeFile() {
   document.getElementById("runBtn").disabled = true;
   document.getElementById("fileInput").value = "";
   document.getElementById("fileTypeBadge").innerHTML = "";
-  document.getElementById("originalFileName").textContent = "לא נבחר קובץ";
+  document.getElementById("originalFileName").textContent = t("origname_none");
   document.getElementById("filenameCombined").classList.remove("show");
+  const fa = document.getElementById("fileActions");
+  if (fa) fa.classList.add("hidden");
   const rb = document.getElementById("recorderBlock");
   if (rb) rb.classList.remove("hidden"); // file cleared — offer recording again
 }
