@@ -1763,7 +1763,7 @@ async function sendChunk(job, i, tail, apiKey) {
   const fd = new FormData();
   fd.append("file", new File([c.blob], c.name, { type: c.type || c.blob.type || "audio/wav" }), c.name);
   fd.append("model", job.model);
-  fd.append("language", transcribeLang);
+  fd.append("language", job.lang);
   fd.append("response_format", job.wantTs ? "verbose_json" : "text");
   if (job.wantTs) fd.append("timestamp_granularities[]", "segment");
   const prompt = [tail, job.basePrompt].filter(Boolean).join(" ").trim();
@@ -1845,6 +1845,7 @@ async function transcribeChunks(chunks, apiKey, basePrompt, chaining, fromPct, t
   const job = {
     chunks, basePrompt, chaining,
     model: selectedModel,
+    lang: transcribeLang, // lock the language for the whole job (+ its retries)
     wantTs: !!(MODELS[selectedModel] && MODELS[selectedModel].timestamps),
     results: new Array(chunks.length).fill(null),
   };
