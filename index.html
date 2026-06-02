@@ -1675,7 +1675,7 @@ async function transcribeSingle(apiKey) {
 }
 
 async function whisperFetch(fd, apiKey, onAttempt, asText = false) {
-  const MAX = 3;
+  const MAX = 4;
   let lastErr;
   for (let attempt = 1; attempt <= MAX; attempt++) {
     if (onAttempt) onAttempt(attempt);
@@ -1685,13 +1685,23 @@ async function whisperFetch(fd, apiKey, onAttempt, asText = false) {
       });
       if (res.ok) return asText ? (await res.text()).trim() : await res.json();
       const e = await res.json().catch(() => ({}));
-      if (res.status < 500) throw new Error(e.error?.message || res.statusText);
+      // 429 (rate limit) and 408 (timeout) are transient — retry them too.
+      const retryable = res.status >= 500 || res.status === 429 || res.status === 408;
+      if (!retryable) throw new Error(e.error?.message || res.statusText);
       lastErr = new Error(e.error?.message || `שגיאת שרת ${res.status}`);
+      const ra = parseFloat(res.headers.get("retry-after"));
+      if (!isNaN(ra) && ra > 0 && attempt < MAX) {
+        await new Promise(r => setTimeout(r, Math.min(ra * 1000, 20000)));
+        continue; // already waited the server-requested time
+      }
     } catch (err) {
       if (err.message && !err.message.includes("fetch")) throw err;
       lastErr = err;
     }
-    if (attempt < MAX) await new Promise(r => setTimeout(r, attempt * 2000));
+    if (attempt < MAX) {
+      const backoff = Math.min(1500 * Math.pow(2, attempt - 1), 16000) + Math.random() * 500;
+      await new Promise(r => setTimeout(r, backoff));
+    }
   }
   throw lastErr;
 }
@@ -1770,7 +1780,9 @@ async function sendChunk(job, i, tail, apiKey) {
 
 // Transcribe the given chunk indices, writing into job.results in place.
 async function processChunks(job, indices, apiKey, fromPct, toPct) {
-  const CONCURRENCY = 3;
+  // Fewer parallel requests on mobile — flaky networks fail less at lower concurrency.
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const CONCURRENCY = isMobile ? 2 : 3;
   const total = indices.length;
   let done = 0;
   const tick = () => setProgress(
@@ -1838,6 +1850,19 @@ async function transcribeChunks(chunks, apiKey, basePrompt, chaining, fromPct, t
   };
   window._chunkJob = job;
   await processChunks(job, chunks.map((_, i) => i), apiKey, fromPct, toPct);
+
+  // Self-heal: automatically retry failed parts a couple of times before
+  // surfacing the manual "retry" banner — transient mobile/network failures
+  // usually clear on a second try.
+  const AUTO_RETRIES = 2;
+  for (let r = 0; r < AUTO_RETRIES; r++) {
+    const failed = job.results.map((res, i) => (res === null ? i : -1)).filter(i => i >= 0);
+    if (!failed.length) break;
+    setProgress(Math.round(toPct - 2), `${t("prog_transcribing")} (${failed.length})`);
+    await new Promise(res => setTimeout(res, 1200 * (r + 1))); // brief pause before retrying
+    await processChunks(job, failed, apiKey, toPct - 2, toPct);
+  }
+
   return assembleChunks(job.results, job.wantTs);
 }
 
