@@ -888,6 +888,7 @@
         <div class="file-size" id="fileSize"></div>
         <div id="fileTypeBadge"></div>
       </div>
+      <button class="btn-sm" id="saveRecBtn" onclick="saveRecordingToDevice()" data-i18n="btn_save_rec" style="display:none;flex-shrink:0;">💾 שמור הקלטה</button>
       <button class="btn-remove" onclick="removeFile()" data-i18n-title="file_remove" title="הסר קובץ">✕</button>
     </div>
 
@@ -1276,6 +1277,9 @@ const I18N = {
   t_rec_unsupported:{ he: "הדפדפן אינו תומך בהקלטה", en: "Recording not supported in this browser", es: "La grabación no es compatible", fr: "Enregistrement non pris en charge" },
   t_rec_empty:     { he: "ההקלטה ריקה", en: "The recording is empty", es: "La grabación está vacía", fr: "L'enregistrement est vide" },
   t_rec_ready:     { he: "✓ ההקלטה מוכנה לתמלול", en: "✓ Recording ready to transcribe", es: "✓ Grabación lista para transcribir", fr: "✓ Enregistrement prêt à transcrire" },
+  t_rec_saved:     { he: "✓ ההקלטה נשמרה למכשיר (הורדות)", en: "✓ Recording saved to your device (Downloads)", es: "✓ Grabación guardada en tu dispositivo (Descargas)", fr: "✓ Enregistrement sauvegardé sur l'appareil (Téléchargements)" },
+  btn_save_rec:    { he: "💾 שמור הקלטה", en: "💾 Save recording", es: "💾 Guardar grabación", fr: "💾 Enregistrer l'audio" },
+  rec_filename:    { he: "הקלטה", en: "recording", es: "grabacion", fr: "enregistrement" },
   t_pick_folder:   { he: "נא לבחור תיקייה תחילה", en: "Please choose a folder first", es: "Elige una carpeta primero", fr: "Choisissez d'abord un dossier" },
   t_folder_picked: { he: "✓ תיקייה נבחרה: ", en: "✓ Folder selected: ", es: "✓ Carpeta seleccionada: ", fr: "✓ Dossier sélectionné : " },
   t_folder_err:    { he: "שגיאה בבחירת תיקייה", en: "Folder selection error", es: "Error al elegir carpeta", fr: "Erreur de sélection de dossier" },
@@ -1561,6 +1565,9 @@ function onFileSelect(file) {
   document.getElementById("errorBox").style.display = "none";
   const rb = document.getElementById("recorderBlock");
   if (rb) rb.classList.add("hidden"); // a file is chosen — hide the recorder
+  // "save recording" button only for in-app recordings
+  const srb = document.getElementById("saveRecBtn");
+  if (srb) srb.style.display = (file === lastRecordingFile && lastRecordingFile) ? "inline-flex" : "none";
 }
 
 function removeFile() {
@@ -2706,9 +2713,24 @@ function onRecordingStopped() {
   if (!blob.size) { showToast(t("t_rec_empty"), "error"); return; }
 
   const stamp = new Date().toLocaleDateString("he-IL").replace(/\//g, "-");
-  const file = new File([blob], `הקלטה_${stamp}.${ext}`, { type: blob.type });
+  const file = new File([blob], `${t("rec_filename")}_${stamp}.${ext}`, { type: blob.type });
+  lastRecordingFile = file;
   onFileSelect(file);                       // → preview, badge, enable "start"
-  showToast(t("t_rec_ready"), "success");
+  saveRecordingToDevice();                  // safety net: never lose the audio
+}
+
+/* Save the recorded audio to the device so it's never lost if transcription
+   fails or the tab is closed. Also available via the "save recording" button. */
+let lastRecordingFile = null;
+function saveRecordingToDevice() {
+  if (!lastRecordingFile) return;
+  try {
+    const url = URL.createObjectURL(lastRecordingFile);
+    const a = document.createElement("a");
+    a.href = url; a.download = lastRecordingFile.name; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast(t("t_rec_saved"), "success");
+  } catch (e) { /* ignore */ }
 }
 
 function playBeep() {
