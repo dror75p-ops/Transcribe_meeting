@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Teamnul — תמלול ישיבות</title>
+<title>Teamnul — תמלול ישיבות ובדיקת מבנים</title>
+<meta name="description" content="Teamnul — כלי חינמי לתמלול ישיבות לעברית, אנגלית, ספרדית וצרפתית, וניתוח תמונות לבדיקת מבנים, מסמכים ונוף. ישירות בדפדפן. | Free meeting transcription + AI photo inspection." />
+<meta property="og:title" content="Teamnul — תמלול ישיבות ובדיקת מבנים" />
+<meta property="og:description" content="תמלול ישיבות + ניתוח תמונות (בדיקת מבנה / מסמכים / נוף), ב-4 שפות, ישירות בדפדפן. חינמי." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="https://dror75p-ops.github.io/Transcribe_meeting/logo.jpg" />
+<meta name="twitter:card" content="summary" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <!-- Patch Worker constructor BEFORE FFmpeg loads.
@@ -87,6 +93,11 @@
   .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
   .page-title { font-size: 26px; font-weight: 600; color: var(--navy); margin-bottom: 5px; }
   .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+
+  /* Top-level view tabs */
+  .view-tabs { display: flex; gap: 8px; margin-bottom: 1.25rem; }
+  .view-tab { flex: 1; padding: 12px 10px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-sm); font-family: 'Heebo', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+  .view-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
 
   /* ── CARD ────────────────────────────────── */
   .card {
@@ -852,30 +863,45 @@
     </div>
   </div>
 
-  <!-- STANDALONE BUILDING INSPECTION (photos only — no recording) -->
-  <div class="card">
-    <div class="card-title" data-i18n="inspect_title">🔍 בדיקת מבנה מתמונות</div>
-    <div class="field-hint" style="margin-bottom:12px;" data-i18n="inspect_hint">צלם או העלה תמונות של פנים/חוץ הבית — וקבל ניתוח מקצועי. ללא הקלטה.</div>
-    <div class="field-group" style="margin-bottom:12px;">
-      <div class="field-label" data-i18n="lbl_analysis_mode">סוג ניתוח</div>
-      <select id="analysisModeSelect" class="field-input" style="height:40px;" onchange="onAnalysisModeChange()">
-        <option value="building" data-i18n="mode_building">🏠 בדיקת מבנה</option>
-        <option value="document" data-i18n="mode_document">📄 מסמכים / מצגות</option>
-        <option value="nature" data-i18n="mode_nature">🏞️ נוף וטבע</option>
-      </select>
-    </div>
-    <input type="file" id="inspectInput" accept="image/*" multiple style="display:none" onchange="addInspectPhotos(this.files)" />
-    <button class="btn-sm cobalt" onclick="document.getElementById('inspectInput').click()" data-i18n="btn_take_upload">📷 צלם / העלה תמונות</button>
-    <div id="inspectStrip" class="photo-strip"></div>
-    <button class="btn-claude" id="inspectAnalyzeBtn" onclick="analyzeInspectPhotos(this)" data-i18n="btn_analyze" style="display:none;margin-top:12px;">🔍 נתח תמונות</button>
-    <div id="inspectResultWrap" style="display:none;margin-top:14px;">
-      <div class="transcript-box" id="inspectResult" dir="auto"></div>
-      <div class="action-row" style="margin-top:8px;">
-        <button class="btn-action" onclick="copyInspect(this)" data-i18n="btn_copy">📋 העתק</button>
-        <button class="btn-action" onclick="downloadInspect()">💾 TXT</button>
+  <!-- VIEW TABS -->
+  <div class="view-tabs">
+    <button class="view-tab active" id="tabTranscribe" onclick="setView('transcribe')" data-i18n="tab_transcribe">🎙️ תמלול</button>
+    <button class="view-tab" id="tabInspect" onclick="setView('inspect')" data-i18n="tab_inspect">🔍 בדיקת תמונות</button>
+  </div>
+
+  <!-- PHOTO INSPECTION VIEW -->
+  <div id="viewInspect" class="hidden">
+    <div class="card">
+      <div class="card-title" data-i18n="inspect_title">🔍 בדיקת מבנה מתמונות</div>
+      <div class="field-hint" style="margin-bottom:12px;" data-i18n="inspect_hint">צלם או העלה תמונות של פנים/חוץ הבית — וקבל ניתוח מקצועי. ללא הקלטה.</div>
+      <div class="field-group" style="margin-bottom:12px;">
+        <div class="field-label" data-i18n="lbl_analysis_mode">סוג ניתוח</div>
+        <select id="analysisModeSelect" class="field-input" style="height:40px;" onchange="onAnalysisModeChange()">
+          <option value="building" data-i18n="mode_building">🏠 בדיקת מבנה</option>
+          <option value="document" data-i18n="mode_document">📄 מסמכים / מצגות</option>
+          <option value="nature" data-i18n="mode_nature">🏞️ נוף וטבע</option>
+        </select>
+      </div>
+      <input type="file" id="inspectCamInput" accept="image/*" capture="environment" style="display:none" onchange="addInspectPhotos(this.files)" />
+      <input type="file" id="inspectInput" accept="image/*" multiple style="display:none" onchange="addInspectPhotos(this.files)" />
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-sm cobalt" onclick="document.getElementById('inspectCamInput').click()" data-i18n="btn_take">📷 צלם</button>
+        <button class="btn-sm" onclick="document.getElementById('inspectInput').click()" data-i18n="btn_upload">🖼️ העלה</button>
+      </div>
+      <div id="inspectStrip" class="photo-strip"></div>
+      <button class="btn-claude" id="inspectAnalyzeBtn" onclick="analyzeInspectPhotos(this)" data-i18n="btn_analyze" style="display:none;margin-top:12px;">🔍 נתח תמונות</button>
+      <div id="inspectResultWrap" style="display:none;margin-top:14px;">
+        <div class="transcript-box" id="inspectResult" dir="auto"></div>
+        <div class="action-row" style="margin-top:8px;">
+          <button class="btn-action" onclick="copyInspect(this)" data-i18n="btn_copy">📋 העתק</button>
+          <button class="btn-action" onclick="downloadInspect()">💾 TXT</button>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- TRANSCRIPTION VIEW -->
+  <div id="viewTranscribe">
 
   <!-- STEP 1: MODEL -->
   <div class="card">
@@ -1104,6 +1130,7 @@
     </div>
     <div id="historyList"><div class="empty-history" data-i18n="empty_history">עדיין אין תמלולים שמורים</div></div>
   </div>
+  </div><!-- /viewTranscribe -->
 
   <!-- DONATION (PayPal embedded payment link — no SDK) -->
   <div class="donate-section">
@@ -1347,7 +1374,10 @@ const I18N = {
   btn_analyze:     { he: "🔍 נתח תמונות", en: "🔍 Analyze photos", es: "🔍 Analizar fotos", fr: "🔍 Analyser les photos" },
   inspect_title:   { he: "🔍 בדיקת מבנה מתמונות", en: "🔍 Building inspection from photos", es: "🔍 Inspección de edificio con fotos", fr: "🔍 Inspection du bâtiment par photos" },
   inspect_hint:    { he: "צלם או העלה תמונות של פנים/חוץ הבית — וקבל ניתוח מקצועי. ללא הקלטה.", en: "Take or upload photos of a home's interior/exterior — get a professional analysis. No recording needed.", es: "Toma o sube fotos del interior/exterior de la casa — obtén un análisis profesional. Sin grabación.", fr: "Prenez ou téléversez des photos de l'intérieur/extérieur d'une maison — obtenez une analyse professionnelle. Sans enregistrement." },
-  btn_take_upload: { he: "📷 צלם / העלה תמונות", en: "📷 Take / upload photos", es: "📷 Tomar / subir fotos", fr: "📷 Prendre / téléverser des photos" },
+  btn_take:        { he: "📷 צלם", en: "📷 Take photo", es: "📷 Tomar foto", fr: "📷 Prendre une photo" },
+  btn_upload:      { he: "🖼️ העלה", en: "🖼️ Upload", es: "🖼️ Subir", fr: "🖼️ Téléverser" },
+  tab_transcribe:  { he: "🎙️ תמלול", en: "🎙️ Transcribe", es: "🎙️ Transcribir", fr: "🎙️ Transcrire" },
+  tab_inspect:     { he: "🔍 בדיקת תמונות", en: "🔍 Photo inspection", es: "🔍 Inspección de fotos", fr: "🔍 Inspection photo" },
   lbl_analysis_mode:{ he: "סוג ניתוח", en: "Analysis type", es: "Tipo de análisis", fr: "Type d'analyse" },
   mode_building:   { he: "🏠 בדיקת מבנה", en: "🏠 Building inspection", es: "🏠 Inspección de edificio", fr: "🏠 Inspection bâtiment" },
   mode_document:   { he: "📄 מסמכים / מצגות", en: "📄 Documents / slides", es: "📄 Documentos / diapositivas", fr: "📄 Documents / diapos" },
@@ -1457,6 +1487,7 @@ window.onload = () => {
     document.getElementById("apiKey").value = saved;
     collapseApiKey(saved);
   }
+  setView(localStorage.getItem("da_view") || "transcribe");
   const savedModel = localStorage.getItem(MODEL_KEY);
   if (savedModel && MODELS[savedModel]) {
     selectedModel = savedModel;
@@ -1587,6 +1618,16 @@ function onModelChange() {
     selectedModel = sel.value;
     localStorage.setItem(MODEL_KEY, selectedModel);
   }
+}
+
+/* Top-level view switch: transcription vs photo inspection */
+function setView(v) {
+  const insp = (v === "inspect");
+  document.getElementById("viewInspect").classList.toggle("hidden", !insp);
+  document.getElementById("viewTranscribe").classList.toggle("hidden", insp);
+  document.getElementById("tabInspect").classList.toggle("active", insp);
+  document.getElementById("tabTranscribe").classList.toggle("active", !insp);
+  try { localStorage.setItem("da_view", v); } catch (_) {}
 }
 
 /* ---- Build Whisper prompt ---- */
@@ -2511,19 +2552,16 @@ async function analyzePhotos(btn) {
   const orig = btn.textContent;
   btn.disabled = true;
   const sys = analysisSysPrompt();
-  try {
-    for (let i = 0; i < recPhotos.length; i++) {
-      btn.textContent = `${t("t_analyze_working")} ${i + 1}/${recPhotos.length}`;
-      recPhotos[i].analysis = await visionAnalyzeOne(recPhotos[i].blob, apiKey, sys, i);
-    }
-    weavePhotoAnalysis();
-    showToast(t("t_analyze_done"), "success");
-  } catch (e) {
-    showToast(t("t_analyze_err") + ((e && e.message) ? e.message : t("t_analyze_unknown")), "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = orig;
+  let ok = 0, failed = 0, lastErr = "";
+  for (let i = 0; i < recPhotos.length; i++) {
+    btn.textContent = `${t("t_analyze_working")} ${i + 1}/${recPhotos.length}`;
+    try { recPhotos[i].analysis = await visionAnalyzeOne(recPhotos[i].blob, apiKey, sys, i); ok++; }
+    catch (e) { failed++; lastErr = (e && e.message) ? e.message : t("t_analyze_unknown"); }
   }
+  if (ok) { weavePhotoAnalysis(); showToast(t("t_analyze_done") + (failed ? ` (${failed} ✕)` : ""), failed ? "" : "success"); }
+  else { showToast(t("t_analyze_err") + lastErr, "error"); }
+  btn.disabled = false;
+  btn.textContent = orig;
 }
 function weavePhotoAnalysis() {
   const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -2576,19 +2614,16 @@ async function analyzeInspectPhotos(btn) {
   const orig = btn.textContent;
   btn.disabled = true;
   const sys = analysisSysPrompt();
-  try {
-    for (let i = 0; i < inspectPhotos.length; i++) {
-      btn.textContent = `${t("t_analyze_working")} ${i + 1}/${inspectPhotos.length}`;
-      inspectPhotos[i].analysis = await visionAnalyzeOne(inspectPhotos[i].blob, apiKey, sys, i);
-    }
-    renderInspectionReport();
-    showToast(t("t_analyze_done"), "success");
-  } catch (e) {
-    showToast(t("t_analyze_err") + ((e && e.message) ? e.message : t("t_analyze_unknown")), "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = orig;
+  let ok = 0, failed = 0, lastErr = "";
+  for (let i = 0; i < inspectPhotos.length; i++) {
+    btn.textContent = `${t("t_analyze_working")} ${i + 1}/${inspectPhotos.length}`;
+    try { inspectPhotos[i].analysis = await visionAnalyzeOne(inspectPhotos[i].blob, apiKey, sys, i); ok++; }
+    catch (e) { failed++; lastErr = (e && e.message) ? e.message : t("t_analyze_unknown"); }
   }
+  if (ok) { renderInspectionReport(); showToast(t("t_analyze_done") + (failed ? ` (${failed} ✕)` : ""), failed ? "" : "success"); }
+  else { showToast(t("t_analyze_err") + lastErr, "error"); }
+  btn.disabled = false;
+  btn.textContent = orig;
 }
 function renderInspectionReport() {
   const lines = [`${analysisSectionTitle()} — ${new Date().toLocaleDateString()}`, ""];
