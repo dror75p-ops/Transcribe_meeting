@@ -852,6 +852,30 @@
     </div>
   </div>
 
+  <!-- STANDALONE BUILDING INSPECTION (photos only — no recording) -->
+  <div class="card">
+    <div class="card-title" data-i18n="inspect_title">🔍 בדיקת מבנה מתמונות</div>
+    <div class="field-hint" style="margin-bottom:12px;" data-i18n="inspect_hint">צלם או העלה תמונות של פנים/חוץ הבית — וקבל ניתוח מקצועי. ללא הקלטה.</div>
+    <div class="field-group" style="margin-bottom:12px;">
+      <div class="field-label" data-i18n="lbl_analysis_mode">סוג ניתוח</div>
+      <select id="analysisModeSelect" class="field-input" style="height:40px;" onchange="onAnalysisModeChange()">
+        <option value="building" data-i18n="mode_building">🏠 בדיקת מבנה</option>
+        <option value="document" data-i18n="mode_document">📄 מסמכים / מצגות</option>
+      </select>
+    </div>
+    <input type="file" id="inspectInput" accept="image/*" multiple style="display:none" onchange="addInspectPhotos(this.files)" />
+    <button class="btn-sm cobalt" onclick="document.getElementById('inspectInput').click()" data-i18n="btn_take_upload">📷 צלם / העלה תמונות</button>
+    <div id="inspectStrip" class="photo-strip"></div>
+    <button class="btn-claude" id="inspectAnalyzeBtn" onclick="analyzeInspectPhotos(this)" data-i18n="btn_analyze" style="display:none;margin-top:12px;">🔍 נתח תמונות</button>
+    <div id="inspectResultWrap" style="display:none;margin-top:14px;">
+      <div class="transcript-box" id="inspectResult" dir="auto"></div>
+      <div class="action-row" style="margin-top:8px;">
+        <button class="btn-action" onclick="copyInspect(this)" data-i18n="btn_copy">📋 העתק</button>
+        <button class="btn-action" onclick="downloadInspect()">💾 TXT</button>
+      </div>
+    </div>
+  </div>
+
   <!-- STEP 1: MODEL -->
   <div class="card">
     <div class="card-title step-title"><span class="step-num">1</span><span data-i18n="step1_title">בחירת מנוע תמלול</span></div>
@@ -1320,6 +1344,16 @@ const I18N = {
   t_no_photos:     { he: "אין תמונות לשמירה", en: "No photos to save", es: "Sin fotos para guardar", fr: "Aucune photo à enregistrer" },
   photo_word:      { he: "תמונה", en: "Photo", es: "Foto", fr: "Photo" },
   btn_analyze:     { he: "🔍 נתח תמונות", en: "🔍 Analyze photos", es: "🔍 Analizar fotos", fr: "🔍 Analyser les photos" },
+  inspect_title:   { he: "🔍 בדיקת מבנה מתמונות", en: "🔍 Building inspection from photos", es: "🔍 Inspección de edificio con fotos", fr: "🔍 Inspection du bâtiment par photos" },
+  inspect_hint:    { he: "צלם או העלה תמונות של פנים/חוץ הבית — וקבל ניתוח מקצועי. ללא הקלטה.", en: "Take or upload photos of a home's interior/exterior — get a professional analysis. No recording needed.", es: "Toma o sube fotos del interior/exterior de la casa — obtén un análisis profesional. Sin grabación.", fr: "Prenez ou téléversez des photos de l'intérieur/extérieur d'une maison — obtenez une analyse professionnelle. Sans enregistrement." },
+  btn_take_upload: { he: "📷 צלם / העלה תמונות", en: "📷 Take / upload photos", es: "📷 Tomar / subir fotos", fr: "📷 Prendre / téléverser des photos" },
+  lbl_analysis_mode:{ he: "סוג ניתוח", en: "Analysis type", es: "Tipo de análisis", fr: "Type d'analyse" },
+  mode_building:   { he: "🏠 בדיקת מבנה", en: "🏠 Building inspection", es: "🏠 Inspección de edificio", fr: "🏠 Inspection bâtiment" },
+  mode_document:   { he: "📄 מסמכים / מצגות", en: "📄 Documents / slides", es: "📄 Documentos / diapositivas", fr: "📄 Documents / diapos" },
+  docs_title:      { he: "תוכן שחולץ", en: "Extracted content", es: "Contenido extraído", fr: "Contenu extrait" },
+  doc_text:        { he: "טקסט", en: "Text", es: "Texto", fr: "Texte" },
+  doc_visuals:     { he: "גרפים / ויזואלים", en: "Charts / visuals", es: "Gráficos / visuales", fr: "Graphiques / visuels" },
+  doc_summary:     { he: "תקציר", en: "Summary", es: "Resumen", fr: "Résumé" },
   t_analyze_working:{ he: "⏳ מנתח תמונות", en: "⏳ Analyzing photos", es: "⏳ Analizando fotos", fr: "⏳ Analyse des photos" },
   t_analyze_done:  { he: "✓ ניתוח התמונות הושלם", en: "✓ Photo analysis complete", es: "✓ Análisis de fotos completado", fr: "✓ Analyse des photos terminée" },
   t_analyze_err:   { he: "שגיאה בניתוח התמונות: ", en: "Photo analysis error: ", es: "Error al analizar las fotos: ", fr: "Erreur d'analyse des photos : " },
@@ -2366,6 +2400,73 @@ function undoLabelSpeakers() {
 function blobToDataURL(blob) {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
 }
+let analysisMode = "building"; // "building" | "document"
+function onAnalysisModeChange() {
+  const sel = document.getElementById("analysisModeSelect");
+  if (sel) analysisMode = sel.value;
+}
+function langName() { return { he: "Hebrew", en: "English", es: "Spanish", fr: "French" }[currentLang] || "English"; }
+function inspectionSysPrompt() {
+  return `You are a professional building inspector examining a photo of a home or building (interior or exterior). ` +
+    `Identify whether it is interior or exterior and the main element. Return ONLY JSON: ` +
+    `{"location": string, "summary": string (one plain-language sentence a homeowner understands), ` +
+    `"findings": [{"issue": string, "severity": "major"|"minor"|"safety"|"ok", "recommendation": string, "confidence": "high"|"medium"|"low"}]}. ` +
+    `Be precise and conservative: if unsure, set confidence "low" and say so — never invent defects. Respond entirely in ${langName()}.`;
+}
+function documentSysPrompt() {
+  return `You are an expert at reading documents, slides and screens (e.g. a lecture's presentation). ` +
+    `For the image, faithfully extract the content. Return ONLY JSON: ` +
+    `{"title": string, "text": string (all readable text, transcribed accurately — OCR), ` +
+    `"visuals": string (describe any charts, graphs, tables or diagrams, including key numbers/trends; empty if none), ` +
+    `"summary": string (key takeaways)}. Do not invent text you cannot read; if unclear, note it. ` +
+    `Respond in ${langName()}, but keep proper nouns and numbers exactly as shown.`;
+}
+function analysisSysPrompt() { return analysisMode === "document" ? documentSysPrompt() : inspectionSysPrompt(); }
+function analysisSectionTitle() { return analysisMode === "document" ? t("docs_title") : t("findings_title"); }
+// Format one photo's analysis into report lines (building findings OR document content).
+function formatAnalysisBlock(a, n) {
+  const out = [];
+  if (Array.isArray(a.findings)) {
+    out.push(`${t("photo_word")} ${n}${a.location ? " — " + a.location : ""}: ${a.summary || ""}`);
+    a.findings.forEach((f) => {
+      const conf = f.confidence ? ` (${f.confidence})` : "";
+      out.push(`  • [${sevLabel(f.severity)}] ${f.issue || ""}${f.recommendation ? " → " + f.recommendation : ""}${conf}`);
+    });
+  } else {
+    out.push(`${t("photo_word")} ${n}${a.title ? " — " + a.title : ""}`);
+    if (a.text) out.push(`${t("doc_text")}: ${a.text}`);
+    if (a.visuals) out.push(`${t("doc_visuals")}: ${a.visuals}`);
+    if (a.summary) out.push(`${t("doc_summary")}: ${a.summary}`);
+  }
+  return out;
+}
+function analysisInlineSummary(a) {
+  return (a.summary || a.title || (a.text || "").slice(0, 80) || "").trim();
+}
+// Analyze one photo with GPT-4o vision; returns the parsed analysis object.
+async function visionAnalyzeOne(blob, apiKey, sys, idx) {
+  const dataUrl = await blobToDataURL(blob);
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + apiKey },
+    body: JSON.stringify({
+      model: "gpt-4o", temperature: 0, response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: sys },
+        { role: "user", content: [
+          { type: "text", text: `Photo ${idx + 1}. Analyze it for a building inspection.` },
+          { type: "image_url", image_url: { url: dataUrl, detail: "auto" } },
+        ] },
+      ],
+    }),
+  });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || res.statusText); }
+  const data = await res.json();
+  try { return JSON.parse(data.choices[0].message.content); }
+  catch (_) { return { location: "", summary: (data.choices?.[0]?.message?.content || "").trim(), findings: [] }; }
+}
+function sevLabel(s) { return ({ major: t("sev_major"), minor: t("sev_minor"), safety: t("sev_safety"), ok: t("sev_ok") }[s] || s || ""); }
+
 async function analyzePhotos(btn) {
   if (!recPhotos.length) { showToast(t("t_no_photos"), "error"); return; }
   const apiKey = document.getElementById("apiKey").value.trim();
@@ -2376,37 +2477,11 @@ async function analyzePhotos(btn) {
 
   const orig = btn.textContent;
   btn.disabled = true;
-  const langName = { he: "Hebrew", en: "English", es: "Spanish", fr: "French" }[currentLang] || "English";
-  const sys = `You are a professional building inspector examining a photo of a home or building (interior or exterior). ` +
-    `Identify whether it is interior or exterior and the main element. Return ONLY JSON: ` +
-    `{"location": string, "summary": string (one plain-language sentence a homeowner understands), ` +
-    `"findings": [{"issue": string, "severity": "major"|"minor"|"safety"|"ok", "recommendation": string, "confidence": "high"|"medium"|"low"}]}. ` +
-    `Be precise and conservative: if unsure, set confidence "low" and say so — never invent defects. Respond entirely in ${langName}.`;
-
+  const sys = analysisSysPrompt();
   try {
     for (let i = 0; i < recPhotos.length; i++) {
       btn.textContent = `${t("t_analyze_working")} ${i + 1}/${recPhotos.length}`;
-      const dataUrl = await blobToDataURL(recPhotos[i].blob);
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + apiKey },
-        body: JSON.stringify({
-          model: "gpt-4o", temperature: 0, response_format: { type: "json_object" },
-          messages: [
-            { role: "system", content: sys },
-            { role: "user", content: [
-              { type: "text", text: `Photo ${i + 1}. Analyze it for a building inspection.` },
-              { type: "image_url", image_url: { url: dataUrl, detail: "auto" } },
-            ] },
-          ],
-        }),
-      });
-      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || res.statusText); }
-      const data = await res.json();
-      let parsed;
-      try { parsed = JSON.parse(data.choices[0].message.content); }
-      catch (_) { parsed = { location: "", summary: (data.choices?.[0]?.message?.content || "").trim(), findings: [] }; }
-      recPhotos[i].analysis = parsed;
+      recPhotos[i].analysis = await visionAnalyzeOne(recPhotos[i].blob, apiKey, sys, i);
     }
     weavePhotoAnalysis();
     showToast(t("t_analyze_done"), "success");
@@ -2418,31 +2493,93 @@ async function analyzePhotos(btn) {
   }
 }
 function weavePhotoAnalysis() {
-  const sev = (s) => ({ major: t("sev_major"), minor: t("sev_minor"), safety: t("sev_safety"), ok: t("sev_ok") }[s] || s || "");
   const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   let text = transcriptText;
-  // Upgrade inline photo markers with the plain-language summary.
   recPhotos.forEach((p, i) => {
     if (!p.analysis) return;
     const n = i + 1;
-    const sum = (p.analysis.summary || "").trim();
+    const sum = analysisInlineSummary(p.analysis);
     const re = new RegExp(`📷 ${esc(t("photo_word"))} ${n}(?!\\d)`);
     text = text.replace(re, `🔍 ${t("photo_word")} ${n}${sum ? " — " + sum : ""}`);
   });
-  // Structured findings section for inspectors.
-  const sec = [`\n\n── ${t("findings_title")} ──`];
+  const sec = [`\n\n── ${analysisSectionTitle()} ──`];
   recPhotos.forEach((p, i) => {
     if (!p.analysis) return;
-    const n = i + 1; const a = p.analysis;
-    sec.push(`\n${t("photo_word")} ${n}${a.location ? " — " + a.location : ""}: ${a.summary || ""}`);
-    (a.findings || []).forEach((f) => {
-      const conf = f.confidence ? ` (${f.confidence})` : "";
-      sec.push(`  • [${sev(f.severity)}] ${f.issue || ""}${f.recommendation ? " → " + f.recommendation : ""}${conf}`);
-    });
+    sec.push("\n" + formatAnalysisBlock(p.analysis, i + 1).join("\n"));
   });
   transcriptText = text + sec.join("\n");
   document.getElementById("transcriptBox").textContent = transcriptText;
   document.getElementById("s1").textContent = transcriptText.split(/\s+/).filter(Boolean).length.toLocaleString();
+}
+
+/* ---- Standalone building inspection (photos only, no recording) ---- */
+let inspectPhotos = []; // { blob, url, analysis? }
+let inspectReportText = "";
+function addInspectPhotos(files) {
+  for (const f of files) {
+    if (f && f.type && f.type.startsWith("image/")) inspectPhotos.push({ blob: f, url: URL.createObjectURL(f) });
+  }
+  document.getElementById("inspectInput").value = "";
+  renderInspectStrip();
+}
+function renderInspectStrip() {
+  const strip = document.getElementById("inspectStrip");
+  if (!strip) return;
+  strip.innerHTML = inspectPhotos.map((p, i) =>
+    `<div class="photo-thumb"><img src="${p.url}" alt=""><button class="photo-del" onclick="removeInspectPhoto(${i})" title="✕">✕</button></div>`
+  ).join("");
+  document.getElementById("inspectAnalyzeBtn").style.display = inspectPhotos.length ? "inline-flex" : "none";
+}
+function removeInspectPhoto(i) {
+  if (inspectPhotos[i]) { try { URL.revokeObjectURL(inspectPhotos[i].url); } catch (_) {} inspectPhotos.splice(i, 1); renderInspectStrip(); }
+}
+async function analyzeInspectPhotos(btn) {
+  if (!inspectPhotos.length) { showToast(t("t_no_photos"), "error"); return; }
+  const apiKey = document.getElementById("apiKey").value.trim();
+  if (!apiKey.startsWith("sk-")) { showToast(t("t_key_enter"), "error"); return; }
+  const cost = (inspectPhotos.length * 0.01).toFixed(2);
+  if (!confirm(t("c_analyze").replace("{n}", inspectPhotos.length).replace("{cost}", cost))) return;
+
+  const orig = btn.textContent;
+  btn.disabled = true;
+  const sys = analysisSysPrompt();
+  try {
+    for (let i = 0; i < inspectPhotos.length; i++) {
+      btn.textContent = `${t("t_analyze_working")} ${i + 1}/${inspectPhotos.length}`;
+      inspectPhotos[i].analysis = await visionAnalyzeOne(inspectPhotos[i].blob, apiKey, sys, i);
+    }
+    renderInspectionReport();
+    showToast(t("t_analyze_done"), "success");
+  } catch (e) {
+    showToast(t("t_analyze_err") + e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+function renderInspectionReport() {
+  const lines = [`${analysisSectionTitle()} — ${new Date().toLocaleDateString()}`, ""];
+  inspectPhotos.forEach((p, i) => {
+    if (!p.analysis) return;
+    lines.push(...formatAnalysisBlock(p.analysis, i + 1));
+    lines.push("");
+  });
+  inspectReportText = lines.join("\n").trim();
+  document.getElementById("inspectResult").textContent = inspectReportText;
+  document.getElementById("inspectResultWrap").style.display = "block";
+}
+function copyInspect(btn) {
+  if (!inspectReportText) return;
+  navigator.clipboard.writeText(inspectReportText).then(() => {
+    const o = btn.textContent; btn.textContent = t("t_copied"); setTimeout(() => btn.textContent = o, 1500);
+  });
+}
+function downloadInspect() {
+  if (!inspectReportText) return;
+  const url = URL.createObjectURL(new Blob([inspectReportText], { type: "text/plain;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = t("findings_title").replace(/\s+/g, "_") + ".txt"; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 /* ---- Email / Share ---- */
