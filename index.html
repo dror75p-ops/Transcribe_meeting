@@ -880,6 +880,8 @@
           <option value="building" data-i18n="mode_building">🏠 בדיקת מבנה</option>
           <option value="document" data-i18n="mode_document">📄 מסמכים / מצגות</option>
           <option value="nature" data-i18n="mode_nature">🏞️ נוף וטבע</option>
+          <option value="maintenance" data-i18n="mode_maintenance">🔧 דוח תחזוקה</option>
+          <option value="fives" data-i18n="mode_5s">🏭 ניתוח 5S (סביבת עבודה)</option>
         </select>
       </div>
       <input type="file" id="inspectCamInput" accept="image/*" capture="environment" style="display:none" onchange="addInspectPhotos(this.files)" />
@@ -1372,8 +1374,18 @@ const I18N = {
   t_no_photos:     { he: "אין תמונות לשמירה", en: "No photos to save", es: "Sin fotos para guardar", fr: "Aucune photo à enregistrer" },
   photo_word:      { he: "תמונה", en: "Photo", es: "Foto", fr: "Photo" },
   btn_analyze:     { he: "🔍 נתח תמונות", en: "🔍 Analyze photos", es: "🔍 Analizar fotos", fr: "🔍 Analyser les photos" },
-  inspect_title:   { he: "🔍 בדיקת מבנה מתמונות", en: "🔍 Building inspection from photos", es: "🔍 Inspección de edificio con fotos", fr: "🔍 Inspection du bâtiment par photos" },
-  inspect_hint:    { he: "צלם או העלה תמונות של פנים/חוץ הבית — וקבל ניתוח מקצועי. ללא הקלטה.", en: "Take or upload photos of a home's interior/exterior — get a professional analysis. No recording needed.", es: "Toma o sube fotos del interior/exterior de la casa — obtén un análisis profesional. Sin grabación.", fr: "Prenez ou téléversez des photos de l'intérieur/extérieur d'une maison — obtenez une analyse professionnelle. Sans enregistrement." },
+  inspect_title:   { he: "🔍 ניתוח תמונות", en: "🔍 Photo analysis", es: "🔍 Análisis de fotos", fr: "🔍 Analyse de photos" },
+  inspect_hint:    { he: "צלם או העלה תמונות ובחר את סוג הניתוח — וקבל דוח מקצועי. ללא הקלטה.", en: "Take or upload photos and pick the analysis type — get a professional report. No recording needed.", es: "Toma o sube fotos y elige el tipo de análisis — obtén un informe profesional. Sin grabación.", fr: "Prenez ou téléversez des photos et choisissez le type d'analyse — obtenez un rapport professionnel. Sans enregistrement." },
+  mode_maintenance:{ he: "🔧 דוח תחזוקה", en: "🔧 Maintenance report", es: "🔧 Informe de mantenimiento", fr: "🔧 Rapport de maintenance" },
+  mode_5s:         { he: "🏭 ניתוח 5S (סביבת עבודה)", en: "🏭 5S workspace analysis", es: "🏭 Análisis 5S (lugar de trabajo)", fr: "🏭 Analyse 5S (espace de travail)" },
+  maint_title:     { he: "דוח תחזוקה", en: "Maintenance report", es: "Informe de mantenimiento", fr: "Rapport de maintenance" },
+  fives_title:     { he: "ניתוח 5S — סביבת עבודה", en: "5S analysis — workspace", es: "Análisis 5S — lugar de trabajo", fr: "Analyse 5S — espace de travail" },
+  sev_urgent:      { he: "דחוף", en: "Urgent", es: "Urgente", fr: "Urgent" },
+  sev_soon:        { he: "בקרוב", en: "Soon", es: "Pronto", fr: "Bientôt" },
+  sev_routine:     { he: "שגרתי", en: "Routine", es: "Rutina", fr: "Routine" },
+  rate_good:       { he: "טוב", en: "Good", es: "Bueno", fr: "Bon" },
+  rate_fair:       { he: "בינוני", en: "Fair", es: "Regular", fr: "Moyen" },
+  rate_poor:       { he: "טעון שיפור", en: "Poor", es: "Deficiente", fr: "Faible" },
   btn_take:        { he: "📷 צלם", en: "📷 Take photo", es: "📷 Tomar foto", fr: "📷 Prendre une photo" },
   btn_upload:      { he: "🖼️ העלה", en: "🖼️ Upload", es: "🖼️ Subir", fr: "🖼️ Téléverser" },
   tab_transcribe:  { he: "🎙️ תמלול", en: "🎙️ Transcribe", es: "🎙️ Transcribir", fr: "🎙️ Transcrire" },
@@ -2474,30 +2486,53 @@ function natureSysPrompt() {
     `"elements": string (plants, trees, animals, rocks/geological or water features you can identify — be conservative and note uncertainty), ` +
     `"summary": string (a short, engaging description)}. Do not invent species you cannot identify. Respond in ${langName()}.`;
 }
+function maintenanceSysPrompt() {
+  return `You are a professional maintenance inspector. For the photo, identify the asset/area and any maintenance needs. ` +
+    `Return ONLY JSON: {"location": string, "summary": string (one plain-language sentence), ` +
+    `"findings": [{"issue": string, "severity": "urgent"|"soon"|"routine"|"ok", "recommendation": string, "confidence": "high"|"medium"|"low"}]}. ` +
+    `Be precise and conservative; if unsure, set confidence "low". Respond entirely in ${langName()}.`;
+}
+function fiveSSysPrompt() {
+  return `You are a Lean industrial-improvement expert assessing a workspace photo against the 5S methodology ` +
+    `(Sort, Set in order, Shine, Standardize, Sustain). Return ONLY JSON: ` +
+    `{"area": string, "fiveS": [{"s": string (the 5S step name), "rating": "good"|"fair"|"poor", "observation": string, "improvement": string}], ` +
+    `"summary": string (overall assessment and top priorities)}. Cover all five S steps. Be practical and specific. Respond entirely in ${langName()}.`;
+}
 function analysisSysPrompt() {
   return analysisMode === "document" ? documentSysPrompt()
     : analysisMode === "nature" ? natureSysPrompt()
+    : analysisMode === "maintenance" ? maintenanceSysPrompt()
+    : analysisMode === "fives" ? fiveSSysPrompt()
     : inspectionSysPrompt();
 }
 function analysisSectionTitle() {
   return analysisMode === "document" ? t("docs_title")
     : analysisMode === "nature" ? t("nature_title")
+    : analysisMode === "maintenance" ? t("maint_title")
+    : analysisMode === "fives" ? t("fives_title")
     : t("findings_title");
 }
-// Format one photo's analysis into report lines (building findings OR document content).
+function ratingLabel(r) { return ({ good: t("rate_good"), fair: t("rate_fair"), poor: t("rate_poor") }[r] || r || ""); }
+// Format one photo's analysis into report lines (mode-aware).
 function formatAnalysisBlock(a, n) {
   const out = [];
-  if (Array.isArray(a.findings)) {
+  if (Array.isArray(a.fiveS)) {                       // 5S workspace
+    out.push(`${t("photo_word")} ${n}${a.area ? " — " + a.area : ""}`);
+    a.fiveS.forEach((s) => {
+      out.push(`  • ${s.s || ""} [${ratingLabel(s.rating)}]: ${s.observation || ""}${s.improvement ? " → " + s.improvement : ""}`);
+    });
+    if (a.summary) out.push(`${t("doc_summary")}: ${a.summary}`);
+  } else if (Array.isArray(a.findings)) {             // building / maintenance
     out.push(`${t("photo_word")} ${n}${a.location ? " — " + a.location : ""}: ${a.summary || ""}`);
     a.findings.forEach((f) => {
       const conf = f.confidence ? ` (${f.confidence})` : "";
       out.push(`  • [${sevLabel(f.severity)}] ${f.issue || ""}${f.recommendation ? " → " + f.recommendation : ""}${conf}`);
     });
-  } else if (a.scene !== undefined || a.elements !== undefined) {
+  } else if (a.scene !== undefined || a.elements !== undefined) { // nature
     out.push(`${t("photo_word")} ${n}${a.scene ? " — " + a.scene : ""}`);
     if (a.elements) out.push(`${t("nat_elements")}: ${a.elements}`);
     if (a.summary) out.push(`${t("doc_summary")}: ${a.summary}`);
-  } else {
+  } else {                                            // document / slide
     out.push(`${t("photo_word")} ${n}${a.title ? " — " + a.title : ""}`);
     if (a.text) out.push(`${t("doc_text")}: ${a.text}`);
     if (a.visuals) out.push(`${t("doc_visuals")}: ${a.visuals}`);
@@ -2506,7 +2541,7 @@ function formatAnalysisBlock(a, n) {
   return out;
 }
 function analysisInlineSummary(a) {
-  return (a.summary || a.scene || a.title || (a.text || "").slice(0, 80) || "").trim();
+  return (a.summary || a.scene || a.area || a.title || (a.text || "").slice(0, 80) || "").trim();
 }
 // Analyze one photo with GPT-4o vision; returns the parsed analysis object.
 async function visionAnalyzeOne(blob, apiKey, sys, idx) {
@@ -2539,7 +2574,7 @@ async function visionAnalyzeOne(blob, apiKey, sys, idx) {
   try { return JSON.parse(content); }
   catch (_) { return { summary: content.trim() }; } // non-JSON → still show what came back
 }
-function sevLabel(s) { return ({ major: t("sev_major"), minor: t("sev_minor"), safety: t("sev_safety"), ok: t("sev_ok") }[s] || s || ""); }
+function sevLabel(s) { return ({ major: t("sev_major"), minor: t("sev_minor"), safety: t("sev_safety"), ok: t("sev_ok"), urgent: t("sev_urgent"), soon: t("sev_soon"), routine: t("sev_routine") }[s] || s || ""); }
 
 async function analyzePhotos(btn) {
   if (!recPhotos.length) { showToast(t("t_no_photos"), "error"); return; }
