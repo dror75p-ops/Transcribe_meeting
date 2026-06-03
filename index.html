@@ -1025,6 +1025,7 @@
       <div class="action-row">
         <button class="btn-drive" onclick="openDrivePanel()" data-i18n="btn_drive">📁 שמור ל-Drive</button>
         <button class="btn-action" onclick="labelSpeakers(this)" data-i18n="btn_label_spk">🏷️ זהה דוברים</button>
+        <button class="btn-action" id="analyzePhotosBtn" onclick="analyzePhotos(this)" data-i18n="btn_analyze" style="display:none;">🔍 נתח תמונות</button>
         <button class="btn-action" id="undoLabelBtn" onclick="undoLabelSpeakers()" data-i18n="btn_undo" style="display:none;">↩︎ בטל</button>
         <button class="btn-action" onclick="copyText(this)" data-i18n="btn_copy">📋 העתק</button>
         <button class="btn-action" onclick="downloadTxt()">💾 TXT</button>
@@ -1318,6 +1319,16 @@ const I18N = {
   t_photos_saved:  { he: "✓ תמונות נשמרו: ", en: "✓ Photos saved: ", es: "✓ Fotos guardadas: ", fr: "✓ Photos enregistrées : " },
   t_no_photos:     { he: "אין תמונות לשמירה", en: "No photos to save", es: "Sin fotos para guardar", fr: "Aucune photo à enregistrer" },
   photo_word:      { he: "תמונה", en: "Photo", es: "Foto", fr: "Photo" },
+  btn_analyze:     { he: "🔍 נתח תמונות", en: "🔍 Analyze photos", es: "🔍 Analizar fotos", fr: "🔍 Analyser les photos" },
+  t_analyze_working:{ he: "⏳ מנתח תמונות", en: "⏳ Analyzing photos", es: "⏳ Analizando fotos", fr: "⏳ Analyse des photos" },
+  t_analyze_done:  { he: "✓ ניתוח התמונות הושלם", en: "✓ Photo analysis complete", es: "✓ Análisis de fotos completado", fr: "✓ Analyse des photos terminée" },
+  t_analyze_err:   { he: "שגיאה בניתוח התמונות: ", en: "Photo analysis error: ", es: "Error al analizar las fotos: ", fr: "Erreur d'analyse des photos : " },
+  c_analyze:       { he: "ניתוח {n} תמונות בבדיקת מבנה (GPT-4o, עלות מוערכת ~${cost}). התמונות יישלחו ל-OpenAI לניתוח. להמשיך?", en: "Analyze {n} photos for building inspection (GPT-4o, est. ~${cost}). The photos will be sent to OpenAI. Continue?", es: "Analizar {n} fotos para inspección de edificios (GPT-4o, est. ~${cost}). Las fotos se enviarán a OpenAI. ¿Continuar?", fr: "Analyser {n} photos pour l'inspection du bâtiment (GPT-4o, est. ~{cost}$). Les photos seront envoyées à OpenAI. Continuer ?" },
+  findings_title:  { he: "ממצאי בדיקה", en: "Inspection findings", es: "Hallazgos de inspección", fr: "Constats d'inspection" },
+  sev_major:       { he: "ליקוי מהותי", en: "Major", es: "Mayor", fr: "Majeur" },
+  sev_minor:       { he: "ליקוי קל", en: "Minor", es: "Menor", fr: "Mineur" },
+  sev_safety:      { he: "סיכון בטיחותי", en: "Safety", es: "Seguridad", fr: "Sécurité" },
+  sev_ok:          { he: "תקין", en: "OK", es: "Correcto", fr: "Correct" },
   t_pick_folder:   { he: "נא לבחור תיקייה תחילה", en: "Please choose a folder first", es: "Elige una carpeta primero", fr: "Choisissez d'abord un dossier" },
   t_folder_picked: { he: "✓ תיקייה נבחרה: ", en: "✓ Folder selected: ", es: "✓ Carpeta seleccionada: ", fr: "✓ Dossier sélectionné : " },
   t_folder_err:    { he: "שגיאה בבחירת תיקייה", en: "Folder selection error", es: "Error al elegir carpeta", fr: "Erreur de sélection de dossier" },
@@ -2195,6 +2206,10 @@ function renderResult(failures) {
   const fc = failures ? failures.length : 0;
   if (fc) { document.getElementById("retryCount").textContent = fc; banner.style.display = "block"; }
   else { banner.style.display = "none"; }
+
+  // Show "analyze photos" only when this transcript came from a recording with photos.
+  const apb = document.getElementById("analyzePhotosBtn");
+  if (apb) apb.style.display = (recPhotos.length && currentFile === lastRecordingFile) ? "inline-flex" : "none";
 }
 
 function finish(failures) {
@@ -2345,6 +2360,89 @@ function undoLabelSpeakers() {
     transcriptText.split(/\s+/).filter(Boolean).length.toLocaleString("he-IL");
   document.getElementById("undoLabelBtn").style.display = "none";
   showToast(t("t_restored"));
+}
+
+/* ---- Photo analysis (building inspection, GPT-4o vision) ---- */
+function blobToDataURL(blob) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+}
+async function analyzePhotos(btn) {
+  if (!recPhotos.length) { showToast(t("t_no_photos"), "error"); return; }
+  const apiKey = document.getElementById("apiKey").value.trim();
+  if (!apiKey.startsWith("sk-")) { showToast(t("t_key_enter"), "error"); return; }
+
+  const cost = (recPhotos.length * 0.01).toFixed(2);
+  if (!confirm(t("c_analyze").replace("{n}", recPhotos.length).replace("{cost}", cost))) return;
+
+  const orig = btn.textContent;
+  btn.disabled = true;
+  const langName = { he: "Hebrew", en: "English", es: "Spanish", fr: "French" }[currentLang] || "English";
+  const sys = `You are a professional building inspector examining a photo of a home or building (interior or exterior). ` +
+    `Identify whether it is interior or exterior and the main element. Return ONLY JSON: ` +
+    `{"location": string, "summary": string (one plain-language sentence a homeowner understands), ` +
+    `"findings": [{"issue": string, "severity": "major"|"minor"|"safety"|"ok", "recommendation": string, "confidence": "high"|"medium"|"low"}]}. ` +
+    `Be precise and conservative: if unsure, set confidence "low" and say so — never invent defects. Respond entirely in ${langName}.`;
+
+  try {
+    for (let i = 0; i < recPhotos.length; i++) {
+      btn.textContent = `${t("t_analyze_working")} ${i + 1}/${recPhotos.length}`;
+      const dataUrl = await blobToDataURL(recPhotos[i].blob);
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + apiKey },
+        body: JSON.stringify({
+          model: "gpt-4o", temperature: 0, response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: sys },
+            { role: "user", content: [
+              { type: "text", text: `Photo ${i + 1}. Analyze it for a building inspection.` },
+              { type: "image_url", image_url: { url: dataUrl, detail: "auto" } },
+            ] },
+          ],
+        }),
+      });
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || res.statusText); }
+      const data = await res.json();
+      let parsed;
+      try { parsed = JSON.parse(data.choices[0].message.content); }
+      catch (_) { parsed = { location: "", summary: (data.choices?.[0]?.message?.content || "").trim(), findings: [] }; }
+      recPhotos[i].analysis = parsed;
+    }
+    weavePhotoAnalysis();
+    showToast(t("t_analyze_done"), "success");
+  } catch (e) {
+    showToast(t("t_analyze_err") + e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+function weavePhotoAnalysis() {
+  const sev = (s) => ({ major: t("sev_major"), minor: t("sev_minor"), safety: t("sev_safety"), ok: t("sev_ok") }[s] || s || "");
+  const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  let text = transcriptText;
+  // Upgrade inline photo markers with the plain-language summary.
+  recPhotos.forEach((p, i) => {
+    if (!p.analysis) return;
+    const n = i + 1;
+    const sum = (p.analysis.summary || "").trim();
+    const re = new RegExp(`📷 ${esc(t("photo_word"))} ${n}(?!\\d)`);
+    text = text.replace(re, `🔍 ${t("photo_word")} ${n}${sum ? " — " + sum : ""}`);
+  });
+  // Structured findings section for inspectors.
+  const sec = [`\n\n── ${t("findings_title")} ──`];
+  recPhotos.forEach((p, i) => {
+    if (!p.analysis) return;
+    const n = i + 1; const a = p.analysis;
+    sec.push(`\n${t("photo_word")} ${n}${a.location ? " — " + a.location : ""}: ${a.summary || ""}`);
+    (a.findings || []).forEach((f) => {
+      const conf = f.confidence ? ` (${f.confidence})` : "";
+      sec.push(`  • [${sev(f.severity)}] ${f.issue || ""}${f.recommendation ? " → " + f.recommendation : ""}${conf}`);
+    });
+  });
+  transcriptText = text + sec.join("\n");
+  document.getElementById("transcriptBox").textContent = transcriptText;
+  document.getElementById("s1").textContent = transcriptText.split(/\s+/).filter(Boolean).length.toLocaleString();
 }
 
 /* ---- Email / Share ---- */
