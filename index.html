@@ -861,6 +861,7 @@
       <select id="analysisModeSelect" class="field-input" style="height:40px;" onchange="onAnalysisModeChange()">
         <option value="building" data-i18n="mode_building">🏠 בדיקת מבנה</option>
         <option value="document" data-i18n="mode_document">📄 מסמכים / מצגות</option>
+        <option value="nature" data-i18n="mode_nature">🏞️ נוף וטבע</option>
       </select>
     </div>
     <input type="file" id="inspectInput" accept="image/*" multiple style="display:none" onchange="addInspectPhotos(this.files)" />
@@ -1354,6 +1355,11 @@ const I18N = {
   doc_text:        { he: "טקסט", en: "Text", es: "Texto", fr: "Texte" },
   doc_visuals:     { he: "גרפים / ויזואלים", en: "Charts / visuals", es: "Gráficos / visuales", fr: "Graphiques / visuels" },
   doc_summary:     { he: "תקציר", en: "Summary", es: "Resumen", fr: "Résumé" },
+  mode_nature:     { he: "🏞️ נוף וטבע", en: "🏞️ Landscape & nature", es: "🏞️ Paisaje y naturaleza", fr: "🏞️ Paysage & nature" },
+  nature_title:    { he: "תיאור נוף", en: "Nature description", es: "Descripción de la naturaleza", fr: "Description de la nature" },
+  nat_elements:    { he: "מה בתמונה", en: "What's in the photo", es: "Qué hay en la foto", fr: "Ce qu'on voit" },
+  t_analyze_refused:{ he: "המנוע סירב לנתח את התמונה — ייתכן תוכן רגיש (כמו מסמך מזהה/דרכון/פנים). נסה תמונה אחרת.", en: "The model declined to analyze this image — it may contain sensitive content (e.g. an ID/passport/face). Try a different photo.", es: "El modelo no pudo analizar esta imagen — puede contener contenido sensible (p. ej. un documento de identidad/pasaporte/rostro). Prueba otra foto.", fr: "Le modèle a refusé d'analyser cette image — elle peut contenir du contenu sensible (p. ex. une pièce d'identité/passeport/visage). Essayez une autre photo." },
+  t_analyze_unknown:{ he: "שגיאה לא ידועה", en: "Unknown error", es: "Error desconocido", fr: "Erreur inconnue" },
   t_analyze_working:{ he: "⏳ מנתח תמונות", en: "⏳ Analyzing photos", es: "⏳ Analizando fotos", fr: "⏳ Analyse des photos" },
   t_analyze_done:  { he: "✓ ניתוח התמונות הושלם", en: "✓ Photo analysis complete", es: "✓ Análisis de fotos completado", fr: "✓ Analyse des photos terminée" },
   t_analyze_err:   { he: "שגיאה בניתוח התמונות: ", en: "Photo analysis error: ", es: "Error al analizar las fotos: ", fr: "Erreur d'analyse des photos : " },
@@ -2421,8 +2427,22 @@ function documentSysPrompt() {
     `"summary": string (key takeaways)}. Do not invent text you cannot read; if unclear, note it. ` +
     `Respond in ${langName()}, but keep proper nouns and numbers exactly as shown.`;
 }
-function analysisSysPrompt() { return analysisMode === "document" ? documentSysPrompt() : inspectionSysPrompt(); }
-function analysisSectionTitle() { return analysisMode === "document" ? t("docs_title") : t("findings_title"); }
+function natureSysPrompt() {
+  return `You are a knowledgeable naturalist describing a landscape or nature photo. Return ONLY JSON: ` +
+    `{"scene": string (the type of landscape/setting), ` +
+    `"elements": string (plants, trees, animals, rocks/geological or water features you can identify — be conservative and note uncertainty), ` +
+    `"summary": string (a short, engaging description)}. Do not invent species you cannot identify. Respond in ${langName()}.`;
+}
+function analysisSysPrompt() {
+  return analysisMode === "document" ? documentSysPrompt()
+    : analysisMode === "nature" ? natureSysPrompt()
+    : inspectionSysPrompt();
+}
+function analysisSectionTitle() {
+  return analysisMode === "document" ? t("docs_title")
+    : analysisMode === "nature" ? t("nature_title")
+    : t("findings_title");
+}
 // Format one photo's analysis into report lines (building findings OR document content).
 function formatAnalysisBlock(a, n) {
   const out = [];
@@ -2432,6 +2452,10 @@ function formatAnalysisBlock(a, n) {
       const conf = f.confidence ? ` (${f.confidence})` : "";
       out.push(`  • [${sevLabel(f.severity)}] ${f.issue || ""}${f.recommendation ? " → " + f.recommendation : ""}${conf}`);
     });
+  } else if (a.scene !== undefined || a.elements !== undefined) {
+    out.push(`${t("photo_word")} ${n}${a.scene ? " — " + a.scene : ""}`);
+    if (a.elements) out.push(`${t("nat_elements")}: ${a.elements}`);
+    if (a.summary) out.push(`${t("doc_summary")}: ${a.summary}`);
   } else {
     out.push(`${t("photo_word")} ${n}${a.title ? " — " + a.title : ""}`);
     if (a.text) out.push(`${t("doc_text")}: ${a.text}`);
@@ -2441,7 +2465,7 @@ function formatAnalysisBlock(a, n) {
   return out;
 }
 function analysisInlineSummary(a) {
-  return (a.summary || a.title || (a.text || "").slice(0, 80) || "").trim();
+  return (a.summary || a.scene || a.title || (a.text || "").slice(0, 80) || "").trim();
 }
 // Analyze one photo with GPT-4o vision; returns the parsed analysis object.
 async function visionAnalyzeOne(blob, apiKey, sys, idx) {
@@ -2454,16 +2478,25 @@ async function visionAnalyzeOne(blob, apiKey, sys, idx) {
       messages: [
         { role: "system", content: sys },
         { role: "user", content: [
-          { type: "text", text: `Photo ${idx + 1}. Analyze it for a building inspection.` },
+          { type: "text", text: `Photo ${idx + 1}.` },
           { type: "image_url", image_url: { url: dataUrl, detail: "auto" } },
         ] },
       ],
     }),
   });
-  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || res.statusText); }
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    const m = (e.error && e.error.message) || res.statusText || ("HTTP " + res.status);
+    // ID docs / faces / sensitive content are blocked by OpenAI's safety system.
+    throw new Error(/safety|policy|content|moderation|reject/i.test(m) ? t("t_analyze_refused") : m);
+  }
   const data = await res.json();
-  try { return JSON.parse(data.choices[0].message.content); }
-  catch (_) { return { location: "", summary: (data.choices?.[0]?.message?.content || "").trim(), findings: [] }; }
+  const msg = data.choices && data.choices[0] && data.choices[0].message;
+  if (msg && msg.refusal) throw new Error(t("t_analyze_refused"));
+  const content = msg && msg.content;
+  if (!content) throw new Error(t("t_analyze_refused"));
+  try { return JSON.parse(content); }
+  catch (_) { return { summary: content.trim() }; } // non-JSON → still show what came back
 }
 function sevLabel(s) { return ({ major: t("sev_major"), minor: t("sev_minor"), safety: t("sev_safety"), ok: t("sev_ok") }[s] || s || ""); }
 
@@ -2486,7 +2519,7 @@ async function analyzePhotos(btn) {
     weavePhotoAnalysis();
     showToast(t("t_analyze_done"), "success");
   } catch (e) {
-    showToast(t("t_analyze_err") + e.message, "error");
+    showToast(t("t_analyze_err") + ((e && e.message) ? e.message : t("t_analyze_unknown")), "error");
   } finally {
     btn.disabled = false;
     btn.textContent = orig;
@@ -2551,7 +2584,7 @@ async function analyzeInspectPhotos(btn) {
     renderInspectionReport();
     showToast(t("t_analyze_done"), "success");
   } catch (e) {
-    showToast(t("t_analyze_err") + e.message, "error");
+    showToast(t("t_analyze_err") + ((e && e.message) ? e.message : t("t_analyze_unknown")), "error");
   } finally {
     btn.disabled = false;
     btn.textContent = orig;
