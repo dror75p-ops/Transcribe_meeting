@@ -573,6 +573,8 @@
     letter-spacing: 0.3px; transition: background 0.15s;
   }
   .btn-claude:hover { background: #6d28d9; }
+  .btn-claude:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-claude:disabled:hover { background: #7c3aed; }
   .email-row { display: flex; gap: 8px; }
   .email-row input {
     flex: 1; height: 40px; padding: 0 14px; border: 1px solid var(--border);
@@ -872,15 +874,11 @@
   <!-- PHOTO INSPECTION VIEW -->
   <div id="viewInspect" class="hidden">
     <div class="card">
-      <div class="card-title" data-i18n="inspect_title">🔍 בדיקת מבנה מתמונות</div>
-      <div class="field-hint" style="margin-bottom:12px;" data-i18n="inspect_hint">צלם או העלה תמונות של פנים/חוץ הבית — וקבל ניתוח מקצועי. ללא הקלטה.</div>
-      <div class="field-group" style="margin-bottom:12px;">
-        <div class="field-label" data-i18n="lbl_analysis_mode">סוג ניתוח</div>
-        <select id="analysisModeSelect" class="field-input" style="height:40px;" onchange="onAnalysisModeChange()">
-          <option value="building" data-i18n="mode_building">🏠 בדיקת מבנה</option>
-          <option value="document" data-i18n="mode_document">📄 מסמכים / מצגות</option>
-          <option value="nature" data-i18n="mode_nature">🏞️ נוף וטבע</option>
-        </select>
+      <div class="chip-row" id="analysisModeChips" style="margin-bottom:10px;">
+        <span class="chip active" data-mode="building" onclick="setAnalysisMode(this,'building')" data-i18n="mode_building">🏠 בדיקת מבנה</span>
+        <span class="chip" data-mode="document" onclick="setAnalysisMode(this,'document')" data-i18n="mode_document">📄 מסמכים</span>
+        <span class="chip" data-mode="nature" onclick="setAnalysisMode(this,'nature')" data-i18n="mode_nature">🏞️ נוף</span>
+        <span class="chip" data-mode="lean5s" onclick="setAnalysisMode(this,'lean5s')" data-i18n="mode_lean5s">🏭 Lean 5S</span>
       </div>
       <input type="file" id="inspectCamInput" accept="image/*" capture="environment" style="display:none" onchange="addInspectPhotos(this.files)" />
       <input type="file" id="inspectInput" accept="image/*" multiple style="display:none" onchange="addInspectPhotos(this.files)" />
@@ -889,7 +887,7 @@
         <button class="btn-sm" onclick="document.getElementById('inspectInput').click()" data-i18n="btn_upload">🖼️ העלה</button>
       </div>
       <div id="inspectStrip" class="photo-strip"></div>
-      <button class="btn-claude" id="inspectAnalyzeBtn" onclick="analyzeInspectPhotos(this)" data-i18n="btn_analyze" style="display:none;margin-top:12px;">🔍 נתח תמונות</button>
+      <button class="btn-claude" id="inspectAnalyzeBtn" onclick="analyzeInspectPhotos(this)" data-i18n="btn_analyze" style="margin-top:12px;" disabled>🔍 נתח תמונות</button>
       <div id="inspectResultWrap" style="display:none;margin-top:14px;">
         <div class="transcript-box" id="inspectResult" dir="auto"></div>
         <div class="action-row" style="margin-top:8px;">
@@ -1388,6 +1386,11 @@ const I18N = {
   mode_nature:     { he: "🏞️ נוף וטבע", en: "🏞️ Landscape & nature", es: "🏞️ Paisaje y naturaleza", fr: "🏞️ Paysage & nature" },
   nature_title:    { he: "תיאור נוף", en: "Nature description", es: "Descripción de la naturaleza", fr: "Description de la nature" },
   nat_elements:    { he: "מה בתמונה", en: "What's in the photo", es: "Qué hay en la foto", fr: "Ce qu'on voit" },
+  mode_lean5s:     { he: "🏭 Lean 5S", en: "🏭 Lean 5S", es: "🏭 Lean 5S", fr: "🏭 Lean 5S" },
+  lean5s_title:    { he: "ניתוח Lean 5S", en: "Lean 5S Analysis", es: "Análisis Lean 5S", fr: "Analyse Lean 5S" },
+  lean5s_area:     { he: "אזור עבודה", en: "Work area", es: "Área de trabajo", fr: "Zone de travail" },
+  lean5s_scores:   { he: "ציוני 5S", en: "5S Scores", es: "Puntuaciones 5S", fr: "Notes 5S" },
+  lean5s_score:    { he: "ציון כולל", en: "Overall score", es: "Puntuación global", fr: "Score global" },
   t_analyze_refused:{ he: "המנוע סירב לנתח את התמונה — ייתכן תוכן רגיש (כמו מסמך מזהה/דרכון/פנים). נסה תמונה אחרת.", en: "The model declined to analyze this image — it may contain sensitive content (e.g. an ID/passport/face). Try a different photo.", es: "El modelo no pudo analizar esta imagen — puede contener contenido sensible (p. ej. un documento de identidad/pasaporte/rostro). Prueba otra foto.", fr: "Le modèle a refusé d'analyser cette image — elle peut contenir du contenu sensible (p. ex. une pièce d'identité/passeport/visage). Essayez une autre photo." },
   t_analyze_unknown:{ he: "שגיאה לא ידועה", en: "Unknown error", es: "Error desconocido", fr: "Erreur inconnue" },
   t_analyze_working:{ he: "⏳ מנתח תמונות", en: "⏳ Analyzing photos", es: "⏳ Analizando fotos", fr: "⏳ Analyse des photos" },
@@ -2447,11 +2450,13 @@ function undoLabelSpeakers() {
 function blobToDataURL(blob) {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
 }
-let analysisMode = "building"; // "building" | "document"
-function onAnalysisModeChange() {
-  const sel = document.getElementById("analysisModeSelect");
-  if (sel) analysisMode = sel.value;
+let analysisMode = "building";
+function setAnalysisMode(el, mode) {
+  analysisMode = mode;
+  document.querySelectorAll("#analysisModeChips .chip").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
 }
+function onAnalysisModeChange() {} // kept for backward compat
 function langName() { return { he: "Hebrew", en: "English", es: "Spanish", fr: "French" }[currentLang] || "English"; }
 function inspectionSysPrompt() {
   return `You are a professional building inspector examining a photo of a home or building (interior or exterior). ` +
@@ -2474,20 +2479,48 @@ function natureSysPrompt() {
     `"elements": string (plants, trees, animals, rocks/geological or water features you can identify — be conservative and note uncertainty), ` +
     `"summary": string (a short, engaging description)}. Do not invent species you cannot identify. Respond in ${langName()}.`;
 }
+function lean5sSysPrompt() {
+  return `You are a senior OPEX (Operational Excellence) consultant conducting a Lean 5S workplace audit. ` +
+    `Analyze the workspace photo and assess 5S compliance across all five pillars. ` +
+    `Return ONLY JSON: {"area": string (type of workspace/area), "summary": string (one-sentence overall 5S status), ` +
+    `"overall_score": number 1-5, ` +
+    `"scores": {"sort": number 1-5, "set_in_order": number 1-5, "shine": number 1-5, "standardize": number 1-5, "sustain": number 1-5}, ` +
+    `"findings": [{"pillar": "Sort"|"Set in Order"|"Shine"|"Standardize"|"Sustain", ` +
+    `"observation": string (what you see), "issue": string (the 5S gap or non-compliance), ` +
+    `"recommendation": string (specific corrective action), "priority": "high"|"medium"|"low"}]}. ` +
+    `Score 1=very poor, 3=acceptable, 5=exemplary. Only note what is visible in the photo. ` +
+    `Be precise and actionable — use lean terminology. Respond in ${langName()}.`;
+}
 function analysisSysPrompt() {
   return analysisMode === "document" ? documentSysPrompt()
     : analysisMode === "nature" ? natureSysPrompt()
+    : analysisMode === "lean5s" ? lean5sSysPrompt()
     : inspectionSysPrompt();
 }
 function analysisSectionTitle() {
   return analysisMode === "document" ? t("docs_title")
     : analysisMode === "nature" ? t("nature_title")
+    : analysisMode === "lean5s" ? t("lean5s_title")
     : t("findings_title");
 }
 // Format one photo's analysis into report lines (building findings OR document content).
 function formatAnalysisBlock(a, n) {
   const out = [];
-  if (Array.isArray(a.findings)) {
+  if (a.scores !== undefined || a.overall_score !== undefined) {
+    // Lean 5S output
+    out.push(`${t("photo_word")} ${n}${a.area ? " — " + a.area : ""}: ${a.summary || ""}`);
+    if (a.overall_score) out.push(`${t("lean5s_score")}: ${a.overall_score}/5`);
+    if (a.scores) {
+      const s = a.scores;
+      out.push(`${t("lean5s_scores")}: Sort ${s.sort||"?"}/5 · Set ${s.set_in_order||"?"}/5 · Shine ${s.shine||"?"}/5 · Standardize ${s.standardize||"?"}/5 · Sustain ${s.sustain||"?"}/5`);
+    }
+    if (Array.isArray(a.findings)) {
+      a.findings.forEach((f) => {
+        const pri = f.priority ? ` [${f.priority}]` : "";
+        out.push(`  • [${f.pillar || ""}${pri}] ${f.observation || ""}${f.issue ? " → " + f.issue : ""}${f.recommendation ? " ✦ " + f.recommendation : ""}`);
+      });
+    }
+  } else if (Array.isArray(a.findings)) {
     out.push(`${t("photo_word")} ${n}${a.location ? " — " + a.location : ""}: ${a.summary || ""}`);
     a.findings.forEach((f) => {
       const conf = f.confidence ? ` (${f.confidence})` : "";
@@ -2506,7 +2539,7 @@ function formatAnalysisBlock(a, n) {
   return out;
 }
 function analysisInlineSummary(a) {
-  return (a.summary || a.scene || a.title || (a.text || "").slice(0, 80) || "").trim();
+  return (a.summary || a.scene || a.title || a.area || (a.text || "").slice(0, 80) || "").trim();
 }
 // Analyze one photo with GPT-4o vision; returns the parsed analysis object.
 async function visionAnalyzeOne(blob, apiKey, sys, idx) {
@@ -2599,7 +2632,7 @@ function renderInspectStrip() {
   strip.innerHTML = inspectPhotos.map((p, i) =>
     `<div class="photo-thumb"><img src="${p.url}" alt=""><button class="photo-del" onclick="removeInspectPhoto(${i})" title="✕">✕</button></div>`
   ).join("");
-  document.getElementById("inspectAnalyzeBtn").style.display = inspectPhotos.length ? "inline-flex" : "none";
+  document.getElementById("inspectAnalyzeBtn").disabled = !inspectPhotos.length;
 }
 function removeInspectPhoto(i) {
   if (inspectPhotos[i]) { try { URL.revokeObjectURL(inspectPhotos[i].url); } catch (_) {} inspectPhotos.splice(i, 1); renderInspectStrip(); }
