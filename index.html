@@ -624,6 +624,70 @@
 
   .hidden { display: none !important; }
 
+  /* ── MODE TABS ───────────────────────────── */
+  .mode-tabs {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: #f9fafb;
+    margin-bottom: 1.5rem;
+  }
+  .mode-tab {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--muted);
+    transition: background 0.15s, color 0.15s;
+    text-align: center;
+  }
+  .mode-tab.active { background: var(--navy); color: #fff; }
+  .mode-tab:hover:not(.active) { background: var(--cobalt-light); color: var(--cobalt); }
+
+  /* ── PICTURE MODE ────────────────────────── */
+  .img-preview-box {
+    margin-top: 12px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: #f9fafb;
+    text-align: center;
+  }
+  .img-preview-box img {
+    max-width: 100%;
+    max-height: 380px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+  }
+  .btn-analyze {
+    width: 100%;
+    height: 52px;
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.22);
+  }
+  .btn-analyze:hover:not(:disabled) { background: #6d28d9; box-shadow: 0 4px 16px rgba(124,58,237,0.3); }
+  .btn-analyze:active:not(:disabled) { transform: scale(0.99); }
+  .btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
   /* ── RESPONSIVE ──────────────────────────── */
   @media (max-width: 520px) {
     .page { padding: 1.5rem 1rem 4rem; }
@@ -651,6 +715,13 @@
   <div class="page-title">🎙️ תמלול ישיבות לעברית</div>
   <div class="page-sub">העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI Whisper</div>
 
+  <!-- MODE TABS -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="audio" onclick="switchMode('audio')">🎙️ מצב שמע</button>
+    <button class="mode-tab" data-mode="picture" onclick="switchMode('picture')">🖼️ מצב תמונה</button>
+  </div>
+
+  <div id="audioMode">
   <!-- API KEY -->
   <div class="card">
     <div class="card-title">🔑 OpenAI API Key</div>
@@ -828,6 +899,93 @@
     </div>
     <div id="historyList"><div class="empty-history">עדיין אין תמלולים שמורים</div></div>
   </div>
+  </div><!-- /audioMode -->
+
+  <!-- PICTURE MODE -->
+  <div id="pictureMode" class="hidden">
+
+    <!-- IMAGE UPLOAD -->
+    <div class="card">
+      <div class="card-title">🖼️ תמונה לניתוח</div>
+
+      <div class="drop-zone" id="imgDropZone"
+        onclick="document.getElementById('imageInput').click()"
+        ondragover="onImgDragOver(event)"
+        ondragleave="onImgDragLeave(event)"
+        ondrop="onImgDrop(event)">
+        <div class="drop-icon">🖼️</div>
+        <div class="drop-title">לחץ להעלאת תמונה או גרור לכאן</div>
+        <div class="drop-sub">JPG · PNG · GIF · WEBP · עד 20MB</div>
+      </div>
+      <input type="file" id="imageInput" accept="image/*" onchange="onImageSelect(this.files[0])" />
+
+      <div id="imgPreviewContainer" class="hidden">
+        <div class="img-preview-box">
+          <img id="imgPreview" src="" alt="תצוגה מקדימה" />
+        </div>
+        <div class="file-preview" style="margin-top:8px;">
+          <div class="file-icon">🖼️</div>
+          <div class="file-details">
+            <div class="file-name" id="imgFileName"></div>
+            <div class="file-size" id="imgFileSize"></div>
+          </div>
+          <button class="btn-remove" onclick="removeImage()" title="הסר תמונה">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSIS PROMPT -->
+    <div class="card">
+      <div class="card-title">📝 מה לנתח? (אופציונלי)</div>
+      <div class="field-group">
+        <div class="chip-row">
+          <span class="chip" onclick="applyImgChip(this,'תאר את התמונה בפירוט')">🔍 תיאור כללי</span>
+          <span class="chip" onclick="applyImgChip(this,'חלץ את כל הטקסט מהתמונה')">📄 חילוץ טקסט</span>
+          <span class="chip" onclick="applyImgChip(this,'סכם את הנושאים העיקריים בשקף המצגת')">📊 סיכום שקף</span>
+          <span class="chip" onclick="applyImgChip(this,'תאר את הלוח הלבן וחלץ את כל הנקודות')">✏️ לוח לבן</span>
+          <span class="chip" onclick="applyImgChip(this,'זהה ותאר את הגרף או הדיאגרמה')">📈 גרף/דיאגרמה</span>
+        </div>
+        <textarea id="imgPrompt" class="field-input"
+          placeholder="לדוגמה: חלץ את כל הטקסט מהשקף ותסכם את הנקודות העיקריות"></textarea>
+        <div class="field-hint">השאר ריק לתיאור אוטומטי של התמונה</div>
+      </div>
+    </div>
+
+    <!-- ANALYZE BUTTON -->
+    <button class="btn-analyze" id="analyzeBtn" onclick="startImageAnalysis()" disabled>
+      🔍&nbsp; נתח תמונה
+    </button>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap hidden" id="imgProgressWrap">
+      <div class="progress-label" id="imgProgressLabel">מנתח תמונה...</div>
+      <div class="progress-track"><div class="progress-fill" id="imgProgressFill" style="width:60%"></div></div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="error-box" id="imgErrorBox"></div>
+
+    <!-- RESULT -->
+    <div class="card result-card" id="imgResultCard" style="margin-top:1.25rem;">
+      <div class="result-header">
+        <div class="result-title">🔍 תוצאות ניתוח</div>
+        <div class="action-row">
+          <button class="btn-action" onclick="copyImageAnalysis(this)">📋 העתק</button>
+        </div>
+      </div>
+      <div class="transcript-box" id="imgResultBox" dir="rtl"></div>
+
+      <div class="claude-section">
+        <div class="card-title">🤖 עיבוד נוסף עם Claude</div>
+        <textarea class="claude-instructions" id="imgClaudeInstructions"
+          placeholder="הנחיות נוספות לעיבוד (אופציונלי)...">אנא עבד את תוצאות הניתוח ותסכם את הנקודות העיקריות:</textarea>
+        <button class="btn-claude" onclick="openImageInClaude()">✨ פתח ב-Claude לעיבוד</button>
+        <div class="email-hint" style="margin-top:7px;">מעתיק את הניתוח + ההנחיות ופותח Claude — הדבק ושלח</div>
+      </div>
+    </div>
+
+  </div><!-- /pictureMode -->
+
 </div>
 
 <!-- GOOGLE DRIVE SAVE PANEL -->
@@ -1884,6 +2042,137 @@ window.addEventListener("beforeunload", function(e) {
     e.returnValue = "התמלול עדיין פעיל — האם אתם בטוחים שברצונכם לצאת?";
   }
 });
+
+/* ---- Picture Mode ---- */
+let currentImage = null;
+let imageAnalysisText = "";
+
+function switchMode(mode) {
+  document.querySelectorAll(".mode-tab").forEach(t => t.classList.remove("active"));
+  document.querySelector(`.mode-tab[data-mode="${mode}"]`).classList.add("active");
+  const isAudio = mode === "audio";
+  document.getElementById("audioMode").classList.toggle("hidden", !isAudio);
+  document.getElementById("pictureMode").classList.toggle("hidden", isAudio);
+}
+
+function onImageSelect(file) {
+  if (!file) return;
+  if (!file.type.startsWith("image/")) { showToast("יש לבחור קובץ תמונה", "error"); return; }
+  if (file.size > 20 * 1024 * 1024) { showToast("התמונה גדולה מדי — מקסימום 20MB", "error"); return; }
+  currentImage = file;
+  document.getElementById("imgFileName").textContent = file.name;
+  document.getElementById("imgFileSize").textContent = (file.size / 1024 / 1024).toFixed(2) + " MB";
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById("imgPreview").src = e.target.result;
+    document.getElementById("imgDropZone").classList.add("hidden");
+    document.getElementById("imgPreviewContainer").classList.remove("hidden");
+    document.getElementById("analyzeBtn").disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage() {
+  currentImage = null;
+  document.getElementById("imgPreview").src = "";
+  document.getElementById("imgDropZone").classList.remove("hidden");
+  document.getElementById("imgPreviewContainer").classList.add("hidden");
+  document.getElementById("analyzeBtn").disabled = true;
+  document.getElementById("imageInput").value = "";
+}
+
+function onImgDragOver(e) { e.preventDefault(); e.currentTarget.classList.add("drag-over"); }
+function onImgDragLeave(e) { e.currentTarget.classList.remove("drag-over"); }
+function onImgDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove("drag-over");
+  const f = e.dataTransfer.files[0];
+  if (f) onImageSelect(f);
+}
+
+function applyImgChip(el, text) {
+  document.querySelectorAll("#pictureMode .chip").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("imgPrompt").value = text;
+}
+
+async function startImageAnalysis() {
+  const key = localStorage.getItem("da_api_key");
+  if (!key) { showToast("נא לשמור מפתח OpenAI API", "error"); return; }
+  if (!currentImage) { showToast("נא לבחור תמונה", "error"); return; }
+
+  const prompt = document.getElementById("imgPrompt").value.trim() ||
+    "תאר את התמונה הזו בפירוט. אם יש טקסט — חלץ אותו. אם זה שקף מצגת — סכם את הנושאים העיקריים.";
+
+  const dataUrl = await new Promise(res => {
+    const reader = new FileReader();
+    reader.onload = e => res(e.target.result);
+    reader.readAsDataURL(currentImage);
+  });
+  const base64 = dataUrl.split(",")[1];
+  const mimeType = currentImage.type || "image/jpeg";
+
+  document.getElementById("analyzeBtn").disabled = true;
+  document.getElementById("imgProgressWrap").classList.remove("hidden");
+  document.getElementById("imgProgressLabel").textContent = "מנתח תמונה...";
+  document.getElementById("imgErrorBox").style.display = "none";
+  document.getElementById("imgResultCard").style.display = "none";
+
+  try {
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image_url", image_url: { url: "data:" + mimeType + ";base64," + base64 } },
+            { type: "text", text: prompt }
+          ]
+        }],
+        max_tokens: 2000
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || "שגיאת API: " + resp.status);
+    }
+
+    const data = await resp.json();
+    imageAnalysisText = data.choices?.[0]?.message?.content || "";
+    document.getElementById("imgResultBox").textContent = imageAnalysisText;
+    document.getElementById("imgResultCard").style.display = "block";
+    showToast("הניתוח הושלם ✓", "success");
+  } catch(e) {
+    const box = document.getElementById("imgErrorBox");
+    box.textContent = e.message;
+    box.style.display = "block";
+    showToast("שגיאה בניתוח", "error");
+  } finally {
+    document.getElementById("analyzeBtn").disabled = false;
+    document.getElementById("imgProgressWrap").classList.add("hidden");
+  }
+}
+
+function copyImageAnalysis(btn) {
+  if (!imageAnalysisText) return;
+  navigator.clipboard.writeText(imageAnalysisText).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = "✓ הועתק";
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+function openImageInClaude() {
+  const instructions = document.getElementById("imgClaudeInstructions").value.trim();
+  const full = instructions ? instructions + "\n\n" + imageAnalysisText : imageAnalysisText;
+  navigator.clipboard.writeText(full).then(() => {
+    window.open("https://claude.ai", "_blank");
+    showToast("הועתק — הדבק ב-Claude", "success");
+  });
+}
 </script>
 </body>
 </html>
