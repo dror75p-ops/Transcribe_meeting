@@ -6,33 +6,37 @@
   <title>in-site — Card Preview</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    /* Preview page background only — not part of the card */
     body {
       margin: 0;
-      padding: 40px 20px;
-      background: #f1f5f9;
+      padding: 48px 20px;
+      background: #eef2f7;
       font-family: 'Inter', system-ui, sans-serif;
       display: flex;
       justify-content: center;
     }
 
     /*
-    ================================================================
-    EMBED: copy the <style> block + <div class="da-tool-card"> block
-    into your site's HTML embed widget.
-    ================================================================
+    =====================================================================
+    EMBED INSTRUCTIONS
+    Copy the <style> block below AND the <div class="da-tool-card"> block
+    into your website's HTML / Custom-Code embed widget.
+    =====================================================================
     */
 
     .da-tool-card {
       background: #ffffff;
-      border-radius: 20px;
-      padding: 32px 28px 28px;
+      border-radius: 22px;
+      padding: 34px 30px 30px;
       max-width: 400px;
       width: 100%;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.07);
-      font-family: 'Inter', system-ui, sans-serif;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04),
+                  0 10px 32px rgba(15, 23, 42, 0.08);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      box-sizing: border-box;
     }
 
-    /* Icon square */
+    /* Icon tile — light blue square with a clean blue line icon */
     .da-icon {
       width: 56px;
       height: 56px;
@@ -41,111 +45,98 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
+    }
+    .da-icon svg {
+      width: 28px;
+      height: 28px;
+      display: block;
     }
 
     /* FREE TOOL badge */
     .da-badge {
       display: inline-block;
-      background: #dbeafe;
-      color: #1d4ed8;
-      font-size: 11px;
+      color: #2563eb;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.09em;
       text-transform: uppercase;
-      padding: 3px 10px;
-      border-radius: 6px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     /* Title */
     .da-title {
-      font-size: 21px;
+      font-size: 23px;
       font-weight: 800;
       color: #0f172a;
-      line-height: 1.3;
-      margin-bottom: 12px;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 14px;
     }
 
-    /* Body text */
+    /* Description */
     .da-body {
       font-size: 15px;
       color: #64748b;
       line-height: 1.7;
-      margin-bottom: 8px;
+      margin: 0 0 26px;
     }
 
-    /* Secondary note */
-    .da-note {
-      font-size: 13px;
-      color: #94a3b8;
-      line-height: 1.6;
-      margin-bottom: 24px;
-    }
-
-    /* Divider */
-    .da-divider {
-      border: none;
-      border-top: 1px solid #f1f5f9;
-      margin: 0 0 20px;
-    }
-
-    /* CTA link — matches "Access portal →" style */
+    /* CTA link — matches the site's "Access portal →" style */
     .da-link {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      color: #1d4ed8;
+      gap: 8px;
+      color: #2563eb;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       text-decoration: none;
+      transition: gap 0.15s ease;
     }
-
+    .da-link svg {
+      width: 18px;
+      height: 18px;
+    }
     .da-link:hover {
-      color: #1e40af;
-      text-decoration: underline;
-    }
-
-    /* Footer */
-    .da-footer {
-      font-size: 12px;
-      color: #cbd5e1;
-      margin-top: 16px;
+      gap: 12px;
+      color: #1d4ed8;
     }
   </style>
 </head>
 <body>
 
-<!-- ============ COPY BELOW THIS LINE ============ -->
+<!-- =================  COPY FROM HERE  ================= -->
 
 <div class="da-tool-card">
 
-  <div class="da-icon">📸</div>
+  <div class="da-icon">
+    <!-- camera line icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+      <circle cx="12" cy="13" r="3.2"/>
+    </svg>
+  </div>
 
   <div class="da-badge">Free Tool</div>
 
-  <div class="da-title">in-site · AI Property Inspector</div>
+  <h3 class="da-title">AI Property Inspector</h3>
 
   <p class="da-body">
-    Photo inspection powered by AI. Take or upload site photos and get instant findings on defects, safety risks, and maintenance issues — with annotated photos and a print-ready report.
+    Snap or upload site photos and get instant AI findings on defects, safety risks, and maintenance issues — annotate the photos and export a print-ready inspection report. Also handles document analysis, Lean 5S audits, and meeting transcription.
   </p>
-
-  <p class="da-note">
-    Also includes: document analysis · Lean 5S audits · meeting transcription
-  </p>
-
-  <hr class="da-divider">
 
   <a class="da-link" href="https://dror75p-ops.github.io/Transcribe_meeting/" target="_blank" rel="noopener noreferrer">
-    Open in-site &rarr;
+    Open tool
+    <!-- arrow icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"/>
+      <polyline points="12 5 19 12 12 19"/>
+    </svg>
   </a>
-
-  <p class="da-footer">Free · Uses your OpenAI API key · No data stored</p>
 
 </div>
 
-<!-- ============ COPY UP TO HERE ============ -->
+<!-- =================  COPY UP TO HERE  ================= -->
 
 </body>
 </html>
