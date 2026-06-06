@@ -3,168 +3,149 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>in-site · AI Photo Inspector — Card Preview</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>in-site — Card Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: #f1f5f9;
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+    }
+
     /*
     ================================================================
-    HOW TO EMBED THIS CARD ON YOUR WEBSITE
-    ================================================================
-    Copy the <style> block AND the <div class="insite-card"> block
-    into your website builder's HTML embed widget.
-
-    Any site builder  → HTML embed / Custom HTML block → paste
+    EMBED: copy the <style> block + <div class="da-tool-card"> block
+    into your site's HTML embed widget.
     ================================================================
     */
 
-    /* Page wrapper — for standalone preview only */
-    body {
-      margin: 0;
-      padding: 32px 16px;
-      background: #f1f5f9;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      display: flex;
-      justify-content: center;
-    }
-
-    /* ── Card — matches Doryangel tool card style ── */
-    .insite-card {
+    .da-tool-card {
       background: #ffffff;
-      border-radius: 16px;
-      padding: 28px 24px 24px;
-      max-width: 420px;
+      border-radius: 20px;
+      padding: 32px 28px 28px;
+      max-width: 400px;
       width: 100%;
-      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.07);
+      font-family: 'Inter', system-ui, sans-serif;
     }
 
-    /* Icon — light blue rounded square, sits alone at top */
-    .ic-icon {
-      width: 52px;
-      height: 52px;
-      background: #dbeafe;
-      border-radius: 12px;
+    /* Icon square */
+    .da-icon {
+      width: 56px;
+      height: 56px;
+      background: #eff6ff;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 26px;
-      margin-bottom: 14px;
+      font-size: 28px;
+      margin-bottom: 18px;
     }
 
-    /* Badge */
-    .ic-badge {
+    /* FREE TOOL badge */
+    .da-badge {
       display: inline-block;
+      background: #dbeafe;
       color: #1d4ed8;
       font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    /* Title */
-    .ic-title {
-      font-size: 20px;
       font-weight: 700;
-      color: #0f172a;
-      line-height: 1.25;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 6px;
       margin-bottom: 12px;
     }
 
-    /* Description */
-    .ic-subtitle {
-      font-size: 14px;
-      color: #64748b;
-      line-height: 1.65;
-      margin-bottom: 16px;
+    /* Title */
+    .da-title {
+      font-size: 21px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+      margin-bottom: 12px;
     }
 
-    /* Feature list */
-    .ic-features {
-      list-style: none;
-      margin: 0 0 20px 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .ic-features li {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 14px;
-      color: #334155;
-      line-height: 1.5;
-    }
-
-    .ic-features li .em {
+    /* Body text */
+    .da-body {
       font-size: 15px;
-      flex-shrink: 0;
-      margin-top: 1px;
+      color: #64748b;
+      line-height: 1.7;
+      margin-bottom: 8px;
     }
 
-    /* CTA — text link style matching "Access portal →" */
-    .ic-cta {
+    /* Secondary note */
+    .da-note {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* Divider */
+    .da-divider {
+      border: none;
+      border-top: 1px solid #f1f5f9;
+      margin: 0 0 20px;
+    }
+
+    /* CTA link — matches "Access portal →" style */
+    .da-link {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       color: #1d4ed8;
       font-size: 15px;
       font-weight: 600;
       text-decoration: none;
     }
 
-    .ic-cta:hover {
+    .da-link:hover {
       color: #1e40af;
       text-decoration: underline;
     }
 
-    /* Footer note */
-    .ic-footer {
+    /* Footer */
+    .da-footer {
       font-size: 12px;
-      color: #94a3b8;
-      margin-top: 14px;
-      line-height: 1.5;
+      color: #cbd5e1;
+      margin-top: 16px;
     }
   </style>
 </head>
 <body>
 
-<!-- ================================================================
-  COPY FROM HERE ↓
-  ================================================================ -->
+<!-- ============ COPY BELOW THIS LINE ============ -->
 
-<div class="insite-card">
+<div class="da-tool-card">
 
-  <div class="ic-icon">📸</div>
+  <div class="da-icon">📸</div>
 
-  <div class="ic-badge">Free Tool</div>
+  <div class="da-badge">Free Tool</div>
 
-  <div class="ic-title">in-site · AI Property Inspector</div>
+  <div class="da-title">in-site · AI Property Inspector</div>
 
-  <p class="ic-subtitle">
-    Take or upload property photos and get instant AI-generated inspection findings — defects, safety risks, and maintenance issues identified automatically.
+  <p class="da-body">
+    Photo inspection powered by AI. Take or upload site photos and get instant findings on defects, safety risks, and maintenance issues — with annotated photos and a print-ready report.
   </p>
 
-  <ul class="ic-features">
-    <li><span class="em">📸</span><span>Take or upload photos — analyzed instantly with AI</span></li>
-    <li><span class="em">🏠</span><span>Detects defects, safety risks &amp; maintenance issues</span></li>
-    <li><span class="em">✏️</span><span>Annotate photos with arrows, circles &amp; markers</span></li>
-    <li><span class="em">📊</span><span>Generate professional inspection reports — print or save</span></li>
-  </ul>
+  <p class="da-note">
+    Also includes: document analysis · Lean 5S audits · meeting transcription
+  </p>
 
-  <a class="ic-cta" href="https://dror75p-ops.github.io/Transcribe_meeting/" target="_blank" rel="noopener noreferrer">
+  <hr class="da-divider">
+
+  <a class="da-link" href="https://dror75p-ops.github.io/Transcribe_meeting/" target="_blank" rel="noopener noreferrer">
     Open in-site &rarr;
   </a>
 
-  <p class="ic-footer">Free &middot; Uses your OpenAI API key &middot; No data stored on any server</p>
+  <p class="da-footer">Free · Uses your OpenAI API key · No data stored</p>
 
 </div>
 
-<!-- ================================================================
-  COPY UP TO HERE ↑
-  ================================================================ -->
+<!-- ============ COPY UP TO HERE ============ -->
 
 </body>
 </html>
