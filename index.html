@@ -895,6 +895,13 @@
           <button class="btn-action" onclick="downloadInspect()">💾 TXT</button>
           <button class="btn-action" onclick="generateInspectReport()" data-i18n="btn_report">📊 צור דוח</button>
         </div>
+        <div class="claude-section" style="margin-top:0;padding-top:1rem;">
+          <div class="card-title" data-i18n="inspect_claude_title">🤖 ניתוח עמוק עם Claude</div>
+          <input type="text" id="inspectClaudeSubject" class="field-input" style="margin-bottom:8px;" data-i18n-ph="inspect_claude_subject_ph" placeholder="נושא הביקורת (אופציונלי)..." />
+          <textarea class="claude-instructions" id="inspectClaudeDesc" data-i18n-ph="inspect_claude_desc_ph" oninput="this.dataset.userEdited='1'" placeholder="הנחיות נוספות..."></textarea>
+          <button class="btn-claude" onclick="openInspectClaude()" data-i18n="btn_inspect_claude">✨ פתח ב-Claude לניתוח</button>
+          <div class="email-hint" style="margin-top:7px;" data-i18n="inspect_claude_hint">מעתיק את ממצאי הביקורת + ההנחיות ופותח Claude — הדבק ושלח</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1311,6 +1318,13 @@ const I18N = {
   claude_default:  { he: "אנא סכם את ישיבה זו בצורה מסודרת:\n- כותרת הישיבה\n- משתתפים (אם מוזכרים)\n- נושאים עיקריים שנדונו\n- החלטות שהתקבלו\n- משימות להמשך ואחראים", en: "Please summarize this meeting clearly:\n- Meeting title\n- Participants (if mentioned)\n- Main topics discussed\n- Decisions made\n- Action items and owners", es: "Resume esta reunión de forma clara:\n- Título de la reunión\n- Participantes (si se mencionan)\n- Temas principales\n- Decisiones tomadas\n- Tareas y responsables", fr: "Résumez clairement cette réunion :\n- Titre de la réunion\n- Participants (si mentionnés)\n- Sujets principaux\n- Décisions prises\n- Actions et responsables" },
   btn_claude:      { he: "✨ פתח ב-Claude לסיכום", en: "✨ Open in Claude to summarize", es: "✨ Abrir en Claude para resumir", fr: "✨ Ouvrir dans Claude pour résumer" },
   claude_hint:     { he: "מעתיק את התמלול + ההנחיות ופותח Claude — הדבק ושלח", en: "Copies the transcript + instructions and opens Claude — paste and send", es: "Copia la transcripción + instrucciones y abre Claude — pega y envía", fr: "Copie la transcription + instructions et ouvre Claude — collez et envoyez" },
+  inspect_claude_title:      { he: "🤖 ניתוח עמוק עם Claude", en: "🤖 Deep analysis with Claude", es: "🤖 Análisis profundo con Claude", fr: "🤖 Analyse approfondie avec Claude" },
+  inspect_claude_subject_ph: { he: "נושא הביקורת (אופציונלי)...", en: "Inspection subject (optional)...", es: "Asunto de la inspección (opcional)...", fr: "Sujet de l'inspection (facultatif)..." },
+  inspect_claude_desc_ph:    { he: "הנחיות נוספות (אופציונלי)...", en: "Additional instructions (optional)...", es: "Instrucciones adicionales (opcional)...", fr: "Instructions supplémentaires (facultatif)..." },
+  inspect_claude_default:    { he: "אנא נתח את ממצאי הביקורת הבאים:\n- סיכום מנהלים קצר\n- ממצאים קריטיים הדורשים טיפול מיידי\n- ממצאים משניים\n- המלצות לפי סדר עדיפויות\n- ציון כולל והסבר", en: "Please analyze the following inspection findings:\n- Short executive summary\n- Critical issues requiring immediate attention\n- Minor findings\n- Prioritized recommendations\n- Overall score and explanation", es: "Por favor, analiza los siguientes hallazgos de inspección:\n- Resumen ejecutivo breve\n- Problemas críticos que requieren atención inmediata\n- Hallazgos menores\n- Recomendaciones priorizadas\n- Puntuación general y explicación", fr: "Veuillez analyser les constats d'inspection suivants :\n- Résumé exécutif court\n- Problèmes critiques nécessitant une attention immédiate\n- Constats mineurs\n- Recommandations par ordre de priorité\n- Score global et explication" },
+  btn_inspect_claude:        { he: "✨ פתח ב-Claude לניתוח", en: "✨ Open in Claude to analyze", es: "✨ Abrir en Claude para analizar", fr: "✨ Ouvrir dans Claude pour analyser" },
+  inspect_claude_hint:       { he: "מעתיק את ממצאי הביקורת + ההנחיות ופותח Claude — הדבק ושלח", en: "Copies the inspection findings + instructions and opens Claude — paste and send", es: "Copia los hallazgos + instrucciones y abre Claude — pega y envía", fr: "Copie les constats + instructions et ouvre Claude — collez et envoyez" },
+  inspect_claude_prefix:     { he: "להלן ממצאי הביקורת:", en: "Here are the inspection findings:", es: "Aquí están los hallazgos de la inspección:", fr: "Voici les constats d'inspection :" },
   history_title:   { he: "🕘 היסטוריה", en: "🕘 History", es: "🕘 Historial", fr: "🕘 Historique" },
   clear_all:       { he: "נקה הכל", en: "Clear all", es: "Borrar todo", fr: "Tout effacer" },
   empty_history:   { he: "עדיין אין תמלולים שמורים", en: "No saved transcripts yet", es: "Aún no hay transcripciones", fr: "Aucune transcription enregistrée" },
@@ -1478,6 +1492,8 @@ function setLang(lang) {
   const dfn = document.getElementById("driveFileName");
   const claudeTa = document.getElementById("claudeInstructions");
   if (claudeTa && !claudeTa.dataset.userEdited) claudeTa.value = t("claude_default");
+  const inspectTa = document.getElementById("inspectClaudeDesc");
+  if (inspectTa && !inspectTa.dataset.userEdited) inspectTa.value = t("inspect_claude_default");
   const ppBtn = document.querySelector(".pp-NXAJTCXW9FUBY");
   if (ppBtn) ppBtn.value = t("donate_btn");
   const save = document.getElementById("btnPanelSave");
@@ -2744,6 +2760,24 @@ body{font-family:system-ui,sans-serif;color:#0f172a;background:#fff}
   const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
   window.open(blobUrl, "_blank");
   setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
+}
+
+/* ---- Inspect → Claude ---- */
+function openInspectClaude() {
+  const reportText = document.getElementById("inspectResult").value.trim();
+  if (!reportText) { showToast(t("t_no_photos"), "error"); return; }
+  const subject = document.getElementById("inspectClaudeSubject").value.trim();
+  const desc = document.getElementById("inspectClaudeDesc").value.trim();
+  let prompt = "";
+  if (desc) prompt += desc + "\n\n";
+  if (subject) prompt += subject + "\n\n";
+  prompt += t("inspect_claude_prefix") + "\n\n" + reportText;
+  navigator.clipboard.writeText(prompt).then(() => {
+    window.open("https://claude.ai/new", "_blank");
+    showToast(t("t_claude_copied"), "success");
+  }).catch(() => {
+    showToast(t("t_copy_err"), "error");
+  });
 }
 
 /* ---- Email / Share ---- */
