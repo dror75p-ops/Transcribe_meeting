@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>in-site · AI Photo Inspector — Card Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /*
+    ================================================================
+    HOW TO EMBED THIS CARD ON YOUR WEBSITE
+    ================================================================
+    Copy the <style> block below AND the <div class="insite-card">
+    block into your website builder's HTML embed widget.
+
+    Wix        → Add → Embed → Custom HTML → paste
+    Squarespace→ Edit section → Embed Block → paste
+    WordPress  → Add block → Custom HTML → paste
+    Webflow    → Add element → Embed → paste
+    ================================================================
+    */
+
+    /* Page wrapper — only needed for standalone preview */
+    body {
+      margin: 0;
+      padding: 32px 16px;
+      background: #f1f5f9;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ── Card ── */
+    .insite-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 28px 24px 20px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Header row: icon + badge + title */
+    .ic-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .ic-icon {
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
+      background: #dbeafe;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    .ic-header-text {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .ic-badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      width: fit-content;
+    }
+
+    .ic-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.25;
+    }
+
+    /* Subtitle */
+    .ic-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+
+    /* Feature list */
+    .ic-features {
+      list-style: none;
+      margin: 0 0 20px 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .ic-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #334155;
+      line-height: 1.5;
+    }
+
+    .ic-features li .em {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Divider */
+    .ic-divider {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 0 0 18px 0;
+    }
+
+    /* CTA button */
+    .ic-cta {
+      display: block;
+      width: 100%;
+      background: #1d4ed8;
+      color: #ffffff;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 13px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      box-sizing: border-box;
+    }
+
+    .ic-cta:hover {
+      background: #1e40af;
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    /* Footer note */
+    .ic-footer {
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================
+  COPY FROM HERE ↓
+  ================================================================ -->
+
+<div class="insite-card">
+
+  <div class="ic-header">
+    <div class="ic-icon">📸</div>
+    <div class="ic-header-text">
+      <span class="ic-badge">Free Tool</span>
+      <div class="ic-title">in-site · AI Property Inspector</div>
+    </div>
+  </div>
+
+  <p class="ic-subtitle">
+    Take or upload property photos and get instant AI-generated inspection findings — defects, safety risks, and maintenance issues identified automatically.
+  </p>
+
+  <ul class="ic-features">
+    <li><span class="em">📸</span><span>Take or upload photos — analyzed instantly with AI</span></li>
+    <li><span class="em">🏠</span><span>Detects defects, safety risks &amp; maintenance issues</span></li>
+    <li><span class="em">✏️</span><span>Annotate photos with arrows, circles &amp; markers</span></li>
+    <li><span class="em">📊</span><span>Generate professional inspection reports — print or save</span></li>
+  </ul>
+
+  <hr class="ic-divider">
+
+  <a class="ic-cta" href="https://dror75p-ops.github.io/Transcribe_meeting/" target="_blank" rel="noopener noreferrer">
+    Open in-site &rarr;
+  </a>
+
+  <p class="ic-footer">Free &middot; Uses your OpenAI API key &middot; No data stored on any server</p>
+
+</div>
+
+<!-- ================================================================
+  COPY UP TO HERE ↑
+  ================================================================ -->
+
+</body>
+</html>
