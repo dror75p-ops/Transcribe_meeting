@@ -403,6 +403,13 @@
   .photo-thumb img { width: 76px; height: 76px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border); display: block; }
   .photo-thumb .photo-ts { position: absolute; bottom: 2px; inset-inline-start: 2px; background: rgba(0,0,0,0.65); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 6px; direction: ltr; }
   .photo-thumb .photo-del { position: absolute; top: -6px; inset-inline-end: -6px; width: 20px; height: 20px; border-radius: 50%; border: none; background: var(--danger); color: #fff; font-size: 12px; line-height: 1; cursor: pointer; }
+  /* Photo inspection UX */
+  .photo-drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+  .photo-drop-zone:hover, .photo-drop-zone.drag-over { border-color: var(--cobalt); background: var(--cobalt-light); }
+  .photo-count-badge { background: var(--cobalt); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 99px; margin-inline-start: auto; }
+  .photo-count-badge.hidden { display: none; }
+  .btn-sm.danger { background: var(--danger-light); border-color: #fca5a5; color: var(--danger); }
+  .btn-sm.danger:hover { background: #fee2e2; }
   .rec-warning {
     margin-top: 10px; padding: 10px 12px;
     background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm);
@@ -873,22 +880,54 @@
 
   <!-- PHOTO INSPECTION VIEW -->
   <div id="viewInspect" class="hidden">
+
+    <!-- STEP 1: ANALYSIS MODE -->
     <div class="card">
-      <div class="chip-row" id="analysisModeChips" style="margin-bottom:10px;">
+      <div class="card-title step-title"><span class="step-num">1</span><span data-i18n="inspect_step1_title">בחירת סוג ביקורת</span></div>
+      <div class="chip-row" id="analysisModeChips" style="margin-bottom:8px;">
         <span class="chip active" data-mode="building" onclick="setAnalysisMode(this,'building')" data-i18n="mode_building">🏠 בדיקת מבנה</span>
         <span class="chip" data-mode="document" onclick="setAnalysisMode(this,'document')" data-i18n="mode_document">📄 מסמכים</span>
         <span class="chip" data-mode="nature" onclick="setAnalysisMode(this,'nature')" data-i18n="mode_nature">🏞️ נוף</span>
         <span class="chip" data-mode="lean5s" onclick="setAnalysisMode(this,'lean5s')" data-i18n="mode_lean5s">🏭 Lean 5S</span>
       </div>
+      <div class="field-hint" id="inspectModeHint" data-i18n="inspect_mode_hint_building">מזהה ליקויים, בעיות תחזוקה וסיכונים בפנים ובחוץ של מבנה</div>
+    </div>
+
+    <!-- STEP 2: ADD PHOTOS -->
+    <div class="card">
+      <div class="card-title step-title">
+        <span class="step-num">2</span>
+        <span data-i18n="inspect_step2_title">הוספת תמונות</span>
+        <span class="photo-count-badge hidden" id="inspectCountBadge">0</span>
+      </div>
       <input type="file" id="inspectCamInput" accept="image/*" capture="environment" style="display:none" onchange="addInspectPhotos(this.files)" />
       <input type="file" id="inspectInput" accept="image/*" multiple style="display:none" onchange="addInspectPhotos(this.files)" />
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-sm cobalt" onclick="document.getElementById('inspectCamInput').click()" data-i18n="btn_take">📷 צלם</button>
-        <button class="btn-sm" onclick="document.getElementById('inspectInput').click()" data-i18n="btn_upload">🖼️ העלה</button>
+      <div class="photo-drop-zone" id="inspectDropZone"
+           onclick="document.getElementById('inspectInput').click()"
+           ondragover="inspectDragOver(event)" ondragleave="inspectDragLeave(event)" ondrop="inspectDrop(event)">
+        <div style="font-size:32px;margin-bottom:8px;">📸</div>
+        <div class="drop-title" data-i18n="inspect_drop_title">לחץ להעלאת תמונות או גרור לכאן</div>
+        <div class="drop-sub" data-i18n="inspect_drop_sub">JPG · PNG · WEBP · HEIC — ניתן לבחור מספר תמונות יחד</div>
       </div>
-      <div id="inspectStrip" class="photo-strip"></div>
-      <button class="btn-claude" id="inspectAnalyzeBtn" onclick="analyzeInspectPhotos(this)" data-i18n="btn_analyze" style="margin-top:12px;" disabled>🔍 נתח תמונות</button>
-      <div id="inspectResultWrap" style="display:none;margin-top:14px;">
+      <div id="inspectStrip" class="photo-strip" style="display:none;"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <button class="btn-sm cobalt" onclick="document.getElementById('inspectCamInput').click()" data-i18n="btn_take">📷 צלם</button>
+        <button class="btn-sm" onclick="document.getElementById('inspectInput').click()" data-i18n="btn_upload">🖼️ הוסף עוד</button>
+        <button class="btn-sm danger" id="inspectClearBtn" onclick="clearInspectPhotos()" data-i18n="inspect_clear" style="display:none;">🗑️ נקה הכל</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: ANALYZE -->
+    <div class="card">
+      <div class="card-title step-title"><span class="step-num">3</span><span data-i18n="inspect_step3_title">ניתוח</span></div>
+      <button class="btn-claude" id="inspectAnalyzeBtn" onclick="analyzeInspectPhotos(this)" data-i18n="btn_analyze" disabled>🔍 נתח תמונות</button>
+      <div class="field-hint" id="inspectAnalyzeHint" style="margin-top:8px;" data-i18n="inspect_analyze_hint_empty">הוסף תמונות בשלב 2 כדי להפעיל את הניתוח</div>
+    </div>
+
+    <!-- STEP 4: RESULTS (shown after analysis) -->
+    <div id="inspectResultWrap" style="display:none;">
+      <div class="card">
+        <div class="card-title step-title"><span class="step-num" style="background:var(--success);">4</span><span data-i18n="inspect_step4_title">תוצאות הניתוח</span></div>
         <textarea class="transcript-box" id="inspectResult" dir="auto" style="min-height:180px;resize:vertical;width:100%;box-sizing:border-box;font-family:inherit;font-size:inherit;"></textarea>
         <div class="action-row" style="margin-top:8px;">
           <button class="btn-action" onclick="copyInspect(this)" data-i18n="btn_copy">📋 העתק</button>
@@ -904,6 +943,7 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- TRANSCRIPTION VIEW -->
@@ -1325,6 +1365,19 @@ const I18N = {
   btn_inspect_claude:        { he: "✨ פתח ב-Claude לניתוח", en: "✨ Open in Claude to analyze", es: "✨ Abrir en Claude para analizar", fr: "✨ Ouvrir dans Claude pour analyser" },
   inspect_claude_hint:       { he: "מעתיק את ממצאי הביקורת + ההנחיות ופותח Claude — הדבק ושלח", en: "Copies the inspection findings + instructions and opens Claude — paste and send", es: "Copia los hallazgos + instrucciones y abre Claude — pega y envía", fr: "Copie les constats + instructions et ouvre Claude — collez et envoyez" },
   inspect_claude_prefix:     { he: "להלן ממצאי הביקורת:", en: "Here are the inspection findings:", es: "Aquí están los hallazgos de la inspección:", fr: "Voici les constats d'inspection :" },
+  inspect_step1_title:       { he: "בחירת סוג ביקורת", en: "Choose inspection type", es: "Elige el tipo de inspección", fr: "Choisir le type d'inspection" },
+  inspect_step2_title:       { he: "הוספת תמונות", en: "Add photos", es: "Añadir fotos", fr: "Ajouter des photos" },
+  inspect_step3_title:       { he: "ניתוח", en: "Analyze", es: "Analizar", fr: "Analyser" },
+  inspect_step4_title:       { he: "תוצאות הניתוח", en: "Inspection results", es: "Resultados de la inspección", fr: "Résultats de l'inspection" },
+  inspect_mode_hint_building:{ he: "מזהה ליקויים, בעיות תחזוקה וסיכונים בפנים ובחוץ של מבנה", en: "Identifies defects, maintenance issues and safety risks in building interiors and exteriors", es: "Identifica defectos, problemas de mantenimiento y riesgos en edificios", fr: "Identifie les défauts, problèmes de maintenance et risques dans les bâtiments" },
+  inspect_mode_hint_document:{ he: "מחלץ טקסט, נתונים וויזואלים ממסמכים, מצגות ולוחות", en: "Extracts text, data and visuals from documents, slides and whiteboards", es: "Extrae texto, datos y visuales de documentos, diapositivas y pizarras", fr: "Extrait texte, données et visuels des documents, diapositives et tableaux blancs" },
+  inspect_mode_hint_nature:  { he: "מתאר נוף, צמחייה, מזג אוויר ומאפיינים גיאוגרפיים", en: "Describes landscape, vegetation, weather conditions and geographical features", es: "Describe paisaje, vegetación, clima y características geográficas", fr: "Décrit le paysage, la végétation, la météo et les caractéristiques géographiques" },
+  inspect_mode_hint_lean5s:  { he: "ביקורת Lean 5S מקצועית — מדרג עמידה ב-5S ומספק המלצות OPEX", en: "Professional Lean 5S audit — scores 5S compliance and provides OPEX recommendations", es: "Auditoría Lean 5S profesional — puntúa el cumplimiento de 5S y da recomendaciones OPEX", fr: "Audit Lean 5S professionnel — note la conformité 5S et fournit des recommandations OPEX" },
+  inspect_drop_title:        { he: "לחץ להעלאת תמונות או גרור לכאן", en: "Click to upload photos or drag them here", es: "Haz clic para subir fotos o arrástralas aquí", fr: "Cliquez pour téléverser des photos ou glissez-les ici" },
+  inspect_drop_sub:          { he: "JPG · PNG · WEBP · HEIC — ניתן לבחור מספר תמונות יחד", en: "JPG · PNG · WEBP · HEIC — select multiple photos at once", es: "JPG · PNG · WEBP · HEIC — puedes seleccionar varias fotos a la vez", fr: "JPG · PNG · WEBP · HEIC — sélectionnez plusieurs photos à la fois" },
+  inspect_clear:             { he: "🗑️ נקה הכל", en: "🗑️ Clear all", es: "🗑️ Borrar todo", fr: "🗑️ Tout effacer" },
+  inspect_analyze_hint_empty:{ he: "הוסף תמונות בשלב 2 כדי להפעיל את הניתוח", en: "Add photos in step 2 to enable analysis", es: "Añade fotos en el paso 2 para activar el análisis", fr: "Ajoutez des photos à l'étape 2 pour activer l'analyse" },
+  inspect_analyze_hint_ready:{ he: "{n} תמונות מוכנות לניתוח — לחץ כדי להתחיל", en: "{n} photo(s) ready — click to analyze", es: "{n} foto(s) lista(s) — haz clic para analizar", fr: "{n} photo(s) prête(s) — cliquez pour analyser" },
   history_title:   { he: "🕘 היסטוריה", en: "🕘 History", es: "🕘 Historial", fr: "🕘 Historique" },
   clear_all:       { he: "נקה הכל", en: "Clear all", es: "Borrar todo", fr: "Tout effacer" },
   empty_history:   { he: "עדיין אין תמלולים שמורים", en: "No saved transcripts yet", es: "Aún no hay transcripciones", fr: "Aucune transcription enregistrée" },
@@ -1494,6 +1547,12 @@ function setLang(lang) {
   if (claudeTa && !claudeTa.dataset.userEdited) claudeTa.value = t("claude_default");
   const inspectTa = document.getElementById("inspectClaudeDesc");
   if (inspectTa && !inspectTa.dataset.userEdited) inspectTa.value = t("inspect_claude_default");
+  const modeHint = document.getElementById("inspectModeHint");
+  if (modeHint) modeHint.textContent = t(MODE_HINT_KEYS[analysisMode] || "inspect_mode_hint_building");
+  const analyzeHint = document.getElementById("inspectAnalyzeHint");
+  if (analyzeHint) analyzeHint.textContent = inspectPhotos.length
+    ? t("inspect_analyze_hint_ready").replace("{n}", inspectPhotos.length)
+    : t("inspect_analyze_hint_empty");
   const ppBtn = document.querySelector(".pp-NXAJTCXW9FUBY");
   if (ppBtn) ppBtn.value = t("donate_btn");
   const save = document.getElementById("btnPanelSave");
@@ -2469,10 +2528,13 @@ function blobToDataURL(blob) {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
 }
 let analysisMode = "building";
+const MODE_HINT_KEYS = { building: "inspect_mode_hint_building", document: "inspect_mode_hint_document", nature: "inspect_mode_hint_nature", lean5s: "inspect_mode_hint_lean5s" };
 function setAnalysisMode(el, mode) {
   analysisMode = mode;
   document.querySelectorAll("#analysisModeChips .chip").forEach(c => c.classList.remove("active"));
   el.classList.add("active");
+  const hint = document.getElementById("inspectModeHint");
+  if (hint) hint.textContent = t(MODE_HINT_KEYS[mode] || "inspect_mode_hint_building");
 }
 function onAnalysisModeChange() {} // kept for backward compat
 function langName() { return { he: "Hebrew", en: "English", es: "Spanish", fr: "French" }[currentLang] || "English"; }
@@ -2642,15 +2704,47 @@ function addInspectPhotos(files) {
     if (f && f.type && f.type.startsWith("image/")) inspectPhotos.push({ blob: f, url: URL.createObjectURL(f) });
   }
   document.getElementById("inspectInput").value = "";
+  document.getElementById("inspectCamInput").value = "";
   renderInspectStrip();
+}
+function clearInspectPhotos() {
+  inspectPhotos.forEach(p => { try { URL.revokeObjectURL(p.url); } catch (_) {} });
+  inspectPhotos = [];
+  renderInspectStrip();
+}
+function inspectDragOver(e) { e.preventDefault(); document.getElementById("inspectDropZone").classList.add("drag-over"); }
+function inspectDragLeave(e) { document.getElementById("inspectDropZone").classList.remove("drag-over"); }
+function inspectDrop(e) {
+  e.preventDefault();
+  document.getElementById("inspectDropZone").classList.remove("drag-over");
+  addInspectPhotos(e.dataTransfer.files);
 }
 function renderInspectStrip() {
   const strip = document.getElementById("inspectStrip");
   if (!strip) return;
+  const n = inspectPhotos.length;
+  const hasPhotos = n > 0;
+  // strip / drop zone
+  strip.style.display = hasPhotos ? "" : "none";
+  const dz = document.getElementById("inspectDropZone");
+  if (dz) dz.style.display = hasPhotos ? "none" : "";
+  // thumbnails
   strip.innerHTML = inspectPhotos.map((p, i) =>
     `<div class="photo-thumb"><img src="${p.url}" alt=""><button class="photo-del" onclick="removeInspectPhoto(${i})" title="✕">✕</button></div>`
   ).join("");
-  document.getElementById("inspectAnalyzeBtn").disabled = !inspectPhotos.length;
+  // count badge
+  const badge = document.getElementById("inspectCountBadge");
+  if (badge) { badge.textContent = n; badge.classList.toggle("hidden", !hasPhotos); }
+  // clear button
+  const cb = document.getElementById("inspectClearBtn");
+  if (cb) cb.style.display = hasPhotos ? "" : "none";
+  // analyze button + hint
+  const btn = document.getElementById("inspectAnalyzeBtn");
+  if (btn) btn.disabled = !hasPhotos;
+  const hint = document.getElementById("inspectAnalyzeHint");
+  if (hint) hint.textContent = hasPhotos
+    ? t("inspect_analyze_hint_ready").replace("{n}", n)
+    : t("inspect_analyze_hint_empty");
 }
 function removeInspectPhoto(i) {
   if (inspectPhotos[i]) { try { URL.revokeObjectURL(inspectPhotos[i].url); } catch (_) {} inspectPhotos.splice(i, 1); renderInspectStrip(); }
@@ -2685,7 +2779,9 @@ function renderInspectionReport() {
   });
   inspectReportText = lines.join("\n").trim();
   document.getElementById("inspectResult").value = inspectReportText;
-  document.getElementById("inspectResultWrap").style.display = "block";
+  const wrap = document.getElementById("inspectResultWrap");
+  wrap.style.display = "block";
+  setTimeout(() => wrap.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
 }
 function copyInspect(btn) {
   const text = document.getElementById("inspectResult").value;
