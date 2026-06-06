@@ -414,6 +414,24 @@
   .photo-thumb .photo-ts { position: absolute; bottom: 2px; inset-inline-start: 2px; background: rgba(0,0,0,0.65); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 6px; direction: ltr; }
   .photo-thumb .photo-del { position: absolute; top: -6px; inset-inline-end: -6px; width: 20px; height: 20px; border-radius: 50%; border: none; background: var(--danger); color: #fff; font-size: 12px; line-height: 1; cursor: pointer; }
   .ph-st { position: absolute; bottom: 2px; inset-inline-start: 3px; font-size: 13px; line-height: 1; pointer-events: none; }
+  .photo-anno { position: absolute; bottom: -6px; inset-inline-start: -6px; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #fff; background: var(--cobalt); color: #fff; font-size: 11px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .ph-annotated { position: absolute; top: 2px; inset-inline-start: 2px; font-size: 11px; line-height: 1; pointer-events: none; }
+  /* Annotator modal */
+  .anno-modal { position: fixed; inset: 0; z-index: 300; background: #111; display: flex; flex-direction: column; }
+  .anno-bar { background: #0f2040; padding: 8px 10px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; flex-shrink: 0; }
+  .anno-tool { height: 34px; padding: 0 12px; border: 1.5px solid rgba(255,255,255,0.25); border-radius: 8px; background: transparent; color: #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .12s, border-color .12s; }
+  .anno-tool:hover { background: rgba(255,255,255,0.1); }
+  .anno-tool.active { background: var(--cobalt); border-color: var(--cobalt); color: #fff; }
+  .anno-color { width: 28px; height: 28px; border-radius: 50%; border: 2.5px solid transparent; cursor: pointer; flex-shrink: 0; transition: border-color .12s, transform .12s; }
+  .anno-color.active { border-color: #fff; transform: scale(1.15); }
+  .anno-sep { width: 1px; height: 28px; background: rgba(255,255,255,0.2); flex-shrink: 0; }
+  .anno-spacer { flex: 1; }
+  .anno-btn { height: 34px; padding: 0 14px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .anno-btn.undo { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+  .anno-btn.done { background: #22c55e; color: #fff; }
+  .anno-btn.cancel { background: rgba(255,255,255,0.08); color: #94a3b8; }
+  .anno-canvas-wrap { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 10px; }
+  #annotateCanvas { max-width: 100%; max-height: calc(100dvh - 70px); touch-action: none; cursor: crosshair; display: block; border-radius: 6px; }
   /* Photo inspection UX */
   .photo-drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
   .photo-drop-zone:hover, .photo-drop-zone.drag-over { border-color: var(--cobalt); background: var(--cobalt-light); }
@@ -949,6 +967,7 @@
         <button class="btn-sm danger" id="inspectClearBtn" onclick="clearInspectPhotos()" data-i18n="inspect_clear" style="display:none;">🗑️ נקה הכל</button>
       </div>
       <div class="field-hint" style="margin-top:8px;" data-i18n="inspect_photos_hint">📷 צלם — תמונה אחת בכל פעם (חזור לצלם עוד) · 🖼️ העלה — ניתן לבחור מספר תמונות בבת אחת</div>
+      <div class="field-hint" style="margin-top:4px;color:var(--cobalt);" data-i18n="inspect_anno_hint">✏️ לחץ על תמונה ממוזערת כדי לסמן אזורים לפני הניתוח</div>
     </div>
 
     <!-- STEP 4: ANALYZE -->
@@ -1423,6 +1442,8 @@ const I18N = {
   inspect_ctx_focus_ph:      { he: "על מה להתמקד? (למשל: בטיחות, רטיבות)", en: "What to focus on? (e.g. safety hazards, water damage)", es: "¿En qué enfocarse?", fr: "Quoi chercher?" },
   optional_label:            { he: "אופציונלי", en: "optional", es: "opcional", fr: "optionnel" },
   inspect_result_hint:       { he: "✏️ ניתן לערוך את הטקסט לפני יצירת הדוח", en: "✏️ You can edit the findings above before generating the report", es: "✏️ Puedes editar el texto antes de generar el informe", fr: "✏️ Vous pouvez modifier le texte avant de générer le rapport" },
+  t_anno_saved:              { he: "סימון נשמר ✏️", en: "Annotation saved ✏️", es: "Anotación guardada ✏️", fr: "Annotation enregistrée ✏️" },
+  inspect_anno_hint:         { he: "✏️ לחץ על תמונה ממוזערת כדי לסמן אזורים לפני הניתוח", en: "✏️ Tap any thumbnail to mark areas before analyzing", es: "✏️ Toca una miniatura para marcar áreas antes de analizar", fr: "✏️ Touchez une miniature pour annoter avant d'analyser" },
   inspect_ctx_hint:          { he: "ככל שתיתן יותר הקשר, כך הניתוח יהיה מדויק יותר", en: "More context = more targeted AI analysis", es: "Más contexto = análisis más preciso", fr: "Plus de contexte = analyse plus ciblée" },
   inspect_step3_photos_title:{ he: "הוספת תמונות", en: "Add photos", es: "Agregar fotos", fr: "Ajouter des photos" },
   inspect_step3_title:       { he: "הוספת תמונות", en: "Add photos", es: "Agregar fotos", fr: "Ajouter des photos" },
@@ -2838,7 +2859,8 @@ function renderInspectStrip() {
     const badge = st === "done" ? '<span class="ph-st ph-done">✅</span>'
                 : st === "error" ? '<span class="ph-st ph-err">❌</span>'
                 : st === "working" ? '<span class="ph-st ph-busy">⏳</span>' : "";
-    return `<div class="photo-thumb"><img src="${p.url}" alt="">${badge}<button class="photo-del" onclick="removeInspectPhoto(${i})" title="✕">✕</button></div>`;
+    const annotated = p.annotated ? '<span class="ph-annotated">✏️</span>' : "";
+    return `<div class="photo-thumb"><img src="${p.url}" alt="">${badge}${annotated}<button class="photo-anno" onclick="openAnnotator(${i})" title="Annotate">✏️</button><button class="photo-del" onclick="removeInspectPhoto(${i})" title="✕">✕</button></div>`;
   }).join("");
   // count badge
   const badge = document.getElementById("inspectCountBadge");
@@ -3647,6 +3669,145 @@ window.addEventListener("beforeunload", function(e) {
       : "התמלול עדיין פעיל — האם אתם בטוחים שברצונכם לצאת?";
   }
 });
+
+/* ── Photo Annotator ── */
+let _annoIdx = -1, _annoShapes = [], _annoTool = "arrow", _annoColor = "#ef4444";
+let _annoDown = false, _annoSX = 0, _annoSY = 0, _annoCurPts = [];
+let _annoImg = null;
+
+function openAnnotator(idx) {
+  _annoIdx = idx; _annoShapes = [];
+  const canvas = document.getElementById("annotateCanvas");
+  const modal = document.getElementById("annotateModal");
+  const img = new Image();
+  img.onload = () => {
+    _annoImg = img;
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    annoRedraw();
+    modal.style.display = "flex";
+    setAnnoTool("arrow");
+  };
+  img.src = inspectPhotos[idx].url;
+}
+function closeAnnotator() { document.getElementById("annotateModal").style.display = "none"; }
+function annoRedraw(preview) {
+  const canvas = document.getElementById("annotateCanvas");
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (_annoImg) ctx.drawImage(_annoImg, 0, 0);
+  _annoShapes.forEach(s => _drawShape(ctx, s));
+  if (preview) _drawShape(ctx, preview);
+}
+function _drawShape(ctx, s) {
+  ctx.save();
+  ctx.strokeStyle = s.color; ctx.fillStyle = s.color;
+  ctx.lineWidth = s.w; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  if (s.type === "pen") {
+    if (s.pts.length < 2) { ctx.restore(); return; }
+    ctx.beginPath(); ctx.moveTo(s.pts[0][0], s.pts[0][1]);
+    s.pts.slice(1).forEach(p => ctx.lineTo(p[0], p[1])); ctx.stroke();
+  } else if (s.type === "line") {
+    ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke();
+  } else if (s.type === "arrow") {
+    const dx = s.x2 - s.x1, dy = s.y2 - s.y1;
+    if (Math.sqrt(dx*dx + dy*dy) < 5) { ctx.restore(); return; }
+    const ang = Math.atan2(dy, dx), hw = Math.max(s.w * 5, 22);
+    ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(s.x2, s.y2);
+    ctx.lineTo(s.x2 - hw * Math.cos(ang - 0.42), s.y2 - hw * Math.sin(ang - 0.42));
+    ctx.lineTo(s.x2 - hw * Math.cos(ang + 0.42), s.y2 - hw * Math.sin(ang + 0.42));
+    ctx.closePath(); ctx.fill();
+  } else if (s.type === "circle") {
+    const rx = Math.abs(s.x2 - s.x1) / 2 || 1, ry = Math.abs(s.y2 - s.y1) / 2 || 1;
+    ctx.beginPath(); ctx.ellipse((s.x1+s.x2)/2, (s.y1+s.y2)/2, rx, ry, 0, 0, Math.PI*2); ctx.stroke();
+  } else if (s.type === "rect") {
+    ctx.beginPath(); ctx.strokeRect(s.x1, s.y1, s.x2-s.x1, s.y2-s.y1);
+  }
+  ctx.restore();
+}
+function _annoPos(e) {
+  const c = document.getElementById("annotateCanvas"), r = c.getBoundingClientRect();
+  const sx = c.width / r.width, sy = c.height / r.height;
+  const src = (e.touches && e.touches.length) ? e.touches[0] : (e.changedTouches && e.changedTouches.length) ? e.changedTouches[0] : e;
+  return [(src.clientX - r.left) * sx, (src.clientY - r.top) * sy];
+}
+function _annoW() { return Math.max(Math.round((_annoImg ? _annoImg.naturalWidth : 800) / 160), 3); }
+function annoDown(e) {
+  e.preventDefault(); _annoDown = true;
+  [_annoSX, _annoSY] = _annoPos(e);
+  if (_annoTool === "pen") _annoCurPts = [[_annoSX, _annoSY]];
+}
+function annoMove(e) {
+  e.preventDefault(); if (!_annoDown) return;
+  const [cx, cy] = _annoPos(e); const w = _annoW();
+  let preview;
+  if (_annoTool === "pen") { _annoCurPts.push([cx, cy]); preview = { type:"pen", color:_annoColor, w, pts:_annoCurPts }; }
+  else preview = { type:_annoTool, color:_annoColor, w, x1:_annoSX, y1:_annoSY, x2:cx, y2:cy };
+  annoRedraw(preview);
+}
+function annoUp(e) {
+  e.preventDefault(); if (!_annoDown) return; _annoDown = false;
+  const [cx, cy] = _annoPos(e); const w = _annoW();
+  let shape;
+  if (_annoTool === "pen") { if (_annoCurPts.length > 1) shape = { type:"pen", color:_annoColor, w, pts:[..._annoCurPts] }; }
+  else if (Math.abs(cx-_annoSX) > 3 || Math.abs(cy-_annoSY) > 3) shape = { type:_annoTool, color:_annoColor, w, x1:_annoSX, y1:_annoSY, x2:cx, y2:cy };
+  if (shape) _annoShapes.push(shape);
+  annoRedraw();
+}
+function annoUndo() { _annoShapes.pop(); annoRedraw(); }
+function setAnnoTool(tool) {
+  _annoTool = tool;
+  document.querySelectorAll(".anno-tool").forEach(b => b.classList.remove("active"));
+  const btn = document.getElementById("annoTool_" + tool);
+  if (btn) btn.classList.add("active");
+}
+function setAnnoColor(c, btn) {
+  _annoColor = c;
+  document.querySelectorAll(".anno-color").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+}
+function saveAnnotation() {
+  const canvas = document.getElementById("annotateCanvas");
+  canvas.toBlob(blob => {
+    try { URL.revokeObjectURL(inspectPhotos[_annoIdx].url); } catch(_) {}
+    inspectPhotos[_annoIdx].blob = blob;
+    inspectPhotos[_annoIdx].url = URL.createObjectURL(blob);
+    inspectPhotos[_annoIdx].annotated = true;
+    inspectPhotos[_annoIdx].status = null;
+    renderInspectStrip();
+    closeAnnotator();
+    showToast(t("t_anno_saved") || "Annotation saved ✏️", "success");
+  }, "image/jpeg", 0.92);
+}
 </script>
+
+<!-- PHOTO ANNOTATOR MODAL -->
+<div id="annotateModal" class="anno-modal" style="display:none;" role="dialog" aria-modal="true">
+  <div class="anno-bar">
+    <button class="anno-tool active" id="annoTool_arrow" onclick="setAnnoTool('arrow')" title="Arrow">↗ Arrow</button>
+    <button class="anno-tool" id="annoTool_circle" onclick="setAnnoTool('circle')" title="Circle">○ Circle</button>
+    <button class="anno-tool" id="annoTool_rect" onclick="setAnnoTool('rect')" title="Box">□ Box</button>
+    <button class="anno-tool" id="annoTool_line" onclick="setAnnoTool('line')" title="Line">― Line</button>
+    <button class="anno-tool" id="annoTool_pen" onclick="setAnnoTool('pen')" title="Freehand">✏️ Draw</button>
+    <div class="anno-sep"></div>
+    <button class="anno-color active" onclick="setAnnoColor('#ef4444',this)" style="background:#ef4444" title="Red"></button>
+    <button class="anno-color" onclick="setAnnoColor('#f97316',this)" style="background:#f97316" title="Orange"></button>
+    <button class="anno-color" onclick="setAnnoColor('#fbbf24',this)" style="background:#fbbf24" title="Yellow"></button>
+    <button class="anno-color" onclick="setAnnoColor('#3b82f6',this)" style="background:#3b82f6" title="Blue"></button>
+    <div class="anno-sep"></div>
+    <button class="anno-btn undo" onclick="annoUndo()" title="Undo last">↩ Undo</button>
+    <div class="anno-spacer"></div>
+    <button class="anno-btn cancel" onclick="closeAnnotator()">✕ Cancel</button>
+    <button class="anno-btn done" onclick="saveAnnotation()">✓ Done</button>
+  </div>
+  <div class="anno-canvas-wrap">
+    <canvas id="annotateCanvas"
+      onmousedown="annoDown(event)" onmousemove="annoMove(event)" onmouseup="annoUp(event)" onmouseleave="annoUp(event)"
+      ontouchstart="annoDown(event)" ontouchmove="annoMove(event)" ontouchend="annoUp(event)">
+    </canvas>
+  </div>
+</div>
 </body>
 </html>
