@@ -12,7 +12,7 @@
 <meta name="twitter:card" content="summary" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <!-- Patch Worker constructor BEFORE FFmpeg loads.
      GitHub Pages blocks: new Worker('https://unpkg.com/...')
      Fix: wrap cross-origin URLs in a same-origin blob that calls importScripts(),
@@ -59,7 +59,7 @@
 
   html { overflow-x: hidden; }
   body {
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Heebo', 'Heebo', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -87,17 +87,17 @@
   .nav-tag { background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 11px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.3px; }
   .nav-help { color: #cbd5e1; font-size: 13px; text-decoration: none; background: rgba(255,255,255,0.12); padding: 5px 13px; border-radius: 99px; white-space: nowrap; transition: background 0.15s, color 0.15s; }
   .nav-help:hover { background: rgba(255,255,255,0.22); color: #fff; }
-  .lang-select { background: rgba(255,255,255,0.12); color: #fff; border: none; border-radius: 99px; font-size: 13px; font-family: 'DM Sans', system-ui, sans-serif; padding: 5px 10px; cursor: pointer; outline: none; }
+  .lang-select { background: rgba(255,255,255,0.12); color: #fff; border: none; border-radius: 99px; font-size: 13px; font-family: 'Heebo', sans-serif; padding: 5px 10px; cursor: pointer; outline: none; }
   .lang-select option { color: #1a2744; background: #fff; }
 
   /* ── LAYOUT ──────────────────────────────── */
   .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
-  .page-title { font-family: 'DM Serif Display', serif; font-size: 28px; font-weight: 400; color: var(--navy); margin-bottom: 5px; line-height: 1.25; }
+  .page-title { font-family: 'Heebo', 'DM Sans', sans-serif; font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 5px; line-height: 1.3; }
   .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
 
   /* Top-level view tabs */
   .view-tabs { display: flex; gap: 8px; margin-bottom: 1.25rem; }
-  .view-tab { flex: 1; padding: 12px 10px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-sm); font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+  .view-tab { flex: 1; padding: 12px 10px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-sm); font-family: 'Heebo', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
   .view-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
 
   /* ── CARD ────────────────────────────────── */
@@ -170,7 +170,7 @@
     border-radius: var(--radius-sm);
     background: #f9fafb;
     font-size: 13px;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Heebo', sans-serif;
     cursor: pointer;
     white-space: nowrap;
     transition: background 0.15s, border-color 0.15s;
@@ -199,7 +199,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     font-size: 13px;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Heebo', sans-serif;
     color: var(--text);
     direction: rtl;
     outline: none;
@@ -299,7 +299,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Heebo', sans-serif;
   }
   .filename-combined {
     margin-top: 2px;
@@ -325,7 +325,7 @@
     background: #f9fafb;
     cursor: pointer;
     color: var(--text);
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Heebo', sans-serif;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
     white-space: nowrap;
     user-select: none;
@@ -385,7 +385,7 @@
   .btn-record {
     width: 100%; height: 48px; border: none; border-radius: var(--radius-sm);
     background: var(--danger); color: #fff; font-size: 15px; font-weight: 500;
-    font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer;
+    font-family: 'Heebo', sans-serif; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: background 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(220,38,38,0.22);
   }
@@ -474,7 +474,7 @@
     border-radius: var(--radius-sm);
     font-size: 16px;
     font-weight: 700;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Heebo', sans-serif;
     cursor: pointer;
     transition: background 0.2s, transform 0.1s, box-shadow 0.15s;
     display: flex;
@@ -527,7 +527,7 @@
     border-radius: var(--radius-sm);
     background: #fff;
     font-size: 12px;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Heebo', sans-serif;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -548,7 +548,7 @@
     border-radius: var(--radius-sm);
     font-size: 13px;
     font-weight: 600;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Heebo', sans-serif;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -572,7 +572,7 @@
     overflow-y: auto;
     white-space: pre-wrap;
     border: 1px solid var(--border);
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Heebo', sans-serif;
   }
 
   /* ── STATS ───────────────────────────────── */
@@ -597,7 +597,7 @@
   .claude-instructions {
     width: 100%; min-height: 90px; padding: 10px 14px;
     border: 1px solid var(--border); border-radius: var(--radius-sm);
-    font-size: 13px; font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 13px; font-family: 'Heebo', sans-serif;
     resize: vertical; direction: rtl; margin-bottom: 10px;
     color: var(--text); line-height: 1.6; outline: none;
     transition: border 0.15s, box-shadow 0.15s;
@@ -607,7 +607,7 @@
   .btn-report-primary {
     width: 100%; padding: 13px 20px; background: var(--cobalt); color: #fff;
     border: none; border-radius: var(--radius-sm); font-size: 15px;
-    font-family: 'DM Sans', system-ui, sans-serif; font-weight: 700; cursor: pointer;
+    font-family: 'Heebo', sans-serif; font-weight: 700; cursor: pointer;
     letter-spacing: 0.3px; transition: background 0.15s, box-shadow 0.15s;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     box-shadow: 0 2px 8px rgba(3,105,161,0.28);
@@ -617,7 +617,7 @@
   .btn-claude {
     width: 100%; padding: 12px; background: #7c3aed; color: #fff;
     border: none; border-radius: var(--radius-sm); font-size: 14px;
-    font-family: 'DM Sans', system-ui, sans-serif; font-weight: 600; cursor: pointer;
+    font-family: 'Heebo', sans-serif; font-weight: 600; cursor: pointer;
     letter-spacing: 0.3px; transition: background 0.15s;
   }
   .btn-claude:hover { background: #6d28d9; }
@@ -627,21 +627,21 @@
   .email-row input {
     flex: 1; height: 40px; padding: 0 14px; border: 1px solid var(--border);
     border-radius: var(--radius-sm); font-size: 13px;
-    font-family: 'DM Sans', system-ui, sans-serif; direction: ltr; outline: none;
+    font-family: 'Heebo', sans-serif; direction: ltr; outline: none;
     transition: border 0.15s, box-shadow 0.15s; min-width: 0;
   }
   .email-row input:focus { border-color: var(--cobalt); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
   .btn-email {
     height: 40px; padding: 0 18px; background: var(--navy); color: #fff;
     border: none; border-radius: var(--radius-sm); font-size: 13px;
-    font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; white-space: nowrap;
+    font-family: 'Heebo', sans-serif; cursor: pointer; white-space: nowrap;
     transition: background 0.15s; display: flex; align-items: center; gap: 6px; flex-shrink: 0;
   }
   .btn-email:hover { background: #253360; }
   .btn-share {
     width: 100%; height: 42px; margin-top: 8px;
     background: var(--drive); color: #fff; border: none; border-radius: var(--radius-sm);
-    font-size: 14px; font-weight: 600; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer;
+    font-size: 14px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.15s;
   }
   .btn-share:hover { background: #157a33; }
@@ -694,7 +694,7 @@
   .feedback-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .btn-fb {
     padding: 11px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
-    font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; border: 1px solid var(--border);
+    font-family: 'Heebo', sans-serif; cursor: pointer; border: 1px solid var(--border);
     background: #fff; color: var(--text); transition: background 0.15s, border-color 0.15s;
   }
   .btn-fb.like { background: var(--success); color: #fff; border-color: var(--success); }
@@ -704,7 +704,7 @@
   .feedback-box.hidden { display: none; }
   .feedback-box textarea {
     width: 100%; min-height: 80px; padding: 10px 14px; border: 1px solid var(--border);
-    border-radius: var(--radius-sm); font-size: 13px; font-family: 'DM Sans', system-ui, sans-serif;
+    border-radius: var(--radius-sm); font-size: 13px; font-family: 'Heebo', sans-serif;
     direction: rtl; resize: vertical; outline: none;
   }
   .feedback-box textarea:focus { border-color: var(--cobalt); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
@@ -722,7 +722,7 @@
   }
   .toast {
     background: var(--navy); color: #fff; padding: 10px 22px;
-    border-radius: 18px; font-size: 13px; font-family: 'DM Sans', system-ui, sans-serif;
+    border-radius: 18px; font-size: 13px; font-family: 'Heebo', sans-serif;
     box-shadow: 0 4px 16px rgba(0,0,0,0.2); opacity: 0; transform: translateY(8px);
     transition: opacity 0.2s, transform 0.2s;
     max-width: min(92vw, 440px); text-align: center; line-height: 1.5; word-break: break-word;
@@ -768,7 +768,7 @@
   #driveFileName {
     width: 100%; padding: 10px 14px; border: 1px solid var(--border);
     border-radius: var(--radius-sm); font-size: 13px;
-    font-family: 'DM Sans', system-ui, sans-serif; direction: rtl; outline: none;
+    font-family: 'Heebo', sans-serif; direction: rtl; outline: none;
     transition: border 0.15s, box-shadow 0.15s; color: var(--text);
   }
   #driveFileName:focus { border-color: var(--cobalt); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
@@ -778,7 +778,7 @@
   .format-tab {
     flex: 1; padding: 10px 8px; border: 2px solid var(--border);
     border-radius: var(--radius-sm); background: #fff; font-size: 13px;
-    font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; text-align: center;
+    font-family: 'Heebo', sans-serif; cursor: pointer; text-align: center;
     transition: all 0.15s; color: var(--text); white-space: nowrap;
     font-weight: 500;
   }
@@ -808,7 +808,7 @@
   .btn-pick-folder {
     width: 100%; padding: 11px 14px; border: 1.5px dashed var(--border);
     border-radius: var(--radius-sm); background: #f9fafb;
-    font-size: 13px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer;
+    font-size: 13px; font-family: 'Heebo', sans-serif; cursor: pointer;
     color: var(--cobalt); text-align: center; transition: background 0.15s, border-color 0.15s;
     margin-top: 4px;
   }
@@ -826,14 +826,14 @@
   .btn-panel-cancel {
     flex: 1; padding: 13px; border: 1px solid var(--border);
     border-radius: var(--radius-sm); background: #fff; font-size: 14px;
-    font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; color: var(--text);
+    font-family: 'Heebo', sans-serif; cursor: pointer; color: var(--text);
     transition: background 0.15s;
   }
   .btn-panel-cancel:hover { background: var(--bg); }
   .btn-panel-save {
     flex: 2; padding: 13px; border: none; border-radius: var(--radius-sm);
     background: var(--drive); color: #fff; font-size: 14px; font-weight: 600;
-    font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer;
+    font-family: 'Heebo', sans-serif; cursor: pointer;
     transition: background 0.15s; box-shadow: 0 2px 6px rgba(30,142,62,0.25);
   }
   .btn-panel-save:hover { background: #157a33; }
@@ -868,13 +868,7 @@
 <body>
 
 <nav>
-  <div class="logo">
-    <img src="logo.jpg" class="brand-logo" alt="in-site" />
-    <div>
-      <div class="brand-text">in-site</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px;letter-spacing:0.2px;">AI field inspection &amp; transcription &nbsp;·&nbsp; A DoryAngel free tool</div>
-    </div>
-  </div>
+  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="in-site" /><span class="brand-text">in-site</span></div>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
     <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
       <option value="he">🇮🇱 עברית</option>
