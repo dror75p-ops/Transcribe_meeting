@@ -2755,7 +2755,7 @@ body{font-family:system-ui,sans-serif;color:#0f172a;background:#fff}
   var a = document.getElementById("dlBtn");
   a.href = URL.createObjectURL(new Blob([full],{type:"text/html;charset=utf-8"}));
 })();
-</script>
+<\/script>
 </body></html>`;
   const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
   window.open(blobUrl, "_blank");
