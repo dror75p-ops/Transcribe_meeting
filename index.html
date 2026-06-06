@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Teamnul — תמלול ישיבות ובדיקת מבנים</title>
-<meta name="description" content="Teamnul — כלי חינמי לתמלול ישיבות לעברית, אנגלית, ספרדית וצרפתית, וניתוח תמונות לבדיקת מבנים, מסמכים ונוף. ישירות בדפדפן. | Free meeting transcription + AI photo inspection." />
-<meta property="og:title" content="Teamnul — תמלול ישיבות ובדיקת מבנים" />
+<title>in-site — תמלול ובדיקות שטח</title>
+<meta name="description" content="in-site — כלי חינמי לתמלול ישיבות ולביקורות שטח עם AI. ניתוח תמונות לבדיקת מבנים, Lean 5S ועוד. ב-4 שפות, ישירות בדפדפן. | Free meeting transcription + AI field inspection." />
+<meta property="og:title" content="in-site — תמלול ובדיקות שטח" />
 <meta property="og:description" content="תמלול ישיבות + ניתוח תמונות (בדיקת מבנה / מסמכים / נוף), ב-4 שפות, ישירות בדפדפן. חינמי." />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="https://dror75p-ops.github.io/Transcribe_meeting/logo.jpg" />
@@ -36,14 +36,14 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --navy: #1a2744;
-    --cobalt: #2563eb;
-    --cobalt-light: #dbeafe;
-    --bg: #eef1f8;
+    --navy: #0f2040;
+    --cobalt: #0369a1;
+    --cobalt-light: #e0f2fe;
+    --bg: #f1f5f9;
     --surface: #ffffff;
-    --text: #1a2744;
-    --muted: #6b7280;
-    --border: #d1d5db;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #cbd5e1;
     --success: #059669;
     --success-light: #f0fdf4;
     --danger: #dc2626;
@@ -52,7 +52,7 @@
     --drive-light: #e6f4ea;
     --radius: 12px;
     --radius-sm: 8px;
-    --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04);
     --shadow-panel: 0 -4px 24px rgba(0,0,0,0.13), 0 -1px 6px rgba(0,0,0,0.07);
   }
 
@@ -820,7 +820,7 @@
 <body>
 
 <nav>
-  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="Teamnul" /><span class="brand-text">Teamnul</span></div>
+  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="in-site" /><span class="brand-text">in-site</span></div>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
     <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
       <option value="he">🇮🇱 עברית</option>
@@ -833,8 +833,8 @@
 </nav>
 
 <div class="page">
-  <div class="page-title" data-i18n="page_title">🎙️ תמלול ישיבות לעברית</div>
-  <div class="page-sub" data-i18n="page_sub">העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI</div>
+  <div class="page-title" data-i18n="page_title">in-site · תמלול וביקורות שטח</div>
+  <div class="page-sub" data-i18n="page_sub">תמלול ישיבות + ביקורות שטח חכמות · מופעל על ידי OpenAI</div>
 
   <!-- API KEY -->
   <div class="card">
@@ -1134,7 +1134,7 @@
   <!-- DONATION (PayPal embedded payment link — no SDK) -->
   <div class="donate-section">
     <div class="donate-title" data-i18n="donate_title">💚 אהבתם את הכלי?</div>
-    <div class="donate-sub" data-i18n="donate_sub">Teamnul חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏</div>
+    <div class="donate-sub" data-i18n="donate_sub">in-site חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏</div>
     <div class="donate-btn-wrap">
       <style>.pp-NXAJTCXW9FUBY{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
       <form action="https://www.paypal.com/ncp/payment/NXAJTCXW9FUBY" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
@@ -1245,8 +1245,8 @@ let transcribeLang = "he"; // OpenAI `language` param — follows the UI languag
 
 const I18N = {
   nav_help:        { he: "❓ הסבר", en: "❓ Help", es: "❓ Ayuda", fr: "❓ Aide" },
-  page_title:      { he: "🎙️ תמלול ישיבות", en: "🎙️ Meeting Transcription", es: "🎙️ Transcripción de reuniones", fr: "🎙️ Transcription de réunions" },
-  page_sub:        { he: "העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI", en: "Upload a recording — get a Word transcript in minutes · Powered by OpenAI", es: "Sube una grabación — obtén una transcripción Word en minutos · Powered by OpenAI", fr: "Téléversez un enregistrement — transcription Word en quelques minutes · Powered by OpenAI" },
+  page_title:      { he: "in-site · תמלול וביקורות שטח", en: "in-site · Transcription & Field Inspection", es: "in-site · Transcripción e Inspección de campo", fr: "in-site · Transcription & Inspection terrain" },
+  page_sub:        { he: "תמלול ישיבות + ביקורות שטח חכמות · מופעל על ידי OpenAI", en: "Meeting transcription + AI-powered field inspections · Powered by OpenAI", es: "Transcripción de reuniones + inspecciones de campo con IA · Powered by OpenAI", fr: "Transcription de réunions + inspections terrain par IA · Powered by OpenAI" },
   apikey_saved:    { he: "מפתח שמור", en: "Key saved", es: "Clave guardada", fr: "Clé enregistrée" },
   apikey_edit:     { he: "✎ שנה", en: "✎ Edit", es: "✎ Editar", fr: "✎ Modifier" },
   btn_show:        { he: "הצג", en: "Show", es: "Mostrar", fr: "Afficher" },
@@ -1315,7 +1315,7 @@ const I18N = {
   clear_all:       { he: "נקה הכל", en: "Clear all", es: "Borrar todo", fr: "Tout effacer" },
   empty_history:   { he: "עדיין אין תמלולים שמורים", en: "No saved transcripts yet", es: "Aún no hay transcripciones", fr: "Aucune transcription enregistrée" },
   donate_title:    { he: "💚 אהבתם את הכלי?", en: "💚 Enjoying the tool?", es: "💚 ¿Te gusta la herramienta?", fr: "💚 Vous aimez l'outil ?" },
-  donate_sub:      { he: "Teamnul חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏", en: "Teamnul is completely free. If it helped you, a small donation keeps it free and available for everyone 🙏", es: "Teamnul es totalmente gratis. Si te ayudó, una donación lo mantiene gratis para todos 🙏", fr: "Teamnul est entièrement gratuit. Si l'outil vous a aidé, un don le garde gratuit pour tous 🙏" },
+  donate_sub:      { he: "in-site חינמי לגמרי. אם הוא עזר לכם — אפשר לתמוך, וזה עוזר לשמור אותו חינמי וזמין לכולם 🙏", en: "in-site is completely free. If it helped you, a small donation keeps it free and available for everyone 🙏", es: "in-site es totalmente gratis. Si te ayudó, una donación lo mantiene gratis para todos 🙏", fr: "in-site est entièrement gratuit. Si l'outil vous a aidé, un don le garde gratuit pour tous 🙏" },
   donate_btn:      { he: "💚 לתרומה", en: "💚 Donate", es: "💚 Donar", fr: "💚 Faire un don" },
   fb_title:        { he: "💬 יש לך דקה? נשמח למשוב", en: "💬 Got a minute? We'd love feedback", es: "💬 ¿Tienes un minuto? Tu opinión cuenta", fr: "💬 Une minute ? Votre avis compte" },
   fb_like:         { he: "👍 אהבתי — שתף", en: "👍 I like it — share", es: "👍 Me gusta — compartir", fr: "👍 J'aime — partager" },

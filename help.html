@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Teamnul — מדריך והסבר</title>
-<meta name="description" content="מדריך Teamnul — תמלול ישיבות וניתוח תמונות (בדיקת מבנה / מסמכים / נוף / Lean 5S) ישירות בדפדפן." />
-<meta property="og:title" content="Teamnul — מדריך" />
-<meta property="og:description" content="איך להשתמש ב-Teamnul: תמלול ישיבות וניתוח תמונות, ב-4 שפות." />
+<title>in-site — מדריך והסבר</title>
+<meta name="description" content="מדריך in-site — תמלול ישיבות וביקורות שטח עם AI (בדיקת מבנה / מסמכים / נוף / Lean 5S) ישירות בדפדפן." />
+<meta property="og:title" content="in-site — מדריך" />
+<meta property="og:description" content="איך להשתמש ב-in-site: תמלול ישיבות וביקורות שטח עם AI, ב-4 שפות." />
 <meta property="og:type" content="article" />
 <meta property="og:image" content="https://dror75p-ops.github.io/Transcribe_meeting/logo.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,12 +14,12 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --navy: #1a2744; --cobalt: #2563eb; --cobalt-light: #dbeafe;
-    --bg: #eef1f8; --surface: #ffffff; --text: #1a2744; --muted: #6b7280;
-    --border: #d1d5db; --success: #059669; --drive: #1e8e3e;
+    --navy: #0f2040; --cobalt: #0369a1; --cobalt-light: #e0f2fe;
+    --bg: #f1f5f9; --surface: #ffffff; --text: #0f172a; --muted: #64748b;
+    --border: #cbd5e1; --success: #059669; --drive: #1e8e3e;
     --purple: #7c3aed; --purple-light: #ede9fe;
     --radius: 12px; --radius-sm: 8px;
-    --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04);
   }
   html { overflow-x: hidden; }
   body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
@@ -108,7 +108,7 @@
 <body>
 
 <nav>
-  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="Teamnul" /><span class="brand-text">Teamnul</span></div>
+  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="in-site" /><span class="brand-text">in-site</span></div>
   <div class="nav-right">
     <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
       <option value="he">🇮🇱 עברית</option>
@@ -122,11 +122,11 @@
 
 <div class="page">
   <div class="page-title" data-i18n="h_title">📖 איך זה עובד</div>
-  <div class="page-sub" data-i18n="h_sub">מדריך ל-Teamnul — תמלול ישיבות וניתוח תמונות, ישירות בדפדפן.</div>
+  <div class="page-sub" data-i18n="h_sub">מדריך ל-in-site — תמלול ישיבות וביקורות שטח חכמות, ישירות בדפדפן.</div>
 
   <!-- WHAT IS -->
   <div class="card">
-    <h2 data-i18n="h_what_title">🎙️ מה זה Teamnul?</h2>
+    <h2 data-i18n="h_what_title">🔍 מה זה in-site?</h2>
     <div data-i18n-html="h_what_body">
       <p>כלי חינמי לתמלול ישיבות וניתוח תמונות — ישירות בדפדפן, בלי להתקין כלום. שתי יכולות עיקריות: <strong>תמלול אודיו/וידאו</strong> (Whisper / GPT-4o) ו<strong>ניתוח תמונות</strong> (GPT-4o Vision) — כולל בדיקת מבנה, מסמכים, נוף וניתוח Lean 5S.</p>
       <p>הכל רץ בדפדפן שלך מול OpenAI — אין שרת שאוסף את הנתונים שלך.</p>
@@ -277,12 +277,12 @@
     nav_back:    { he: "→ חזרה לאפליקציה", en: "→ Back to the app", es: "→ Volver a la app", fr: "→ Retour à l'appli" },
     back_to_app: { he: "→ חזרה לאפליקציה", en: "→ Back to the app", es: "→ Volver a la app", fr: "→ Retour à l'appli" },
     h_title:  { he: "📖 איך זה עובד", en: "📖 How it works", es: "📖 Cómo funciona", fr: "📖 Comment ça marche" },
-    h_sub:    { he: "מדריך ל-Teamnul — תמלול ישיבות וניתוח תמונות, ישירות בדפדפן.", en: "Guide to Teamnul — meeting transcription & photo analysis, right in your browser.", es: "Guía de Teamnul — transcripción de reuniones y análisis de fotos, en tu navegador.", fr: "Guide Teamnul — transcription de réunions et analyse de photos, dans votre navigateur." },
+    h_sub:    { he: "מדריך ל-in-site — תמלול ישיבות וביקורות שטח חכמות, ישירות בדפדפן.", en: "Guide to in-site — meeting transcription & AI-powered field inspections, right in your browser.", es: "Guía de in-site — transcripción de reuniones e inspecciones de campo con IA, en tu navegador.", fr: "Guide in-site — transcription de réunions et inspections terrain par IA, dans votre navigateur." },
 
     tag_transcribe: { he: "🎙️ תמלול", en: "🎙️ Transcription", es: "🎙️ Transcripción", fr: "🎙️ Transcription" },
     tag_photo:      { he: "🔍 ניתוח תמונות", en: "🔍 Photo analysis", es: "🔍 Análisis de fotos", fr: "🔍 Analyse de photos" },
 
-    h_what_title: { he: "🎙️ מה זה Teamnul?", en: "🎙️ What is Teamnul?", es: "🎙️ ¿Qué es Teamnul?", fr: "🎙️ Qu'est-ce que Teamnul ?" },
+    h_what_title: { he: "🔍 מה זה in-site?", en: "🔍 What is in-site?", es: "🔍 ¿Qué es in-site?", fr: "🔍 Qu'est-ce que in-site ?" },
     h_what_body: {
       he: "<p>כלי חינמי לתמלול ישיבות וניתוח תמונות — ישירות בדפדפן, בלי להתקין כלום. שתי יכולות עיקריות: <strong>תמלול אודיו/וידאו</strong> (Whisper / GPT-4o) ו<strong>ניתוח תמונות</strong> (GPT-4o Vision) — בדיקת מבנה, מסמכים, נוף וניתוח Lean 5S.</p><p>הכל רץ בדפדפן שלך מול OpenAI — אין שרת שאוסף את הנתונים שלך.</p>",
       en: "<p>A free tool for meeting transcription and photo analysis — right in your browser, nothing to install. Two main capabilities: <strong>audio/video transcription</strong> (Whisper / GPT-4o) and <strong>photo analysis</strong> (GPT-4o Vision) — building inspection, documents, nature and Lean 5S.</p><p>Everything runs in your browser against OpenAI — no server collects your data.</p>",
@@ -414,7 +414,7 @@
   }
   async function shareApp() {
     const url = location.origin + location.pathname.replace(/help\.html$/, "index.html");
-    const data = { title: "Teamnul", text: "Free meeting transcription & photo analysis 🎙️🔍", url };
+    const data = { title: "in-site", text: "Free meeting transcription & photo analysis 🎙️🔍", url };
     try {
       if (navigator.share) { await navigator.share(data); }
       else { await navigator.clipboard.writeText(url); showToast(t("t_link_copied"), "success"); }
@@ -430,7 +430,7 @@
   function sendFeedback() {
     const txt = document.getElementById("feedbackText").value.trim();
     if (!txt) { showToast(t("t_fb_empty"), "error"); return; }
-    window.open(`mailto:${encodeURIComponent(FEEDBACK_EMAIL)}?subject=${encodeURIComponent("Teamnul feedback")}&body=${encodeURIComponent(txt)}`);
+    window.open(`mailto:${encodeURIComponent(FEEDBACK_EMAIL)}?subject=${encodeURIComponent("in-site feedback")}&body=${encodeURIComponent(txt)}`);
     showToast(t("t_mail_opening"), "success");
   }
   setLang(detectLang());
