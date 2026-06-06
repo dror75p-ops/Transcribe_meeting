@@ -3575,9 +3575,10 @@ function capturePhoto() {
 function renderPhotoStrip() {
   const strip = document.getElementById("photoStrip");
   if (!strip) return;
-  strip.innerHTML = recPhotos.map((p, i) =>
-    `<div class="photo-thumb"><img src="${p.url}" alt=""><span class="photo-ts">${fmtTime(Math.floor(p.tMs / 1000))}</span><button class="photo-del" onclick="removePhoto(${i})" title="✕">✕</button></div>`
-  ).join("");
+  strip.innerHTML = recPhotos.map((p, i) => {
+    const annotated = p.annotated ? '<span class="ph-annotated">✏️</span>' : "";
+    return `<div class="photo-thumb"><img src="${p.url}" alt=""><span class="photo-ts">${fmtTime(Math.floor(p.tMs / 1000))}</span>${annotated}<button class="photo-anno" onclick="openAnnotator(${i},recPhotos,renderPhotoStrip)" title="Annotate">✏️</button><button class="photo-del" onclick="removePhoto(${i})" title="✕">✕</button></div>`;
+  }).join("");
   const sp = document.getElementById("savePhotosBtn");
   if (sp && currentFile === lastRecordingFile) sp.style.display = recPhotos.length ? "inline-flex" : "none";
 }
@@ -3673,10 +3674,13 @@ window.addEventListener("beforeunload", function(e) {
 /* ── Photo Annotator ── */
 let _annoIdx = -1, _annoShapes = [], _annoTool = "arrow", _annoColor = "#ef4444";
 let _annoDown = false, _annoSX = 0, _annoSY = 0, _annoCurPts = [];
-let _annoImg = null;
+let _annoImg = null, _annoPhotoArr = null, _annoRenderFn = null;
 
-function openAnnotator(idx) {
-  _annoIdx = idx; _annoShapes = [];
+function openAnnotator(idx, photoArr, renderFn) {
+  _annoIdx = idx;
+  _annoPhotoArr = photoArr || inspectPhotos;
+  _annoRenderFn = renderFn || renderInspectStrip;
+  _annoShapes = [];
   const canvas = document.getElementById("annotateCanvas");
   const modal = document.getElementById("annotateModal");
   const img = new Image();
@@ -3688,7 +3692,7 @@ function openAnnotator(idx) {
     modal.style.display = "flex";
     setAnnoTool("arrow");
   };
-  img.src = inspectPhotos[idx].url;
+  img.src = _annoPhotoArr[idx].url;
 }
 function closeAnnotator() { document.getElementById("annotateModal").style.display = "none"; }
 function annoRedraw(preview) {
@@ -3771,12 +3775,13 @@ function setAnnoColor(c, btn) {
 function saveAnnotation() {
   const canvas = document.getElementById("annotateCanvas");
   canvas.toBlob(blob => {
-    try { URL.revokeObjectURL(inspectPhotos[_annoIdx].url); } catch(_) {}
-    inspectPhotos[_annoIdx].blob = blob;
-    inspectPhotos[_annoIdx].url = URL.createObjectURL(blob);
-    inspectPhotos[_annoIdx].annotated = true;
-    inspectPhotos[_annoIdx].status = null;
-    renderInspectStrip();
+    const arr = _annoPhotoArr || inspectPhotos;
+    try { URL.revokeObjectURL(arr[_annoIdx].url); } catch(_) {}
+    arr[_annoIdx].blob = blob;
+    arr[_annoIdx].url = URL.createObjectURL(blob);
+    arr[_annoIdx].annotated = true;
+    arr[_annoIdx].status = null;
+    if (_annoRenderFn) _annoRenderFn(); else renderInspectStrip();
     closeAnnotator();
     showToast(t("t_anno_saved") || "Annotation saved ✏️", "success");
   }, "image/jpeg", 0.92);
