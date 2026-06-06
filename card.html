@@ -26,12 +26,12 @@
 
     .da-tool-card {
       background: #ffffff;
-      border-radius: 22px;
-      padding: 34px 30px 30px;
-      max-width: 400px;
+      border-radius: 24px;
+      padding: 36px 32px;
+      max-width: 440px;
       width: 100%;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04),
-                  0 10px 32px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05),
+                  0 12px 36px rgba(15, 23, 42, 0.09);
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       box-sizing: border-box;
     }
@@ -40,66 +40,98 @@
     .da-icon {
       width: 56px;
       height: 56px;
-      background: #eff6ff;
+      background: #e8f1ff;
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 20px;
     }
-    .da-icon svg {
-      width: 28px;
-      height: 28px;
-      display: block;
-    }
+    .da-icon svg { width: 28px; height: 28px; display: block; }
 
-    /* FREE TOOL badge */
+    /* FREE TOOL badge — light blue pill */
     .da-badge {
       display: inline-block;
+      background: #e8f1ff;
       color: #2563eb;
       font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.09em;
+      letter-spacing: 0.07em;
       text-transform: uppercase;
-      margin-bottom: 14px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 16px;
     }
 
     /* Title */
     .da-title {
-      font-size: 23px;
+      font-size: 26px;
       font-weight: 800;
       color: #0f172a;
-      line-height: 1.25;
-      letter-spacing: -0.01em;
+      line-height: 1.2;
+      letter-spacing: -0.015em;
       margin: 0 0 14px;
     }
 
     /* Description */
     .da-body {
-      font-size: 15px;
-      color: #64748b;
-      line-height: 1.7;
-      margin: 0 0 26px;
+      font-size: 16px;
+      color: #5b6677;
+      line-height: 1.65;
+      margin: 0 0 20px;
     }
 
-    /* CTA link — matches the site's "Access portal →" style */
-    .da-link {
+    /* Feature chips — light blue pills with check */
+    .da-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .da-chip {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
+      background: #eff5ff;
       color: #2563eb;
-      font-size: 15px;
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+    }
+    .da-chip svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    /* CTA — solid blue button matching "Subscribe Free →" */
+    .da-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #ffffff;
+      font-size: 16px;
       font-weight: 700;
+      padding: 16px 24px;
+      border-radius: 14px;
       text-decoration: none;
-      transition: gap 0.15s ease;
+      box-sizing: border-box;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.22);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
-    .da-link svg {
-      width: 18px;
-      height: 18px;
+    .da-cta svg { width: 19px; height: 19px; }
+    .da-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(37, 99, 235, 0.30);
+      color: #ffffff;
     }
-    .da-link:hover {
-      gap: 12px;
-      color: #1d4ed8;
+
+    /* Footer note */
+    .da-footer {
+      text-align: center;
+      font-size: 12.5px;
+      color: #94a3b8;
+      margin: 14px 0 0;
     }
   </style>
 </head>
@@ -122,17 +154,33 @@
   <h3 class="da-title">AI Property Inspector</h3>
 
   <p class="da-body">
-    Snap or upload site photos and get instant AI findings on defects, safety risks, and maintenance issues — annotate the photos and export a print-ready inspection report. Also handles document analysis, Lean 5S audits, and meeting transcription.
+    Snap or upload site photos and get instant AI findings on defects, safety risks, and maintenance issues — then export a print-ready inspection report. Also handles document analysis, Lean&nbsp;5S audits, and meeting transcription.
   </p>
 
-  <a class="da-link" href="https://dror75p-ops.github.io/Transcribe_meeting/" target="_blank" rel="noopener noreferrer">
-    Open tool
-    <!-- arrow icon -->
+  <div class="da-chips">
+    <span class="da-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Defect &amp; safety detection
+    </span>
+    <span class="da-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Annotate photos
+    </span>
+    <span class="da-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Print-ready reports
+    </span>
+  </div>
+
+  <a class="da-cta" href="https://dror75p-ops.github.io/Transcribe_meeting/" target="_blank" rel="noopener noreferrer">
+    Open the tool
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <line x1="5" y1="12" x2="19" y2="12"/>
       <polyline points="12 5 19 12 12 19"/>
     </svg>
   </a>
+
+  <p class="da-footer">Free · Uses your own OpenAI API key · No data stored</p>
 
 </div>
 
