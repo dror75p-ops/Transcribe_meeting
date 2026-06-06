@@ -914,11 +914,22 @@
       <div class="field-hint" id="inspectModeHint" data-i18n="inspect_mode_hint_building">מזהה ליקויים, בעיות תחזוקה וסיכונים בפנים ובחוץ של מבנה</div>
     </div>
 
-    <!-- STEP 2: ADD PHOTOS -->
+    <!-- STEP 2: CONTEXT -->
+    <div class="card">
+      <div class="card-title step-title"><span class="step-num">2</span><span data-i18n="inspect_step2_title">הקשר הביקורת</span></div>
+      <input type="text" id="inspectContextSubject" class="field-input" style="margin-bottom:8px;"
+             data-i18n-ph="inspect_ctx_subject_ph" placeholder="מה נבדק? (למשל: לוח חשמל, קומה 3)" />
+      <textarea id="inspectContextFocus" class="claude-instructions" rows="3"
+                data-i18n-ph="inspect_ctx_focus_ph"
+                placeholder="על מה להתמקד? (למשל: בעיות בטיחות, סימני רטיבות)"></textarea>
+      <div class="field-hint" style="margin-top:5px;" data-i18n="inspect_ctx_hint">ככל שתיתן יותר הקשר, כך הניתוח יהיה מדויק יותר</div>
+    </div>
+
+    <!-- STEP 3: ADD PHOTOS -->
     <div class="card">
       <div class="card-title step-title">
-        <span class="step-num">2</span>
-        <span data-i18n="inspect_step2_title">הוספת תמונות</span>
+        <span class="step-num">3</span>
+        <span data-i18n="inspect_step3_photos_title">הוספת תמונות</span>
         <span class="photo-count-badge hidden" id="inspectCountBadge">0</span>
       </div>
       <input type="file" id="inspectCamInput" accept="image/*" capture="environment" style="display:none" onchange="addInspectPhotos(this.files)" />
@@ -939,17 +950,17 @@
       <div class="field-hint" style="margin-top:8px;" data-i18n="inspect_photos_hint">📷 צלם — תמונה אחת בכל פעם (חזור לצלם עוד) · 🖼️ העלה — ניתן לבחור מספר תמונות בבת אחת</div>
     </div>
 
-    <!-- STEP 3: ANALYZE -->
+    <!-- STEP 4: ANALYZE -->
     <div class="card">
-      <div class="card-title step-title"><span class="step-num">3</span><span data-i18n="inspect_step3_title">ניתוח</span></div>
+      <div class="card-title step-title"><span class="step-num">4</span><span data-i18n="inspect_step4_analyze_title">ניתוח</span></div>
       <button class="btn-claude" id="inspectAnalyzeBtn" onclick="analyzeInspectPhotos(this)" data-i18n="btn_analyze" disabled>🔍 נתח תמונות</button>
       <div class="field-hint" id="inspectAnalyzeHint" style="margin-top:8px;" data-i18n="inspect_analyze_hint_empty">הוסף תמונות בשלב 2 כדי להפעיל את הניתוח</div>
     </div>
 
-    <!-- STEP 4: RESULTS (shown after analysis) -->
+    <!-- STEP 5: RESULTS (shown after analysis) -->
     <div id="inspectResultWrap" style="display:none;">
       <div class="card">
-        <div class="card-title step-title"><span class="step-num" style="background:var(--success);">4</span><span data-i18n="inspect_step4_title">תוצאות הניתוח</span></div>
+        <div class="card-title step-title"><span class="step-num" style="background:var(--success);">5</span><span data-i18n="inspect_step5_title">תוצאות הניתוח</span></div>
         <textarea class="transcript-box" id="inspectResult" dir="auto" style="min-height:180px;resize:vertical;width:100%;box-sizing:border-box;font-family:inherit;font-size:inherit;"></textarea>
         <div class="action-row" style="margin-top:8px;">
           <button class="btn-action" onclick="copyInspect(this)" data-i18n="btn_copy">📋 העתק</button>
@@ -962,11 +973,10 @@
         </div>
         <div class="claude-section" style="margin-top:0;padding-top:1rem;">
           <div class="card-title" data-i18n="inspect_claude_title">🤖 ניתוח עמוק עם Claude</div>
-          <input type="text" id="inspectClaudeSubject" class="field-input" style="margin-bottom:8px;" data-i18n-ph="inspect_claude_subject_ph" placeholder="נושא הביקורת (אופציונלי)..." />
-          <textarea class="claude-instructions" id="inspectClaudeDesc" data-i18n-ph="inspect_claude_desc_ph" oninput="this.dataset.userEdited='1'" placeholder="הנחיות נוספות..."></textarea>
-          <button class="btn-claude" onclick="openInspectClaude()" data-i18n="btn_inspect_claude">✨ פתח ב-Claude לניתוח</button>
-          <div class="email-hint" style="margin-top:7px;" data-i18n="inspect_claude_hint">מעתיק את ממצאי הביקורת + ההנחיות ופותח Claude — הדבק ושלח</div>
-          <div class="email-hint" style="margin-top:4px;color:#0369a1;" data-i18n="inspect_photos_dl_hint">💡 להעלאת תמונות ל-Claude: הורד את התמונות תחילה בכפתור 📥 בממצאים</div>
+          <div class="field-hint" style="margin-bottom:8px;" data-i18n="inspect_claude_context_note">הנושא וההנחיות מהשלב השני יצורפו אוטומטית</div>
+          <button class="btn-claude" onclick="openInspectClaude()" data-i18n="btn_inspect_claude">✨ העתק והפתח Claude</button>
+          <div class="email-hint" style="margin-top:7px;" data-i18n="inspect_claude_hint">כל הממצאים, הנושא וההנחיות יועתקו — הדבק ב-Claude עם Ctrl+V ושלח</div>
+          <div class="email-hint" style="margin-top:4px;color:#0369a1;" data-i18n="inspect_photos_dl_hint">💡 להעלאת תמונות: הורד תחילה עם 📥 ואז צרף ב-Claude</div>
         </div>
       </div>
     </div>
@@ -1406,9 +1416,16 @@ const I18N = {
   inspect_claude_hint:       { he: "מעתיק את ממצאי הביקורת + ההנחיות ופותח Claude — הדבק ושלח", en: "Copies the inspection findings + instructions and opens Claude — paste and send", es: "Copia los hallazgos + instrucciones y abre Claude — pega y envía", fr: "Copie les constats + instructions et ouvre Claude — collez et envoyez" },
   inspect_claude_prefix:     { he: "להלן ממצאי הביקורת:", en: "Here are the inspection findings:", es: "Aquí están los hallazgos de la inspección:", fr: "Voici les constats d'inspection :" },
   inspect_step1_title:       { he: "בחירת סוג ביקורת", en: "Choose inspection type", es: "Elige el tipo de inspección", fr: "Choisir le type d'inspection" },
-  inspect_step2_title:       { he: "הוספת תמונות", en: "Add photos", es: "Añadir fotos", fr: "Ajouter des photos" },
-  inspect_step3_title:       { he: "ניתוח", en: "Analyze", es: "Analizar", fr: "Analyser" },
-  inspect_step4_title:       { he: "תוצאות הניתוח", en: "Inspection results", es: "Resultados de la inspección", fr: "Résultats de l'inspection" },
+  inspect_step2_title:       { he: "הקשר הביקורת", en: "Inspection context", es: "Contexto de inspección", fr: "Contexte d'inspection" },
+  inspect_ctx_subject_ph:    { he: "מה נבדק? (למשל: לוח חשמל, קומה 3)", en: "What are you inspecting? (e.g. electrical panel, 3rd floor)", es: "¿Qué inspecciona?", fr: "Quoi inspecter?" },
+  inspect_ctx_focus_ph:      { he: "על מה להתמקד? (למשל: בטיחות, רטיבות)", en: "What to focus on? (e.g. safety hazards, water damage)", es: "¿En qué enfocarse?", fr: "Quoi chercher?" },
+  inspect_ctx_hint:          { he: "ככל שתיתן יותר הקשר, כך הניתוח יהיה מדויק יותר", en: "More context = more targeted AI analysis", es: "Más contexto = análisis más preciso", fr: "Plus de contexte = analyse plus ciblée" },
+  inspect_step3_photos_title:{ he: "הוספת תמונות", en: "Add photos", es: "Agregar fotos", fr: "Ajouter des photos" },
+  inspect_step3_title:       { he: "הוספת תמונות", en: "Add photos", es: "Agregar fotos", fr: "Ajouter des photos" },
+  inspect_step4_analyze_title:{ he: "ניתוח", en: "Analyze", es: "Analizar", fr: "Analyser" },
+  inspect_step4_title:       { he: "ניתוח", en: "Analyze", es: "Analizar", fr: "Analyser" },
+  inspect_step5_title:       { he: "תוצאות הניתוח", en: "Inspection results", es: "Resultados de la inspección", fr: "Résultats de l'inspection" },
+  inspect_claude_context_note:{ he: "הנושא וההנחיות מהשלב השני יצורפו אוטומטית", en: "Context from Step 2 is included automatically", es: "El contexto del Paso 2 se incluye automáticamente", fr: "Le contexte de l'étape 2 est inclus automatiquement" },
   inspect_mode_hint_building:{ he: "מזהה ליקויים, בעיות תחזוקה וסיכונים בפנים ובחוץ של מבנה", en: "Identifies defects, maintenance issues and safety risks in building interiors and exteriors", es: "Identifica defectos, problemas de mantenimiento y riesgos en edificios", fr: "Identifie les défauts, problèmes de maintenance et risques dans les bâtiments" },
   inspect_mode_hint_document:{ he: "מחלץ טקסט, נתונים וויזואלים ממסמכים, מצגות ולוחות", en: "Extracts text, data and visuals from documents, slides and whiteboards", es: "Extrae texto, datos y visuales de documentos, diapositivas y pizarras", fr: "Extrait texte, données et visuels des documents, diapositives et tableaux blancs" },
   inspect_mode_hint_nature:  { he: "מתאר נוף, צמחייה, מזג אוויר ומאפיינים גיאוגרפיים", en: "Describes landscape, vegetation, weather conditions and geographical features", es: "Describe paisaje, vegetación, clima y características geográficas", fr: "Décrit le paysage, la végétation, la météo et les caractéristiques géographiques" },
@@ -1593,7 +1610,7 @@ function setLang(lang) {
   const dfn = document.getElementById("driveFileName");
   const claudeTa = document.getElementById("claudeInstructions");
   if (claudeTa && !claudeTa.dataset.userEdited) claudeTa.value = t("claude_default");
-  const inspectTa = document.getElementById("inspectClaudeDesc");
+  const inspectTa = document.getElementById("inspectContextFocus");
   if (inspectTa && !inspectTa.dataset.userEdited) inspectTa.value = t("inspect_claude_default");
   const modeHint = document.getElementById("inspectModeHint");
   if (modeHint) modeHint.textContent = t(MODE_HINT_KEYS[analysisMode] || "inspect_mode_hint_building");
@@ -2647,10 +2664,17 @@ function lean5sSysPrompt() {
     `Be precise and actionable — use lean terminology. Respond in ${langName()}.`;
 }
 function analysisSysPrompt() {
-  return analysisMode === "document" ? documentSysPrompt()
+  const subjectEl = document.getElementById("inspectContextSubject");
+  const focusEl = document.getElementById("inspectContextFocus");
+  const subject = subjectEl ? subjectEl.value.trim() : "";
+  const focus = focusEl ? focusEl.value.trim() : "";
+  const ctx = [subject, focus].filter(Boolean).join(". ");
+  const base = analysisMode === "document" ? documentSysPrompt()
     : analysisMode === "nature" ? natureSysPrompt()
     : analysisMode === "lean5s" ? lean5sSysPrompt()
     : inspectionSysPrompt();
+  if (!ctx) return base;
+  return base + ` INSPECTOR CONTEXT: "${ctx}". Use this context to make findings more specific and relevant.`;
 }
 function analysisSectionTitle() {
   return analysisMode === "document" ? t("docs_title")
@@ -2912,9 +2936,9 @@ async function generateInspectReport() {
   });
   const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   // Read user context
-  const subjectEl = document.getElementById("inspectClaudeSubject");
+  const subjectEl = document.getElementById("inspectContextSubject");
   const subject = subjectEl ? subjectEl.value.trim() : "";
-  const descEl = document.getElementById("inspectClaudeDesc");
+  const descEl = document.getElementById("inspectContextFocus");
   const desc = descEl ? descEl.value.trim() : "";
   const modeLabel = esc(t("mode_" + analysisMode) || analysisSectionTitle());
   const reportTitle = esc(subject || analysisSectionTitle());
@@ -2950,7 +2974,7 @@ const MODE_EMOJIS = { building: "🏠", document: "📄", nature: "🏞️", lea
 function saveInspectHistory() {
   const text = document.getElementById("inspectResult").value.trim();
   if (!text) return;
-  const subjectEl = document.getElementById("inspectClaudeSubject");
+  const subjectEl = document.getElementById("inspectContextSubject");
   const subject = subjectEl ? subjectEl.value.trim() : "";
   const hist = JSON.parse(localStorage.getItem(INSPECT_HISTORY_KEY) || "[]");
   hist.unshift({ subject, mode: analysisMode, photoCount: inspectPhotos.length, date: new Date().toLocaleDateString(), ts: Date.now(), text });
@@ -3012,8 +3036,8 @@ function clearInspectHistory() {
 function openInspectClaude() {
   const reportText = document.getElementById("inspectResult").value.trim();
   if (!reportText) { showToast(t("t_no_photos"), "error"); return; }
-  const subject = document.getElementById("inspectClaudeSubject").value.trim();
-  const desc = document.getElementById("inspectClaudeDesc").value.trim();
+  const subject = (document.getElementById("inspectContextSubject") || {value:""}).value.trim();
+  const desc = (document.getElementById("inspectContextFocus") || {value:""}).value.trim();
   let prompt = "";
   if (desc) prompt += desc + "\n\n";
   if (subject) prompt += subject + "\n\n";
