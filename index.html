@@ -945,6 +945,15 @@
       </div>
     </div>
 
+    <!-- INSPECT HISTORY -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" data-i18n="inspect_history_title">🕘 דוחות שמורים</div>
+        <button class="clear-history-btn" id="clearInspectHistoryBtn" onclick="clearInspectHistory()" data-i18n="clear_all" style="display:none;">נקה הכל</button>
+      </div>
+      <div id="inspectHistoryList"><div class="empty-history" data-i18n="inspect_empty_history">עדיין אין דוחות שמורים</div></div>
+    </div>
+
   </div>
 
   <!-- TRANSCRIPTION VIEW -->
@@ -1380,6 +1389,9 @@ const I18N = {
   inspect_clear:             { he: "🗑️ נקה הכל", en: "🗑️ Clear all", es: "🗑️ Borrar todo", fr: "🗑️ Tout effacer" },
   inspect_analyze_hint_empty:{ he: "הוסף תמונות בשלב 2 כדי להפעיל את הניתוח", en: "Add photos in step 2 to enable analysis", es: "Añade fotos en el paso 2 para activar el análisis", fr: "Ajoutez des photos à l'étape 2 pour activer l'analyse" },
   inspect_analyze_hint_ready:{ he: "{n} תמונות מוכנות לניתוח — לחץ כדי להתחיל", en: "{n} photo(s) ready — click to analyze", es: "{n} foto(s) lista(s) — haz clic para analizar", fr: "{n} photo(s) prête(s) — cliquez pour analyser" },
+  inspect_history_title:     { he: "🕘 דוחות שמורים", en: "🕘 Saved reports", es: "🕘 Informes guardados", fr: "🕘 Rapports enregistrés" },
+  inspect_empty_history:     { he: "עדיין אין דוחות שמורים", en: "No saved reports yet", es: "Aún no hay informes guardados", fr: "Aucun rapport enregistré pour l'instant" },
+  inspect_h_photos:          { he: "תמונות", en: "photos", es: "fotos", fr: "photos" },
   history_title:   { he: "🕘 היסטוריה", en: "🕘 History", es: "🕘 Historial", fr: "🕘 Historique" },
   clear_all:       { he: "נקה הכל", en: "Clear all", es: "Borrar todo", fr: "Tout effacer" },
   empty_history:   { he: "עדיין אין תמלולים שמורים", en: "No saved transcripts yet", es: "Aún no hay transcripciones", fr: "Aucune transcription enregistrée" },
@@ -1560,6 +1572,7 @@ function setLang(lang) {
   const save = document.getElementById("btnPanelSave");
   if (save && !("showDirectoryPicker" in window)) save.textContent = t("btn_download");
   if (typeof renderHistory === "function") renderHistory();
+  if (typeof renderInspectHistory === "function") renderInspectHistory();
 }
 
 /* ---- Init ---- */
@@ -1584,6 +1597,7 @@ window.onload = () => {
     if (sb) sb.style.display = "none";
   }
   renderHistory();
+  renderInspectHistory();
   renderRecentFolders();
 
   // Check File System Access API support
@@ -2784,6 +2798,7 @@ function renderInspectionReport() {
   const wrap = document.getElementById("inspectResultWrap");
   wrap.style.display = "block";
   setTimeout(() => wrap.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+  saveInspectHistory();
 }
 function copyInspect(btn) {
   const text = document.getElementById("inspectResult").value;
@@ -2858,6 +2873,70 @@ body{font-family:system-ui,sans-serif;color:#0f172a;background:#fff}
   const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
   window.open(blobUrl, "_blank");
   setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
+}
+
+/* ---- Inspect History ---- */
+const INSPECT_HISTORY_KEY = "da_inspections";
+const MODE_EMOJIS = { building: "🏠", document: "📄", nature: "🏞️", lean5s: "🏭" };
+function saveInspectHistory() {
+  const text = document.getElementById("inspectResult").value.trim();
+  if (!text) return;
+  const subjectEl = document.getElementById("inspectClaudeSubject");
+  const subject = subjectEl ? subjectEl.value.trim() : "";
+  const hist = JSON.parse(localStorage.getItem(INSPECT_HISTORY_KEY) || "[]");
+  hist.unshift({ subject, mode: analysisMode, photoCount: inspectPhotos.length, date: new Date().toLocaleDateString(), ts: Date.now(), text });
+  if (hist.length > 15) hist.pop();
+  try { localStorage.setItem(INSPECT_HISTORY_KEY, JSON.stringify(hist)); } catch (_) {}
+  renderInspectHistory();
+}
+function renderInspectHistory() {
+  const el = document.getElementById("inspectHistoryList");
+  if (!el) return;
+  const hist = JSON.parse(localStorage.getItem(INSPECT_HISTORY_KEY) || "[]");
+  const btn = document.getElementById("clearInspectHistoryBtn");
+  if (!hist.length) {
+    el.innerHTML = `<div class="empty-history">${escHtml(t("inspect_empty_history"))}</div>`;
+    if (btn) btn.style.display = "none";
+    return;
+  }
+  if (btn) btn.style.display = "inline";
+  el.innerHTML = hist.map((h, i) => {
+    const emoji = MODE_EMOJIS[h.mode] || "🔍";
+    const modeLabel = t("mode_" + h.mode) || h.mode;
+    const displayName = h.subject || `${emoji} ${modeLabel}`;
+    return `<div class="history-item">
+      <div class="history-main" onclick="loadInspectHistory(${i})">
+        <div class="h-name">${escHtml(displayName)}</div>
+        <div class="h-meta">${escHtml(h.date)} · ${h.photoCount || 0} ${escHtml(t("inspect_h_photos"))}</div>
+      </div>
+      <div class="history-actions">
+        <span class="h-badge" onclick="loadInspectHistory(${i})">${escHtml(t("h_load"))}</span>
+        <button class="h-delete" onclick="deleteInspectHistory(${i})" title="${escHtml(t("h_delete"))}">🗑</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+function loadInspectHistory(i) {
+  const hist = JSON.parse(localStorage.getItem(INSPECT_HISTORY_KEY) || "[]");
+  const h = hist[i];
+  if (!h) return;
+  document.getElementById("inspectResult").value = h.text;
+  const wrap = document.getElementById("inspectResultWrap");
+  wrap.style.display = "block";
+  setTimeout(() => wrap.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+}
+function deleteInspectHistory(i) {
+  const hist = JSON.parse(localStorage.getItem(INSPECT_HISTORY_KEY) || "[]");
+  hist.splice(i, 1);
+  try { localStorage.setItem(INSPECT_HISTORY_KEY, JSON.stringify(hist)); } catch (_) {}
+  renderInspectHistory();
+  showToast(t("t_history_removed"));
+}
+function clearInspectHistory() {
+  if (!confirm(t("c_history_clear"))) return;
+  localStorage.removeItem(INSPECT_HISTORY_KEY);
+  renderInspectHistory();
+  showToast(t("t_history_cleared"));
 }
 
 /* ---- Inspect → Claude ---- */
