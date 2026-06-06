@@ -2705,18 +2705,45 @@ async function generateInspectReport() {
   }
   const dir = document.documentElement.getAttribute("dir") || "rtl";
   const lang = document.documentElement.lang || "he";
+  const saveLabel = lang === "he" ? "💾 הורד HTML" : lang === "fr" ? "💾 Télécharger HTML" : lang === "es" ? "💾 Descargar HTML" : "💾 Download HTML";
+  const printLabel = lang === "he" ? "🖨️ הדפס / שמור PDF" : lang === "fr" ? "🖨️ Imprimer / Enregistrer PDF" : lang === "es" ? "🖨️ Imprimir / Guardar PDF" : "🖨️ Print / Save as PDF";
+  const fileName = title.replace(/[^\w-￿]+/g,"_").replace(/^_|_$/g,"") + ".html";
   const html = `<!DOCTYPE html><html dir="${dir}" lang="${lang}"><head><meta charset="UTF-8"><title>${title}</title>
-<style>body{font-family:system-ui,sans-serif;margin:0;padding:20px;color:#1e293b;background:#fff}
-h1{font-size:1.3rem;border-bottom:2px solid #0ea5e9;padding-bottom:8px;margin-bottom:8px}
-.date{color:#64748b;font-size:.85rem;margin-bottom:20px}
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;color:#0f172a;background:#fff}
+.toolbar{display:flex;gap:10px;padding:14px 20px;background:#f1f5f9;border-bottom:1px solid #cbd5e1;position:sticky;top:0;z-index:10;flex-wrap:wrap;align-items:center}
+.toolbar h1{font-size:1.1rem;font-weight:700;color:#0f2040;flex:1;min-width:0}
+.toolbar .date{font-size:.8rem;color:#64748b;white-space:nowrap}
+.btn{padding:7px 16px;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-print{background:#0369a1;color:#fff}.btn-print:hover{background:#0284c7}
+.btn-dl{background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd}.btn-dl:hover{background:#bae6fd}
+.content{padding:20px}
 .ps{display:flex;gap:20px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid #e2e8f0;align-items:flex-start;page-break-inside:avoid}
-.pc{flex:0 0 auto;max-width:45%}.pc img{width:100%;max-width:380px;border-radius:8px;border:1px solid #e2e8f0;display:block}
-.ac{flex:1;min-width:0}.ac p{margin:0 0 5px;font-size:.88rem;line-height:1.55;white-space:pre-wrap}
-@media print{.ps{page-break-inside:avoid}body{padding:12px}}</style></head>
-<body><h1>${title}</h1><div class="date">${date}</div>${photoSections}</body></html>`;
+.pc{flex:0 0 auto;max-width:42%}.pc img{width:100%;max-width:360px;border-radius:8px;border:1px solid #e2e8f0;display:block}
+.ac{flex:1;min-width:0}.ac p{margin:0 0 5px;font-size:.88rem;line-height:1.6;white-space:pre-wrap}
+@media print{.toolbar{display:none}.content{padding:12px}.ps{page-break-inside:avoid}}
+@media(max-width:540px){.ps{flex-direction:column}.pc{max-width:100%}}
+</style></head>
+<body>
+<div class="toolbar">
+  <h1>${title}</h1>
+  <span class="date">${date}</span>
+  <button class="btn btn-print" onclick="window.print()">${printLabel}</button>
+  <a class="btn btn-dl" href="data:text/html;charset=utf-8,${encodeURIComponent('<!-- in-site report -->')}" id="dlBtn" download="${fileName}">${saveLabel}</a>
+</div>
+<div class="content">${photoSections}</div>
+<script>
+(function(){
+  var full = document.documentElement.outerHTML;
+  var a = document.getElementById("dlBtn");
+  a.href = URL.createObjectURL(new Blob([full],{type:"text/html;charset=utf-8"}));
+})();
+</script>
+</body></html>`;
   const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
   window.open(blobUrl, "_blank");
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
 }
 
 /* ---- Email / Share ---- */
