@@ -1357,8 +1357,8 @@ const LANG_KEY = "da_lang";
 
 /* ===== i18n ===== */
 const LANGS = ["he", "en", "es", "fr"];
-let currentLang = "he";
-let transcribeLang = "he"; // OpenAI `language` param — follows the UI language
+let currentLang = "en";
+let transcribeLang = "en"; // OpenAI `language` param — follows the UI language
 
 const I18N = {
   nav_help:        { he: "❓ הסבר", en: "❓ Help", es: "❓ Ayuda", fr: "❓ Aide" },
@@ -1609,11 +1609,11 @@ function t(key) {
 function detectLang() {
   const saved = localStorage.getItem(LANG_KEY);
   if (saved && LANGS.includes(saved)) return saved;
-  const nav = (navigator.language || "he").slice(0, 2).toLowerCase();
-  return LANGS.includes(nav) ? nav : "he";
+  const nav = (navigator.language || "en").slice(0, 2).toLowerCase();
+  return LANGS.includes(nav) ? nav : "en";
 }
 function setLang(lang) {
-  if (!LANGS.includes(lang)) lang = "he";
+  if (!LANGS.includes(lang)) lang = "en";
   currentLang = lang;
   transcribeLang = lang;
   localStorage.setItem(LANG_KEY, lang);
