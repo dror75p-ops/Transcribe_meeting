@@ -574,6 +574,17 @@
     transition: border 0.15s, box-shadow 0.15s;
   }
   .claude-instructions:focus { border-color: var(--cobalt); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+  .report-cta { margin-top: 12px; }
+  .btn-report-primary {
+    width: 100%; padding: 13px 20px; background: var(--cobalt); color: #fff;
+    border: none; border-radius: var(--radius-sm); font-size: 15px;
+    font-family: 'Heebo', sans-serif; font-weight: 700; cursor: pointer;
+    letter-spacing: 0.3px; transition: background 0.15s, box-shadow 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 2px 8px rgba(3,105,161,0.28);
+  }
+  .btn-report-primary:hover { background: #0284c7; box-shadow: 0 4px 14px rgba(3,105,161,0.38); }
+  .report-cta-desc { font-size: 12px; color: var(--muted); margin-top: 6px; text-align: center; line-height: 1.4; }
   .btn-claude {
     width: 100%; padding: 12px; background: #7c3aed; color: #fff;
     border: none; border-radius: var(--radius-sm); font-size: 14px;
@@ -935,7 +946,10 @@
           <button class="btn-action" onclick="copyInspect(this)" data-i18n="btn_copy">📋 העתק</button>
           <button class="btn-action" onclick="downloadInspect()">💾 TXT</button>
           <button class="btn-action" onclick="downloadInspectPhotos()" data-i18n="btn_dl_photos">📥 תמונות</button>
-          <button class="btn-action" onclick="generateInspectReport()" data-i18n="btn_report">📊 צור דוח</button>
+        </div>
+        <div class="report-cta">
+          <button class="btn-report-primary" onclick="generateInspectReport()" data-i18n="btn_report">📊 צור דוח</button>
+          <div class="report-cta-desc" data-i18n="report_cta_desc">דוח HTML מלא עם תמונות + ממצאים — מוכן להדפסה ושמירה</div>
         </div>
         <div class="claude-section" style="margin-top:0;padding-top:1rem;">
           <div class="card-title" data-i18n="inspect_claude_title">🤖 ניתוח עמוק עם Claude</div>
@@ -1456,6 +1470,7 @@ const I18N = {
   photo_word:      { he: "תמונה", en: "Photo", es: "Foto", fr: "Photo" },
   btn_analyze:     { he: "🔍 נתח תמונות", en: "🔍 Analyze photos", es: "🔍 Analizar fotos", fr: "🔍 Analyser les photos" },
   btn_report:      { he: "📊 צור דוח", en: "📊 Generate report", es: "📊 Generar informe", fr: "📊 Générer rapport" },
+  report_cta_desc: { he: "דוח HTML מלא עם תמונות + ממצאים — מוכן להדפסה ושמירה", en: "Full HTML report with photos + findings — ready to print or save", es: "Informe HTML completo con fotos + hallazgos — listo para imprimir", fr: "Rapport HTML complet avec photos + observations — prêt à imprimer" },
   btn_dl_photos:   { he: "📥 תמונות", en: "📥 Photos", es: "📥 Fotos", fr: "📥 Photos" },
   t_photos_dl:     { he: "התמונות נשמרו", en: "Photos saved", es: "Fotos guardadas", fr: "Photos enregistrées" },
   inspect_photos_dl_hint: { he: "💡 להעלאת תמונות ל-Claude: הורד תחילה עם כפתור 📥 בממצאים", en: "💡 To upload photos to Claude: download them first with the 📥 button above", es: "💡 Para subir fotos a Claude: descárgalas primero con el botón 📥", fr: "💡 Pour importer dans Claude: téléchargez d'abord avec le bouton 📥" },
