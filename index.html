@@ -214,7 +214,16 @@
   textarea.field-input { min-height: 80px; }
   .field-hint { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.6; }
 
-  /* Engine "when to use" guide */
+  /* Engine "when to use" guide — collapsible */
+  .model-guide-details { margin-top: 8px; }
+  .mg-toggle {
+    font-size: 12px; color: var(--cobalt); cursor: pointer;
+    list-style: none; display: inline-flex; align-items: center; gap: 4px;
+    user-select: none; padding: 2px 0;
+  }
+  .mg-toggle::-webkit-details-marker { display: none; }
+  .mg-toggle::marker { display: none; }
+  .model-guide-details[open] .mg-toggle { color: var(--muted); }
   .model-guide {
     margin-top: 10px;
     background: #f9fafb;
@@ -985,21 +994,24 @@
         <option value="gpt-4o-mini-transcribe">GPT-4o mini</option>
         <option value="gpt-4o-transcribe">GPT-4o</option>
       </select>
-      <div class="model-guide">
-        <div class="model-guide-row">
-          <span class="mg-name">Whisper</span>
-          <span class="mg-desc" data-i18n-html="mg_whisper">מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.</span>
+      <details class="model-guide-details">
+        <summary class="mg-toggle" data-i18n="mg_toggle">ℹ️ מה ההבדל בין המנועים?</summary>
+        <div class="model-guide">
+          <div class="model-guide-row">
+            <span class="mg-name">Whisper</span>
+            <span class="mg-desc" data-i18n-html="mg_whisper">מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.</span>
+          </div>
+          <div class="model-guide-row">
+            <span class="mg-name">GPT-4o mini</span>
+            <span class="mg-desc" data-i18n-html="mg_mini">דיוק גבוה יותר בעברית במחיר נמוך, <strong>ללא חותמות זמן</strong>. מתאים כשהדיוק חשוב והעלות חשובה.</span>
+          </div>
+          <div class="model-guide-row">
+            <span class="mg-name">GPT-4o</span>
+            <span class="mg-desc" data-i18n-html="mg_gpt">הדיוק הגבוה ביותר בעברית (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה או איכות נמוכה.</span>
+          </div>
+          <div class="field-hint" style="margin-top:8px;" data-i18n="mg_tip">💡 לזיהוי דוברים — הריצו תמלול ואז לחצו "🏷️ זהה דוברים" בתוצאה (פועל עם כל מנוע).</div>
         </div>
-        <div class="model-guide-row">
-          <span class="mg-name">GPT-4o mini</span>
-          <span class="mg-desc" data-i18n-html="mg_mini">דיוק גבוה יותר בעברית במחיר נמוך, <strong>ללא חותמות זמן</strong>. מתאים כשהדיוק חשוב והעלות חשובה.</span>
-        </div>
-        <div class="model-guide-row">
-          <span class="mg-name">GPT-4o</span>
-          <span class="mg-desc" data-i18n-html="mg_gpt">הדיוק הגבוה ביותר בעברית (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה או איכות נמוכה.</span>
-        </div>
-        <div class="field-hint" style="margin-top:8px;" data-i18n="mg_tip">💡 לזיהוי דוברים — הריצו תמלול ואז לחצו "🏷️ זהה דוברים" בתוצאה (פועל עם כל מנוע).</div>
-      </div>
+      </details>
     </div>
   </div>
 
@@ -1326,6 +1338,7 @@ const I18N = {
   btn_show:        { he: "הצג", en: "Show", es: "Mostrar", fr: "Afficher" },
   btn_save:        { he: "שמור", en: "Save", es: "Guardar", fr: "Enregistrer" },
   apikey_hint:     { he: 'המפתח נשמר רק בדפדפן שלך (localStorage).<br/>אין מפתח? &rarr; <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">צור מפתח חדש ב-platform.openai.com ↗</a>', en: 'The key is stored only in your browser (localStorage).<br/>No key? &rarr; <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Create one at platform.openai.com ↗</a>', es: 'La clave se guarda solo en tu navegador (localStorage).<br/>¿Sin clave? &rarr; <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Crea una en platform.openai.com ↗</a>', fr: 'La clé est stockée uniquement dans votre navigateur (localStorage).<br/>Pas de clé ? &rarr; <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Créez-en une sur platform.openai.com ↗</a>' },
+  mg_toggle:       { he: "ℹ️ מה ההבדל בין המנועים?", en: "ℹ️ Which model should I use?", es: "ℹ️ ¿Qué modelo usar?", fr: "ℹ️ Quel modèle choisir ?" },
   step1_title:     { he: "בחירת מנוע תמלול", en: "Choose a transcription engine", es: "Elige el motor de transcripción", fr: "Choisir le moteur de transcription" },
   model_whisper:   { he: "Whisper (ברירת מחדל)", en: "Whisper (default)", es: "Whisper (predeterminado)", fr: "Whisper (par défaut)" },
   mg_whisper:      { he: "מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. הבחירה הטובה לישיבות ארוכות ולמעקב לפי זמן. ברירת המחדל.", en: "Fast and cheap, <strong>with [mm:ss] timestamps</strong>. Best for long meetings and time-based review. The default.", es: "Rápido y económico, <strong>con marcas de tiempo [mm:ss]</strong>. Ideal para reuniones largas. Predeterminado.", fr: "Rapide et économique, <strong>avec horodatage [mm:ss]</strong>. Idéal pour les longues réunions. Par défaut." },
