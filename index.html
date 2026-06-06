@@ -3733,7 +3733,7 @@ function _annoPos(e) {
   const src = (e.touches && e.touches.length) ? e.touches[0] : (e.changedTouches && e.changedTouches.length) ? e.changedTouches[0] : e;
   return [(src.clientX - r.left) * sx, (src.clientY - r.top) * sy];
 }
-function _annoW() { return Math.max(Math.round((_annoImg ? _annoImg.naturalWidth : 800) / 160), 3); }
+function _annoW() { return Math.max(Math.round((_annoImg ? _annoImg.naturalWidth : 800) / 70), 6); }
 function annoDown(e) {
   e.preventDefault(); _annoDown = true;
   [_annoSX, _annoSY] = _annoPos(e);
