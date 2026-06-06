@@ -2550,22 +2550,27 @@ function blobToDataURL(blob) {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
 }
 function compressBlob(blob, maxPx = 1024) {
-  return new Promise(res => {
+  return new Promise((res, rej) => {
     const img = new Image();
     const burl = URL.createObjectURL(blob);
+    const cleanup = () => { try { URL.revokeObjectURL(burl); } catch (_) {} };
+    const timer = setTimeout(() => { cleanup(); blobToDataURL(blob).then(res, rej); }, 8000);
     img.onload = () => {
-      URL.revokeObjectURL(burl);
-      let w = img.naturalWidth, h = img.naturalHeight;
-      if (w > maxPx || h > maxPx) {
-        if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
-        else { w = Math.round(w * maxPx / h); h = maxPx; }
-      }
-      const c = document.createElement("canvas");
-      c.width = w; c.height = h;
-      c.getContext("2d").drawImage(img, 0, 0, w, h);
-      res(c.toDataURL("image/jpeg", 0.85));
+      clearTimeout(timer); cleanup();
+      try {
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if (!w || !h) { blobToDataURL(blob).then(res, rej); return; }
+        if (w > maxPx || h > maxPx) {
+          if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+          else { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        res(c.toDataURL("image/jpeg", 0.85));
+      } catch (_) { blobToDataURL(blob).then(res, rej); }
     };
-    img.onerror = () => { URL.revokeObjectURL(burl); blobToDataURL(blob).then(res); };
+    img.onerror = () => { clearTimeout(timer); cleanup(); blobToDataURL(blob).then(res, rej); };
     img.src = burl;
   });
 }
@@ -2741,6 +2746,7 @@ function weavePhotoAnalysis() {
 /* ---- Standalone building inspection (photos only, no recording) ---- */
 let inspectPhotos = []; // { blob, url, analysis? }
 let inspectReportText = "";
+let _analyzing = false;
 function addInspectPhotos(files) {
   for (const f of files) {
     if (f && f.type && f.type.startsWith("image/")) inspectPhotos.push({ blob: f, url: URL.createObjectURL(f) });
@@ -2787,8 +2793,8 @@ function renderInspectStrip() {
   // analyze button + hint
   const btn = document.getElementById("inspectAnalyzeBtn");
   if (btn) {
-    btn.disabled = !hasPhotos;
-    btn.textContent = hasPhotos ? `${t("btn_analyze")} (${n})` : t("btn_analyze");
+    btn.disabled = _analyzing || !hasPhotos;
+    if (!_analyzing) btn.textContent = hasPhotos ? `${t("btn_analyze")} (${n})` : t("btn_analyze");
   }
   const hint = document.getElementById("inspectAnalyzeHint");
   if (hint) hint.textContent = hasPhotos
@@ -2805,12 +2811,15 @@ async function analyzeInspectPhotos(btn) {
   const cost = (inspectPhotos.length * 0.01).toFixed(2);
   if (!confirm(t("c_analyze").replace("{n}", inspectPhotos.length).replace("{cost}", cost))) return;
 
+  _analyzing = true;
   const orig = btn.textContent;
   btn.disabled = true;
+  btn.textContent = t("t_analyze_working") + " 0/" + inspectPhotos.length;
   const sys = analysisSysPrompt();
   let ok = 0, failed = 0, lastErr = "";
   for (let i = 0; i < inspectPhotos.length; i++) {
     inspectPhotos[i].status = "working";
+    btn.textContent = `${t("t_analyze_working")} ${i + 1}/${inspectPhotos.length}`;
     renderInspectStrip();
     try {
       inspectPhotos[i].analysis = await visionAnalyzeOne(inspectPhotos[i].blob, apiKey, sys, i);
@@ -2821,6 +2830,7 @@ async function analyzeInspectPhotos(btn) {
     }
     renderInspectStrip();
   }
+  _analyzing = false;
   if (ok) { renderInspectionReport(); showToast(t("t_analyze_done") + (failed ? ` (${failed} ✕)` : ""), failed ? "" : "success"); }
   else { showToast(t("t_analyze_err") + lastErr, "error"); }
   btn.disabled = false;
