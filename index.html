@@ -889,10 +889,11 @@
       <div id="inspectStrip" class="photo-strip"></div>
       <button class="btn-claude" id="inspectAnalyzeBtn" onclick="analyzeInspectPhotos(this)" data-i18n="btn_analyze" style="margin-top:12px;" disabled>🔍 נתח תמונות</button>
       <div id="inspectResultWrap" style="display:none;margin-top:14px;">
-        <div class="transcript-box" id="inspectResult" dir="auto"></div>
+        <textarea class="transcript-box" id="inspectResult" dir="auto" style="min-height:180px;resize:vertical;width:100%;box-sizing:border-box;font-family:inherit;font-size:inherit;"></textarea>
         <div class="action-row" style="margin-top:8px;">
           <button class="btn-action" onclick="copyInspect(this)" data-i18n="btn_copy">📋 העתק</button>
           <button class="btn-action" onclick="downloadInspect()">💾 TXT</button>
+          <button class="btn-action" onclick="generateInspectReport()" data-i18n="btn_report">📊 צור דוח</button>
         </div>
       </div>
     </div>
@@ -1370,6 +1371,7 @@ const I18N = {
   t_no_photos:     { he: "אין תמונות לשמירה", en: "No photos to save", es: "Sin fotos para guardar", fr: "Aucune photo à enregistrer" },
   photo_word:      { he: "תמונה", en: "Photo", es: "Foto", fr: "Photo" },
   btn_analyze:     { he: "🔍 נתח תמונות", en: "🔍 Analyze photos", es: "🔍 Analizar fotos", fr: "🔍 Analyser les photos" },
+  btn_report:      { he: "📊 צור דוח", en: "📊 Generate report", es: "📊 Generar informe", fr: "📊 Générer rapport" },
   inspect_title:   { he: "🔍 בדיקת מבנה מתמונות", en: "🔍 Building inspection from photos", es: "🔍 Inspección de edificio con fotos", fr: "🔍 Inspection du bâtiment par photos" },
   inspect_hint:    { he: "צלם או העלה תמונות של פנים/חוץ הבית — וקבל ניתוח מקצועי. ללא הקלטה.", en: "Take or upload photos of a home's interior/exterior — get a professional analysis. No recording needed.", es: "Toma o sube fotos del interior/exterior de la casa — obtén un análisis profesional. Sin grabación.", fr: "Prenez ou téléversez des photos de l'intérieur/extérieur d'une maison — obtenez une analyse professionnelle. Sans enregistrement." },
   btn_take:        { he: "📷 צלם", en: "📷 Take photo", es: "📷 Tomar foto", fr: "📷 Prendre une photo" },
@@ -2666,21 +2668,55 @@ function renderInspectionReport() {
     lines.push("");
   });
   inspectReportText = lines.join("\n").trim();
-  document.getElementById("inspectResult").textContent = inspectReportText;
+  document.getElementById("inspectResult").value = inspectReportText;
   document.getElementById("inspectResultWrap").style.display = "block";
 }
 function copyInspect(btn) {
-  if (!inspectReportText) return;
-  navigator.clipboard.writeText(inspectReportText).then(() => {
+  const text = document.getElementById("inspectResult").value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
     const o = btn.textContent; btn.textContent = t("t_copied"); setTimeout(() => btn.textContent = o, 1500);
   });
 }
 function downloadInspect() {
-  if (!inspectReportText) return;
-  const url = URL.createObjectURL(new Blob([inspectReportText], { type: "text/plain;charset=utf-8" }));
+  const text = document.getElementById("inspectResult").value;
+  if (!text) return;
+  const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url; a.download = t("findings_title").replace(/\s+/g, "_") + ".txt"; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+async function generateInspectReport() {
+  const photos = inspectPhotos.filter(p => p.analysis);
+  if (!photos.length) { showToast(t("t_no_photos"), "error"); return; }
+  const toDataURL = blob => new Promise(res => {
+    const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(blob);
+  });
+  const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const title = esc(analysisSectionTitle());
+  const date = new Date().toLocaleDateString();
+  let photoSections = "";
+  for (let i = 0; i < photos.length; i++) {
+    const p = photos[i];
+    const dataUrl = await toDataURL(p.blob);
+    const lines = formatAnalysisBlock(p.analysis, i + 1);
+    const analysisHtml = lines.map(l => `<p>${esc(l)}</p>`).join("");
+    photoSections += `<div class="ps"><div class="pc"><img src="${dataUrl}" alt="Photo ${i+1}"/></div><div class="ac">${analysisHtml}</div></div>`;
+  }
+  const dir = document.documentElement.getAttribute("dir") || "rtl";
+  const lang = document.documentElement.lang || "he";
+  const html = `<!DOCTYPE html><html dir="${dir}" lang="${lang}"><head><meta charset="UTF-8"><title>${title}</title>
+<style>body{font-family:system-ui,sans-serif;margin:0;padding:20px;color:#1e293b;background:#fff}
+h1{font-size:1.3rem;border-bottom:2px solid #0ea5e9;padding-bottom:8px;margin-bottom:8px}
+.date{color:#64748b;font-size:.85rem;margin-bottom:20px}
+.ps{display:flex;gap:20px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid #e2e8f0;align-items:flex-start;page-break-inside:avoid}
+.pc{flex:0 0 auto;max-width:45%}.pc img{width:100%;max-width:380px;border-radius:8px;border:1px solid #e2e8f0;display:block}
+.ac{flex:1;min-width:0}.ac p{margin:0 0 5px;font-size:.88rem;line-height:1.55;white-space:pre-wrap}
+@media print{.ps{page-break-inside:avoid}body{padding:12px}}</style></head>
+<body><h1>${title}</h1><div class="date">${date}</div>${photoSections}</body></html>`;
+  const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
+  window.open(blobUrl, "_blank");
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
 }
 
 /* ---- Email / Share ---- */
