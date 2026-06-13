@@ -33,6 +33,8 @@
     --navy: #1a2744;
     --cobalt: #2563eb;
     --cobalt-light: #dbeafe;
+    --amber: #f59e0b;
+    --amber-light: #fef3c7;
     --bg: #eef1f8;
     --surface: #ffffff;
     --text: #1a2744;
@@ -80,6 +82,61 @@
   .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
   .page-title { font-size: 26px; font-weight: 600; color: var(--navy); margin-bottom: 5px; }
   .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+
+  /* ── HERO ────────────────────────────────── */
+  .page-hero {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 24px rgba(26,39,68,0.22);
+  }
+  .page-hero-img {
+    width: 100%;
+    height: 210px;
+    object-fit: cover;
+    object-position: center 30%;
+    display: block;
+  }
+  .page-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(26,39,68,0.88) 30%, rgba(37,99,235,0.45) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem 2.25rem;
+  }
+  .page-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245,158,11,0.22);
+    border: 1px solid rgba(245,158,11,0.45);
+    color: #fcd34d;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 12px;
+    width: fit-content;
+    text-transform: uppercase;
+  }
+  .page-hero-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .page-hero-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.72);
+    line-height: 1.65;
+  }
+  .page-hero-sub strong { color: #93c5fd; }
 
   /* ── CARD ────────────────────────────────── */
   .card {
@@ -267,14 +324,55 @@
   .drop-zone {
     border: 2px dashed var(--border);
     border-radius: var(--radius);
-    padding: 2.75rem 1rem;
+    padding: 2.25rem 1rem;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
   }
-  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--cobalt); background: var(--cobalt-light); }
-  .drop-icon { font-size: 40px; margin-bottom: 12px; }
-  .drop-title { font-size: 15px; font-weight: 500; color: var(--navy); margin-bottom: 5px; }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--cobalt);
+    background: var(--cobalt-light);
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
+  }
+  .drop-zone:hover .wave-bar,
+  .drop-zone.drag-over .wave-bar { animation-play-state: running; }
+  .drop-zone-inner { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .drop-waveform {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 44px;
+    margin-bottom: 14px;
+  }
+  @keyframes wave-bar {
+    0%, 100% { transform: scaleY(0.25); opacity: 0.45; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+  .wave-bar {
+    width: 5px;
+    border-radius: 3px;
+    background: var(--cobalt);
+    transform-origin: center;
+    animation: wave-bar 1.3s ease-in-out infinite;
+    animation-play-state: paused;
+    height: 100%;
+  }
+  .wave-bar:nth-child(1) { animation-delay: 0.00s; height: 55%; }
+  .wave-bar:nth-child(2) { animation-delay: 0.12s; height: 80%; }
+  .wave-bar:nth-child(3) { animation-delay: 0.24s; height: 100%; }
+  .wave-bar:nth-child(4) { animation-delay: 0.36s; height: 65%; }
+  .wave-bar:nth-child(5) { animation-delay: 0.48s; height: 90%; }
+  .wave-bar:nth-child(6) { animation-delay: 0.60s; height: 50%; }
+  .wave-bar:nth-child(7) { animation-delay: 0.72s; height: 75%; }
+  .wave-bar:nth-child(8) { animation-delay: 0.84s; height: 40%; }
+  .wave-bar:nth-child(9) { animation-delay: 0.60s; height: 85%; }
+  .wave-bar:nth-child(10){ animation-delay: 0.48s; height: 60%; }
+  .wave-bar:nth-child(11){ animation-delay: 0.36s; height: 95%; }
+  .wave-bar:nth-child(12){ animation-delay: 0.24s; height: 70%; }
+  .wave-bar:nth-child(13){ animation-delay: 0.12s; height: 45%; }
+  .drop-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 5px; }
   .drop-sub { font-size: 13px; color: var(--muted); }
   #fileInput { display: none; }
 
@@ -315,32 +413,102 @@
   /* ── RUN BUTTON ──────────────────────────── */
   .btn-primary {
     width: 100%;
-    height: 52px;
-    background: var(--navy);
+    height: 56px;
+    background: linear-gradient(135deg, var(--navy) 0%, #253360 100%);
     color: #fff;
     border: none;
     border-radius: var(--radius-sm);
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 600;
     font-family: 'Heebo', sans-serif;
     cursor: pointer;
-    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(26,39,68,0.18);
+    box-shadow: 0 2px 12px rgba(26,39,68,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
+    position: relative;
+    overflow: hidden;
   }
-  .btn-primary:hover:not(:disabled) { background: #253360; box-shadow: 0 4px 16px rgba(26,39,68,0.22); }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #253360 0%, var(--cobalt) 100%);
+    box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+  }
   .btn-primary:active:not(:disabled) { transform: scale(0.99); }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
   /* ── PROGRESS ────────────────────────────── */
-  .progress-wrap { margin-top: 1.1rem; }
-  .progress-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; text-align: center; }
-  .progress-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--cobalt); border-radius: 99px; transition: width 0.4s ease; }
+  .progress-wrap {
+    margin-top: 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-card);
+  }
+  .progress-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .progress-label { font-size: 13px; font-weight: 500; color: var(--navy); }
+  .progress-pct { font-size: 12px; color: var(--cobalt); font-weight: 600; }
+  .progress-track {
+    height: 8px;
+    background: var(--cobalt-light);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  @keyframes progress-shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cobalt) 0%, #60a5fa 50%, var(--cobalt) 100%);
+    background-size: 200% 100%;
+    border-radius: 99px;
+    transition: width 0.5s ease;
+    animation: progress-shimmer 2s linear infinite;
+  }
+  /* mini live waveform shown during active processing */
+  .progress-live-wave {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 20px;
+    margin-top: 4px;
+  }
+  @keyframes live-wave {
+    0%, 100% { transform: scaleY(0.2); }
+    50% { transform: scaleY(1); }
+  }
+  .lwave-bar {
+    width: 3px;
+    border-radius: 2px;
+    background: var(--cobalt);
+    height: 100%;
+    transform-origin: center;
+    opacity: 0.6;
+    animation: live-wave 0.9s ease-in-out infinite;
+  }
+  .lwave-bar:nth-child(2) { animation-delay: 0.1s; background: #60a5fa; }
+  .lwave-bar:nth-child(3) { animation-delay: 0.2s; }
+  .lwave-bar:nth-child(4) { animation-delay: 0.3s; background: #60a5fa; }
+  .lwave-bar:nth-child(5) { animation-delay: 0.4s; }
+  .lwave-bar:nth-child(6) { animation-delay: 0.5s; background: #60a5fa; }
+  .lwave-bar:nth-child(7) { animation-delay: 0.6s; }
+  .lwave-bar:nth-child(8) { animation-delay: 0.5s; background: #60a5fa; }
+  .lwave-bar:nth-child(9) { animation-delay: 0.4s; }
+  .lwave-bar:nth-child(10){ animation-delay: 0.3s; background: #60a5fa; }
+  .lwave-bar:nth-child(11){ animation-delay: 0.2s; }
+  .lwave-bar:nth-child(12){ animation-delay: 0.1s; background: #60a5fa; }
 
   /* ── ERROR ───────────────────────────────── */
   .error-box {
@@ -357,6 +525,51 @@
 
   /* ── RESULT ──────────────────────────────── */
   .result-card { display: none; }
+  .result-photo-strip {
+    position: relative;
+    height: 110px;
+    overflow: hidden;
+  }
+  .result-photo-strip img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+    display: block;
+  }
+  .result-photo-strip::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(26,39,68,0.25) 0%, rgba(26,39,68,0.65) 100%);
+  }
+  .result-photo-label {
+    position: absolute;
+    bottom: 14px;
+    right: 20px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 1;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .result-photo-label::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #4ade80;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(74,222,128,0.3);
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(74,222,128,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(74,222,128,0.15); }
+  }
   .result-header {
     display: flex;
     align-items: center;
@@ -712,8 +925,16 @@
 </nav>
 
 <div class="page">
-  <div class="page-title">🎙️ תמלול ישיבות לעברית</div>
-  <div class="page-sub">העלה הקלטה — קבל תמלול Word תוך דקות · Powered by OpenAI Whisper</div>
+
+  <!-- HERO BANNER -->
+  <div class="page-hero">
+    <img class="page-hero-img" src="assets/hero-meeting.jpg" alt="ישיבת צוות" />
+    <div class="page-hero-overlay">
+      <div class="page-hero-badge">✦ Powered by OpenAI Whisper &amp; Claude</div>
+      <div class="page-hero-title">🎙️ תמלול ישיבות לעברית</div>
+      <div class="page-hero-sub">העלה הקלטה — קבל <strong>תמלול Word מדויק</strong> תוך דקות<br/>תמיכה בקבצים עד 500MB · MP4 · MP3 · WAV · M4A</div>
+    </div>
+  </div>
 
   <!-- MODE TABS -->
   <div class="mode-tabs">
@@ -813,9 +1034,25 @@
       ondragover="onDragOver(event)"
       ondragleave="onDragLeave(event)"
       ondrop="onDrop(event)">
-      <div class="drop-icon">📤</div>
-      <div class="drop-title">לחץ להעלאת קובץ או גרור לכאן</div>
-      <div class="drop-sub">MP4 · MP3 · WAV · M4A · OGG · עד 500MB</div>
+      <div class="drop-zone-inner">
+        <div class="drop-waveform">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+        <div class="drop-title">לחץ להעלאת קובץ או גרור לכאן</div>
+        <div class="drop-sub">MP4 · MP3 · WAV · M4A · OGG · עד 500MB</div>
+      </div>
     </div>
     <input type="file" id="fileInput" accept="video/mp4,audio/*,.mp4,.mp3,.wav,.m4a,.ogg" onchange="onFileSelect(this.files[0])" />
 
@@ -837,8 +1074,17 @@
 
   <!-- PROGRESS -->
   <div class="progress-wrap hidden" id="progressWrap">
-    <div class="progress-label" id="progressLabel">מכין...</div>
+    <div class="progress-header">
+      <div class="progress-label" id="progressLabel">מכין...</div>
+      <div class="progress-pct" id="progressPct">0%</div>
+    </div>
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-live-wave">
+      <div class="lwave-bar"></div><div class="lwave-bar"></div><div class="lwave-bar"></div>
+      <div class="lwave-bar"></div><div class="lwave-bar"></div><div class="lwave-bar"></div>
+      <div class="lwave-bar"></div><div class="lwave-bar"></div><div class="lwave-bar"></div>
+      <div class="lwave-bar"></div><div class="lwave-bar"></div><div class="lwave-bar"></div>
+    </div>
   </div>
 
   <!-- TAB WARNING -->
@@ -850,7 +1096,12 @@
   <div class="error-box" id="errorBox"></div>
 
   <!-- RESULT -->
-  <div class="card result-card" id="resultCard" style="margin-top:1.25rem;">
+  <div class="card result-card" id="resultCard" style="margin-top:1.25rem;overflow:hidden;padding:0;">
+    <div class="result-photo-strip">
+      <img src="assets/tablet-checklist.jpg" alt="" />
+      <div class="result-photo-label">✓ התמלול מוכן</div>
+    </div>
+    <div style="padding:1.5rem;">
     <div class="result-header">
       <div class="result-title">📄 תמלול</div>
       <div class="action-row">
@@ -889,6 +1140,7 @@
       <button class="btn-claude" onclick="openInClaude()">✨ פתח ב-Claude לסיכום</button>
       <div class="email-hint" style="margin-top:7px;">מעתיק את התמלול + ההנחיות ופותח Claude — הדבק ושלח</div>
     </div>
+    </div><!-- /inner padding div -->
   </div>
 
   <!-- HISTORY -->
@@ -913,9 +1165,21 @@
         ondragover="onImgDragOver(event)"
         ondragleave="onImgDragLeave(event)"
         ondrop="onImgDrop(event)">
-        <div class="drop-icon">🖼️</div>
-        <div class="drop-title">לחץ להעלאת תמונה או גרור לכאן</div>
-        <div class="drop-sub">JPG · PNG · GIF · WEBP · עד 20MB</div>
+        <div class="drop-zone-inner">
+          <div class="drop-waveform" style="--cobalt:#7c3aed;">
+            <div class="wave-bar" style="background:#7c3aed;"></div>
+            <div class="wave-bar" style="background:#7c3aed;"></div>
+            <div class="wave-bar" style="background:#7c3aed;"></div>
+            <div class="wave-bar" style="background:#a78bfa;"></div>
+            <div class="wave-bar" style="background:#7c3aed;"></div>
+            <div class="wave-bar" style="background:#a78bfa;"></div>
+            <div class="wave-bar" style="background:#7c3aed;"></div>
+            <div class="wave-bar" style="background:#a78bfa;"></div>
+            <div class="wave-bar" style="background:#7c3aed;"></div>
+          </div>
+          <div class="drop-title">לחץ להעלאת תמונה או גרור לכאן</div>
+          <div class="drop-sub">JPG · PNG · GIF · WEBP · עד 20MB</div>
+        </div>
       </div>
       <input type="file" id="imageInput" accept="image/*" onchange="onImageSelect(this.files[0])" />
 
@@ -1241,6 +1505,8 @@ function removeFile() {
 function setProgress(pct, label) {
   document.getElementById("progressFill").style.width = pct + "%";
   document.getElementById("progressLabel").textContent = label;
+  const pctEl = document.getElementById("progressPct");
+  if (pctEl) pctEl.textContent = Math.round(pct) + "%";
 }
 
 function readFileWithProgress(file, fromPct, toPct) {
