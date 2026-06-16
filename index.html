@@ -963,7 +963,7 @@
       <button class="view-tab active" id="tabTranscribe" onclick="setView('transcribe')" data-i18n="tab_transcribe">🎙️ תמלול</button>
       <button class="view-tab" id="tabInspect" onclick="setView('inspect')" data-i18n="tab_inspect">🔍 בדיקת תמונות</button>
     </div>
-    <button class="btn-new-project" onclick="newProject()" title="פרויקט חדש — מאפס את הנתונים הנוכחיים">🔄 פרויקט חדש</button>
+    <button class="btn-new-project" onclick="newProject()" data-i18n="btn_new_project" data-i18n-title="btn_new_project_title">🔄 New Project</button>
   </div>
 
   <!-- PHOTO INSPECTION VIEW -->
@@ -1264,7 +1264,7 @@
     </div>
 
     <div style="margin-bottom:10px;">
-      <button class="btn-add-part" id="addPartBtn" onclick="addAudioPart()">➕ הוסף חלק נוסף להקלטה</button>
+      <button class="btn-add-part" id="addPartBtn" onclick="addAudioPart()" data-i18n="btn_add_part">➕ Add next recording part</button>
       <input type="file" id="addPartInput" accept="video/mp4,audio/*,.mp4,.mp3,.wav,.m4a,.ogg" onchange="onAddPartFileSelect(this.files[0])" style="display:none;" />
     </div>
 
@@ -1400,12 +1400,12 @@
 <!-- NEW PROJECT MODAL -->
 <div class="modal-overlay" id="newProjectModal">
   <div class="modal-box">
-    <div class="modal-title">⚠️ פרויקט חדש</div>
-    <div class="modal-sub" id="newProjectModalSub">יש תוצאות שלא נשמרו. לשמור לפני מעבר לפרויקט חדש?</div>
+    <div class="modal-title" id="newProjectModalTitle" data-i18n="modal_np_title">⚠️ New Project</div>
+    <div class="modal-sub" id="newProjectModalSub"></div>
     <div class="modal-actions">
-      <button class="btn-modal-save" onclick="newProjectSaveAndReset()">💾 שמור ואז פרויקט חדש</button>
-      <button class="btn-modal-skip" onclick="newProjectReset()">🔄 המשך בלי שמירה</button>
-      <button class="btn-modal-cancel" onclick="closeNewProjectModal()">ביטול</button>
+      <button class="btn-modal-save" onclick="newProjectSaveAndReset()" data-i18n="modal_np_save">💾 Save &amp; new project</button>
+      <button class="btn-modal-skip" onclick="newProjectReset()" data-i18n="modal_np_skip">🔄 Continue without saving</button>
+      <button class="btn-modal-cancel" onclick="closeNewProjectModal()" data-i18n="modal_np_cancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -1492,6 +1492,16 @@ const I18N = {
   btn_run:         { he: "▶&nbsp; התחל תמלול", en: "▶&nbsp; Start transcription", es: "▶&nbsp; Iniciar transcripción", fr: "▶&nbsp; Démarrer la transcription" },
   tab_warning:     { he: "⏳ התמלול פועל ברקע — ניתן לעבור לאפליקציות אחרות. אל תסגרו את הטאב או תרעננו את הדף.", en: "⏳ Transcription is running in the background — you can switch apps. Don't close the tab or refresh.", es: "⏳ La transcripción se ejecuta en segundo plano — puedes cambiar de app. No cierres la pestaña ni recargues.", fr: "⏳ La transcription tourne en arrière-plan — vous pouvez changer d'appli. Ne fermez pas l'onglet et ne rechargez pas." },
   result_title:    { he: "📄 תמלול", en: "📄 Transcript", es: "📄 Transcripción", fr: "📄 Transcription" },
+  btn_new_project: { he: "🔄 פרויקט חדש", en: "🔄 New Project", es: "🔄 Nuevo proyecto", fr: "🔄 Nouveau projet" },
+  btn_new_project_title: { he: "פרויקט חדש — מאפס את הנתונים הנוכחיים", en: "New project — resets current data", es: "Nuevo proyecto — reinicia los datos actuales", fr: "Nouveau projet — réinitialise les données" },
+  modal_np_title:  { he: "⚠️ פרויקט חדש", en: "⚠️ New Project", es: "⚠️ Nuevo proyecto", fr: "⚠️ Nouveau projet" },
+  modal_np_sub_tr: { he: "יש תמלול שעדיין לא נשמר. לשמור לפני מעבר לפרויקט חדש?", en: "There is an unsaved transcript. Save before starting a new project?", es: "Hay una transcripción sin guardar. ¿Guardar antes de empezar?", fr: "Il y a une transcription non enregistrée. Sauvegarder avant de commencer ?" },
+  modal_np_sub_ph: { he: "יש ניתוח תמונות שעדיין לא נשמר. לשמור לפני מעבר לפרויקט חדש?", en: "There is an unsaved photo analysis. Save before starting a new project?", es: "Hay un análisis de fotos sin guardar. ¿Guardar antes de empezar?", fr: "Il y a une analyse photo non enregistrée. Sauvegarder avant de commencer ?" },
+  modal_np_save:   { he: "💾 שמור ואז פרויקט חדש", en: "💾 Save & new project", es: "💾 Guardar y nuevo proyecto", fr: "💾 Enregistrer et nouveau projet" },
+  modal_np_skip:   { he: "🔄 המשך בלי שמירה", en: "🔄 Continue without saving", es: "🔄 Continuar sin guardar", fr: "🔄 Continuer sans enregistrer" },
+  modal_np_cancel: { he: "ביטול", en: "Cancel", es: "Cancelar", fr: "Annuler" },
+  btn_add_part:    { he: "➕ הוסף חלק נוסף להקלטה", en: "➕ Add next recording part", es: "➕ Agregar parte grabación", fr: "➕ Ajouter une partie" },
+  toast_new_proj:  { he: "✓ מוכן לפרויקט חדש", en: "✓ Ready for a new project", es: "✓ Listo para nuevo proyecto", fr: "✓ Prêt pour un nouveau projet" },
   btn_drive:       { he: "📁 שמור ל-Drive", en: "📁 Save to Drive", es: "📁 Guardar en Drive", fr: "📁 Enregistrer sur Drive" },
   btn_label_spk:   { he: "🏷️ זהה דוברים", en: "🏷️ Label speakers", es: "🏷️ Identificar hablantes", fr: "🏷️ Identifier les intervenants" },
   btn_undo:        { he: "↩︎ בטל", en: "↩︎ Undo", es: "↩︎ Deshacer", fr: "↩︎ Annuler" },
@@ -1690,8 +1700,7 @@ function t(key) {
 function detectLang() {
   const saved = localStorage.getItem(LANG_KEY);
   if (saved && LANGS.includes(saved)) return saved;
-  const nav = (navigator.language || "en").slice(0, 2).toLowerCase();
-  return LANGS.includes(nav) ? nav : "en";
+  return "en"; // default: English
 }
 function setLang(lang) {
   if (!LANGS.includes(lang)) lang = "en";
@@ -3892,8 +3901,7 @@ function newProject() {
   const hasContent = view === "transcribe" ? !!transcriptText : !!(typeof inspectPhotos !== "undefined" && inspectPhotos && inspectPhotos.length);
   if (hasContent) {
     document.getElementById("newProjectModalSub").textContent = view === "transcribe"
-      ? "יש תמלול שעדיין לא נשמר. לשמור לפני מעבר לפרויקט חדש?"
-      : "יש ניתוח תמונות שעדיין לא נשמר. לשמור לפני מעבר לפרויקט חדש?";
+      ? t("modal_np_sub_tr") : t("modal_np_sub_ph");
     document.getElementById("newProjectModal").classList.add("open");
   } else {
     doNewProjectReset(view);
@@ -3932,7 +3940,7 @@ function doNewProjectReset(view) {
   } else {
     if (typeof resetInspect === "function") resetInspect();
   }
-  showToast("✓ מוכן לפרויקט חדש", "success");
+  showToast(t("toast_new_proj"), "success");
 }
 
 /* ── Add Part 2+ ── */
