@@ -915,14 +915,15 @@
   .mode-tabs-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
   .mode-tabs-row .mode-tabs { flex: 1; margin-bottom: 0; }
   .btn-new-project {
-    height: 46px; padding: 0 14px; border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm); background: #fff; font-size: 12px;
-    font-family: 'Heebo', sans-serif; font-weight: 500; cursor: pointer;
-    color: var(--muted); white-space: nowrap;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-    display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+    height: 46px; padding: 0 16px; border: 1.5px solid var(--amber);
+    border-radius: var(--radius-sm); background: var(--amber-light); font-size: 13px;
+    font-family: 'Heebo', sans-serif; font-weight: 600; cursor: pointer;
+    color: #92400e; white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(245,158,11,0.2);
   }
-  .btn-new-project:hover { background: var(--amber-light); border-color: var(--amber); color: #92400e; }
+  .btn-new-project:hover { background: #fde68a; border-color: #d97706; box-shadow: 0 2px 8px rgba(245,158,11,0.3); }
 
   /* ── VOICE RECORDING ─────────────────────── */
   .voice-record-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
@@ -1025,7 +1026,7 @@
       <button class="mode-tab active" data-mode="audio" onclick="switchMode('audio')">🎙️ מצב שמע</button>
       <button class="mode-tab" data-mode="picture" onclick="switchMode('picture')">🖼️ מצב תמונה</button>
     </div>
-    <button class="btn-new-project" onclick="newProject()" title="התחל פרויקט חדש">🔄 חדש</button>
+    <button class="btn-new-project" onclick="newProject()" title="פרויקט חדש — מאפס את הנתונים הנוכחיים">🔄 פרויקט חדש</button>
   </div>
 
   <div id="audioMode">
