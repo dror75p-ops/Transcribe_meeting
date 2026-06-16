@@ -1003,8 +1003,9 @@
     <img class="page-hero-img" src="assets/hero-meeting.jpg" alt="ישיבת צוות" />
     <div class="page-hero-overlay">
       <div class="page-hero-badge">✦ Powered by OpenAI Whisper &amp; Claude</div>
-      <div class="page-hero-title">🎙️ תמלול ישיבות לעברית</div>
-      <div class="page-hero-sub">העלה הקלטה — קבל <strong>תמלול Word מדויק</strong> תוך דקות<br/>תמיכה בקבצים עד 500MB · MP4 · MP3 · WAV · M4A</div>
+      <div class="page-hero-title">מישיבה לתיעוד — לכל צוות הפיתוח</div>
+      <div class="page-hero-sub">שמע · תמונה · לוח לבן · שקפים — <strong>תוצאות ב-Word תוך דקות</strong><br/>עד 500MB · MP4 · MP3 · WAV · M4A · JPG · PNG</div>
+      <div style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:rgba(5,150,105,0.22);border:1px solid rgba(5,150,105,0.45);color:#6ee7b7;font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;">🔒 ללא שרת — הנתונים נשארים בדפדפן שלך בלבד</div>
     </div>
   </div>
 
@@ -1093,6 +1094,10 @@
         <span class="chip" onclick="applyChip(this,'ראיון עבודה')">🎤 ראיון עבודה</span>
         <span class="chip" onclick="applyChip(this,'ישיבת הנהלה')">🏛️ ישיבת הנהלה</span>
         <span class="chip" onclick="applyChip(this,'שיחת לקוח')">📞 שיחת לקוח</span>
+        <span class="chip" onclick="applyChip(this,'סקירת אבטחה — דיון על חולשות, דרישות compliance ובדיקות חדירה')">🔐 סקירת אבטחה</span>
+        <span class="chip" onclick="applyChip(this,'ביקורת עיצוב — משוב על wireframes, UX ועיצוב ממשק')">🎨 ביקורת עיצוב</span>
+        <span class="chip" onclick="applyChip(this,'Sprint Planning — תכנון משימות, story points ו-backlog')">🗺️ Sprint Planning</span>
+        <span class="chip" onclick="applyChip(this,'ראיון לקוח — הקשב לצרכים, pain points ותובנות שוק')">🤝 ראיון לקוח</span>
       </div>
       <textarea id="instructions" class="field-input"
         placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira."></textarea>
@@ -1285,8 +1290,11 @@
           <span class="chip" onclick="applyImgChip(this,'תאר את התמונה בפירוט')">🔍 תיאור כללי</span>
           <span class="chip" onclick="applyImgChip(this,'חלץ את כל הטקסט מהתמונה')">📄 חילוץ טקסט</span>
           <span class="chip" onclick="applyImgChip(this,'סכם את הנושאים העיקריים בשקף המצגת')">📊 סיכום שקף</span>
-          <span class="chip" onclick="applyImgChip(this,'תאר את הלוח הלבן וחלץ את כל הנקודות')">✏️ לוח לבן</span>
+          <span class="chip" onclick="applyImgChip(this,'תאר את הלוח הלבן וחלץ את כל הנקודות — ארגן לפי נושאים')">✏️ לוח לבן</span>
           <span class="chip" onclick="applyImgChip(this,'זהה ותאר את הגרף או הדיאגרמה')">📈 גרף/דיאגרמה</span>
+          <span class="chip" onclick="applyImgChip(this,'זהה ותאר את ה-wireframe או המוקאפ: מבנה הדף, רכיבי UI, flow משתמש')">🎨 Wireframe/UX</span>
+          <span class="chip" onclick="applyImgChip(this,'תאר את דיאגרמת הארכיטקטורה: רכיבים, חיבורים, זרימת מידע, פרוטוקולים')">🏗️ ארכיטקטורה</span>
+          <span class="chip" onclick="applyImgChip(this,'נתח את מפת הדרכים או ה-Roadmap: תעדוף, ציר זמן, מטרות עסקיות')">🗺️ Roadmap</span>
         </div>
         <textarea id="imgPrompt" class="field-input"
           placeholder="לדוגמה: חלץ את כל הטקסט מהשקף ותסכם את הנקודות העיקריות"></textarea>
