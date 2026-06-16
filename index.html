@@ -1342,7 +1342,13 @@
         <div id="claudeResultBox" style="background:#faf5ff;border:1.5px solid #e9d5ff;border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;max-height:400px;overflow-y:auto;"></div>
       </div>
     </div>
-  </div>
+
+    <!-- SAVE & NEW SESSION -->
+    <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:2px dashed var(--border);text-align:center;">
+      <button onclick="saveAndNewSession()" style="display:inline-flex;align-items:center;gap:8px;padding:13px 28px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'Heebo',sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(13,30,58,0.18);transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'" data-i18n="btn_save_new_session">💾 שמור וסיים — פגישה חדשה</button>
+      <div style="font-size:12px;color:var(--muted);margin-top:7px;" data-i18n="btn_save_new_session_hint">שומר את התמלול ומאפס לפגישה חדשה</div>
+    </div>
+  </div><!-- /result card -->
 
   <!-- HISTORY -->
   <div class="card" style="margin-top:1.25rem;">
@@ -1569,6 +1575,8 @@ const I18N = {
   modal_np_cancel: { he: "ביטול", en: "Cancel", es: "Cancelar", fr: "Annuler" },
   btn_add_part:    { he: "➕ הוסף חלק נוסף להקלטה", en: "➕ Add next recording part", es: "➕ Agregar parte grabación", fr: "➕ Ajouter une partie" },
   toast_new_proj:  { he: "✓ מוכן לפרויקט חדש", en: "✓ Ready for a new project", es: "✓ Listo para nuevo proyecto", fr: "✓ Prêt pour un nouveau projet" },
+  btn_save_new_session:      { he: "💾 שמור וסיים — פגישה חדשה", en: "💾 Save & start new session", es: "💾 Guardar e iniciar nueva sesión", fr: "💾 Enregistrer et nouvelle session" },
+  btn_save_new_session_hint: { he: "שומר את התמלול ומאפס לפגישה חדשה", en: "Saves the transcript and resets for a new meeting", es: "Guarda la transcripción y reinicia para una nueva reunión", fr: "Enregistre la transcription et réinitialise pour une nouvelle réunion" },
   btn_drive:       { he: "📁 שמור ל-Drive", en: "📁 Save to Drive", es: "📁 Guardar en Drive", fr: "📁 Enregistrer sur Drive" },
   btn_label_spk:   { he: "🏷️ זהה דוברים", en: "🏷️ Label speakers", es: "🏷️ Identificar hablantes", fr: "🏷️ Identifier les intervenants" },
   btn_undo:        { he: "↩︎ בטל", en: "↩︎ Undo", es: "↩︎ Deshacer", fr: "↩︎ Annuler" },
@@ -4364,6 +4372,20 @@ function doNewProjectReset(view) {
     if (typeof resetInspect === "function") resetInspect();
   }
   showToast(t("toast_new_proj"), "success");
+}
+
+function saveAndNewSession() {
+  // Open drive panel to save, then after panel closes reset automatically
+  openDrivePanel("transcribe");
+  // Listen for panel close to trigger reset
+  const overlay = document.getElementById("driveOverlay");
+  const observer = new MutationObserver(() => {
+    if (!overlay.classList.contains("open")) {
+      observer.disconnect();
+      if (transcriptText) doNewProjectReset("transcribe");
+    }
+  });
+  observer.observe(overlay, { attributes: true, attributeFilter: ["class"] });
 }
 
 /* ── Add Part 2+ ── */
