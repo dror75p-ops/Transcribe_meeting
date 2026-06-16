@@ -1038,7 +1038,7 @@
         <div class="field-hint" style="margin-top:5px;" data-i18n="inspect_result_hint">✏️ ניתן לערוך את הטקסט לפני יצירת הדוח</div>
         <div class="action-row" style="margin-top:8px;">
           <button class="btn-action" onclick="copyInspect(this)" data-i18n="btn_copy">📋 העתק</button>
-          <button class="btn-action" onclick="downloadInspect()">💾 TXT</button>
+          <button class="btn-drive" onclick="openDrivePanel('inspect')" data-i18n="btn_drive">📁 שמור ל-Drive</button>
           <button class="btn-action" onclick="downloadInspectPhotos()" data-i18n="btn_dl_photos">📥 תמונות</button>
         </div>
         <div class="report-cta">
@@ -3612,18 +3612,38 @@ function sendFeedback() {
 }
 
 /* ---- Google Drive Panel ---- */
-function openDrivePanel() {
-  if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
-  const dfn = document.getElementById("driveFileName");
-  dfn.value = combinedStem();
-  dfn.dataset.userEdited = "";
-  dfn.addEventListener("input", () => { dfn.dataset.userEdited = "1"; }, { once: true });
-  // Show photos checkbox only if session photos exist
-  const photosWrap = document.getElementById("savePhotosToggleWrap");
-  if (photosWrap) {
-    photosWrap.style.display = recPhotos.length ? "" : "none";
-    const lbl = document.getElementById("savePhotosToggleLabel");
-    if (lbl) lbl.textContent = t("save_photos_with").replace("{n}", recPhotos.length);
+let _drivePanelSource = "transcribe"; // "transcribe" | "inspect"
+function openDrivePanel(source) {
+  _drivePanelSource = source || "transcribe";
+  if (_drivePanelSource === "inspect") {
+    const text = document.getElementById("inspectResult")?.value;
+    if (!text) { showToast(t("t_no_transcript"), "error"); return; }
+    const subj = document.getElementById("inspectContextSubject")?.value.trim() || t("findings_title");
+    const dfn = document.getElementById("driveFileName");
+    dfn.value = subj.replace(/[\/\\:*?"<>|]/g, "-");
+    dfn.dataset.userEdited = "";
+    dfn.addEventListener("input", () => { dfn.dataset.userEdited = "1"; }, { once: true });
+    // Show photos checkbox for inspect photos
+    const photosWrap = document.getElementById("savePhotosToggleWrap");
+    if (photosWrap) {
+      const n = inspectPhotos.filter(p => p.blob).length;
+      photosWrap.style.display = n ? "" : "none";
+      const lbl = document.getElementById("savePhotosToggleLabel");
+      if (lbl) lbl.textContent = t("save_photos_with").replace("{n}", n);
+    }
+  } else {
+    if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
+    const dfn = document.getElementById("driveFileName");
+    dfn.value = combinedStem();
+    dfn.dataset.userEdited = "";
+    dfn.addEventListener("input", () => { dfn.dataset.userEdited = "1"; }, { once: true });
+    // Show photos checkbox only if session photos exist
+    const photosWrap = document.getElementById("savePhotosToggleWrap");
+    if (photosWrap) {
+      photosWrap.style.display = recPhotos.length ? "" : "none";
+      const lbl = document.getElementById("savePhotosToggleLabel");
+      if (lbl) lbl.textContent = t("save_photos_with").replace("{n}", recPhotos.length);
+    }
   }
   renderRecentFolders();
   document.getElementById("driveOverlay").classList.add("open");
@@ -3714,12 +3734,24 @@ async function executeDriveSave() {
   const fmt = selectedFormat;
   const name = (document.getElementById("driveFileName").value.trim() || combinedStem())
     .replace(/[\/\\:*?"<>|]/g, "-"); // sanitize filename
-  const withPhotos = document.getElementById("savePhotosWithTranscript")?.checked && recPhotos.length > 0;
+  const withPhotos = document.getElementById("savePhotosWithTranscript")?.checked;
+
+  // Determine what to save based on which view opened the panel
+  const isInspect = _drivePanelSource === "inspect";
+  const photos = isInspect ? inspectPhotos.filter(p => p.blob) : recPhotos;
+  const savePhotos = withPhotos && photos.length > 0;
 
   const downloadSelected = () => {
-    if (fmt === "word" || fmt === "both") downloadWord();
-    if (fmt === "txt" || fmt === "both") downloadTxt();
-    if (withPhotos) recPhotos.forEach((p, i) => {
+    if (isInspect) {
+      const text = document.getElementById("inspectResult")?.value || "";
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+      a.download = name + ".txt"; a.click();
+    } else {
+      if (fmt === "word" || fmt === "both") downloadWord();
+      if (fmt === "txt" || fmt === "both") downloadTxt();
+    }
+    if (savePhotos) photos.forEach((p, i) => {
       const ext = p.blob.type.includes("png") ? "png" : "jpg";
       const a = document.createElement("a");
       a.href = p.url;
@@ -3749,25 +3781,23 @@ async function executeDriveSave() {
   }
 
   try {
-    if (fmt === "word" || fmt === "both") {
-      await writeToFolder(driveDirectoryHandle, name + ".doc", buildWordBlob());
+    if (isInspect) {
+      const text = document.getElementById("inspectResult")?.value || "";
+      await writeToFolder(driveDirectoryHandle, name + ".txt", new Blob([text], { type: "text/plain;charset=utf-8" }));
+    } else {
+      if (fmt === "word" || fmt === "both") await writeToFolder(driveDirectoryHandle, name + ".doc", buildWordBlob());
+      if (fmt === "txt" || fmt === "both") await writeToFolder(driveDirectoryHandle, name + ".txt", new Blob([transcriptText], { type: "text/plain;charset=utf-8" }));
     }
-    if (fmt === "txt" || fmt === "both") {
-      const blob = new Blob([transcriptText], { type: "text/plain;charset=utf-8" });
-      await writeToFolder(driveDirectoryHandle, name + ".txt", blob);
-    }
-    if (withPhotos) {
-      for (let i = 0; i < recPhotos.length; i++) {
-        const ext = recPhotos[i].blob.type.includes("png") ? "png" : "jpg";
-        await writeToFolder(driveDirectoryHandle, `${name}_photo_${String(i + 1).padStart(2, "0")}.${ext}`, recPhotos[i].blob);
+    if (savePhotos) {
+      for (let i = 0; i < photos.length; i++) {
+        const ext = photos[i].blob.type.includes("png") ? "png" : "jpg";
+        await writeToFolder(driveDirectoryHandle, `${name}_photo_${String(i + 1).padStart(2, "0")}.${ext}`, photos[i].blob);
       }
     }
-    const photoMsg = withPhotos ? ` + ${recPhotos.length} ${t("photos_saved_suffix")}` : "";
+    const photoMsg = savePhotos ? ` + ${photos.length} ${t("photos_saved_suffix")}` : "";
     showToast(t("t_saved_to") + driveDirectoryHandle.name + photoMsg, "success");
     closeDrivePanel();
   } catch (e) {
-    // Any write failure (incl. Android's stale-state InvalidStateError on
-    // cloud-synced folders) → fall back to a download so the file is never lost.
     showToast(t("t_write_fail_dl"), "error");
     downloadSelected();
     closeDrivePanel();
