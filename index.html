@@ -926,7 +926,7 @@
 <div class="page">
   <div class="page-title" data-i18n="page_title">in-site · תמלול וביקורות שטח</div>
   <div class="page-sub" data-i18n="page_sub">תמלול ישיבות + ביקורות שטח חכמות · מופעל על ידי OpenAI</div>
-  <div style="display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;color:#065f46;font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;margin-bottom:1.25rem;">🔒 ללא שרת — הנתונים נשארים בדפדפן שלך בלבד</div>
+  <div style="display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;color:#065f46;font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;margin-bottom:1.25rem;" data-i18n="privacy_badge">🔒 ללא שרת — הנתונים נשארים בדפדפן שלך בלבד</div>
 
   <!-- API KEY -->
   <div class="card">
@@ -1218,10 +1218,10 @@
         <span class="chip" onclick="applyChip(this,'interview')" data-i18n="chip_interview">🎤 ראיון עבודה</span>
         <span class="chip" onclick="applyChip(this,'exec')" data-i18n="chip_exec">🏛️ ישיבת הנהלה</span>
         <span class="chip" onclick="applyChip(this,'customer')" data-i18n="chip_customer">📞 שיחת לקוח</span>
-        <span class="chip" onclick="applyChip(this,'security','סקירת אבטחה — דיון על חולשות, דרישות compliance ובדיקות חדירה')">🔐 סקירת אבטחה</span>
-        <span class="chip" onclick="applyChip(this,'design','ביקורת עיצוב — משוב על wireframes, UX ועיצוב ממשק')">🎨 ביקורת עיצוב</span>
-        <span class="chip" onclick="applyChip(this,'planning','Sprint Planning — תכנון משימות, story points ו-backlog')">🗺️ Sprint Planning</span>
-        <span class="chip" onclick="applyChip(this,'custinterview','ראיון לקוח — הקשב לצרכים, pain points ותובנות שוק')">🤝 ראיון לקוח</span>
+        <span class="chip" onclick="applyChip(this,'security')" data-i18n="chip_security">🔐 סקירת אבטחה</span>
+        <span class="chip" onclick="applyChip(this,'design')" data-i18n="chip_design">🎨 ביקורת עיצוב</span>
+        <span class="chip" onclick="applyChip(this,'planning')" data-i18n="chip_planning">🗺️ Sprint Planning</span>
+        <span class="chip" onclick="applyChip(this,'custinterview')" data-i18n="chip_custinterview">🤝 ראיון לקוח</span>
       </div>
       <textarea id="instructions" class="field-input"
         data-i18n-ph="instructions_ph" placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira."></textarea>
@@ -1492,6 +1492,11 @@ const I18N = {
   btn_run:         { he: "▶&nbsp; התחל תמלול", en: "▶&nbsp; Start transcription", es: "▶&nbsp; Iniciar transcripción", fr: "▶&nbsp; Démarrer la transcription" },
   tab_warning:     { he: "⏳ התמלול פועל ברקע — ניתן לעבור לאפליקציות אחרות. אל תסגרו את הטאב או תרעננו את הדף.", en: "⏳ Transcription is running in the background — you can switch apps. Don't close the tab or refresh.", es: "⏳ La transcripción se ejecuta en segundo plano — puedes cambiar de app. No cierres la pestaña ni recargues.", fr: "⏳ La transcription tourne en arrière-plan — vous pouvez changer d'appli. Ne fermez pas l'onglet et ne rechargez pas." },
   result_title:    { he: "📄 תמלול", en: "📄 Transcript", es: "📄 Transcripción", fr: "📄 Transcription" },
+  privacy_badge:   { he: "🔒 ללא שרת — הנתונים נשארים בדפדפן שלך בלבד", en: "🔒 No server — your data stays in your browser only", es: "🔒 Sin servidor — tus datos permanecen en tu navegador", fr: "🔒 Sans serveur — vos données restent dans votre navigateur" },
+  chip_security:   { he: "🔐 סקירת אבטחה", en: "🔐 Security review", es: "🔐 Revisión de seguridad", fr: "🔐 Revue de sécurité" },
+  chip_design:     { he: "🎨 ביקורת עיצוב", en: "🎨 Design review", es: "🎨 Revisión de diseño", fr: "🎨 Revue de conception" },
+  chip_planning:   { he: "🗺️ Sprint Planning", en: "🗺️ Sprint Planning", es: "🗺️ Sprint Planning", fr: "🗺️ Sprint Planning" },
+  chip_custinterview:{ he: "🤝 ראיון לקוח", en: "🤝 Customer interview", es: "🤝 Entrevista de cliente", fr: "🤝 Entretien client" },
   btn_new_project: { he: "🔄 פרויקט חדש", en: "🔄 New Project", es: "🔄 Nuevo proyecto", fr: "🔄 Nouveau projet" },
   btn_new_project_title: { he: "פרויקט חדש — מאפס את הנתונים הנוכחיים", en: "New project — resets current data", es: "Nuevo proyecto — reinicia los datos actuales", fr: "Nouveau projet — réinitialise les données" },
   modal_np_title:  { he: "⚠️ פרויקט חדש", en: "⚠️ New Project", es: "⚠️ Nuevo proyecto", fr: "⚠️ Nouveau projet" },
@@ -1770,7 +1775,7 @@ window.onload = () => {
   if (!("showDirectoryPicker" in window)) {
     document.getElementById("fsFolderUI").classList.add("hidden");
     document.getElementById("fsFallbackUI").classList.remove("hidden");
-    document.getElementById("btnPanelSave").textContent = "⬇️ הורד קובץ";
+    document.getElementById("btnPanelSave").textContent = t("btn_download");
   }
   setLang(detectLang()); // apply UI language (auto-detect or saved)
 };
@@ -1840,17 +1845,17 @@ const CHIP_PRESETS = {
   sales:     { he: "שיחת מכירות עם לקוח. הצגת מוצר, שאלות ותשובות, סיכום עסקה.", en: "Sales call with a client. Product pitch, Q&A, deal close.", es: "Llamada de ventas. Presentación de producto, preguntas y cierre.", fr: "Appel commercial. Présentation produit, questions-réponses, clôture." },
   interview: { he: "ראיון עבודה — שאלות מקצועיות ותשובות מועמד.", en: "Job interview — professional questions and candidate answers.", es: "Entrevista de trabajo — preguntas y respuestas del candidato.", fr: "Entretien d'embauche — questions et réponses du candidat." },
   exec:      { he: "ישיבת הנהלה בכירה. דיון אסטרטגי, תקציב ויעדים.", en: "Executive meeting. Strategy, budget and goals.", es: "Reunión directiva. Estrategia, presupuesto y objetivos.", fr: "Réunion de direction. Stratégie, budget et objectifs." },
-  customer:  { he: "שיחת שירות לקוחות. בירור בעיה, פתרון ומעקב.", en: "Customer support call. Issue, resolution and follow-up.", es: "Llamada de soporte. Problema, solución y seguimiento.", fr: "Appel de support client. Problème, solution et suivi." },
+  customer:      { he: "שיחת שירות לקוחות. בירור בעיה, פתרון ומעקב.", en: "Customer support call. Issue, resolution and follow-up.", es: "Llamada de soporte. Problema, solución y seguimiento.", fr: "Appel de support client. Problème, solution et suivi." },
+  security:      { he: "סקירת אבטחה — דיון על חולשות, דרישות compliance ובדיקות חדירה.", en: "Security review — discussing vulnerabilities, compliance requirements and penetration tests.", es: "Revisión de seguridad — vulnerabilidades, cumplimiento normativo y pruebas de penetración.", fr: "Revue de sécurité — vulnérabilités, exigences de conformité et tests d'intrusion." },
+  design:        { he: "ביקורת עיצוב — משוב על wireframes, UX ועיצוב ממשק.", en: "Design review — feedback on wireframes, UX and interface design.", es: "Revisión de diseño — retroalimentación sobre wireframes, UX y diseño de interfaz.", fr: "Revue de conception — retours sur maquettes, UX et design d'interface." },
+  planning:      { he: "Sprint Planning — תכנון משימות, story points ו-backlog.", en: "Sprint Planning — task breakdown, story points and backlog refinement.", es: "Sprint Planning — desglose de tareas, story points y refinamiento del backlog.", fr: "Sprint Planning — découpage des tâches, story points et raffinement du backlog." },
+  custinterview: { he: "ראיון לקוח — הקשב לצרכים, pain points ותובנות שוק.", en: "Customer interview — listen for needs, pain points and market insights.", es: "Entrevista de cliente — escuchar necesidades, puntos de dolor e insights de mercado.", fr: "Entretien client — écouter les besoins, points de douleur et insights marché." },
 };
-function applyChip(el, key, directText) {
+function applyChip(el, key) {
   document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
   el.classList.add("active");
-  if (directText) {
-    document.getElementById("instructions").value = directText;
-  } else {
-    const preset = CHIP_PRESETS[key];
-    document.getElementById("instructions").value = preset ? (preset[currentLang] || preset.he) : "";
-  }
+  const preset = CHIP_PRESETS[key];
+  document.getElementById("instructions").value = preset ? (preset[currentLang] || preset.he) : "";
   document.getElementById("instructions").dataset.userEdited = "1";
 }
 
