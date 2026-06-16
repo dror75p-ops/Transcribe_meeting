@@ -1187,6 +1187,15 @@
   <div class="progress-wrap hidden" id="progressWrap">
     <div class="progress-label" id="progressLabel">מכין...</div>
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div id="chunkProgressWrap" style="display:none;margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px;">
+        <span id="chunkProgressLabel" data-i18n="prog_chunk_label">מתמלל חלק 1 מתוך 1</span>
+        <span id="chunkProgressPct">0%</span>
+      </div>
+      <div style="background:var(--border);border-radius:99px;height:6px;overflow:hidden;">
+        <div id="chunkProgressBar" style="height:100%;background:var(--cobalt);border-radius:99px;width:0%;transition:width 0.3s ease;"></div>
+      </div>
+    </div>
   </div>
 
   <!-- TAB WARNING -->
@@ -1209,6 +1218,7 @@
         <button class="btn-action" onclick="copyText(this)" data-i18n="btn_copy">📋 העתק</button>
         <button class="btn-action" onclick="downloadTxt()">💾 TXT</button>
         <button class="btn-action secondary" onclick="downloadWord()">📝 Word</button>
+        <button class="btn-action" onclick="downloadTranscriptPDF()" data-i18n="btn_pdf">📄 PDF</button>
       </div>
     </div>
 
@@ -1239,14 +1249,42 @@
     <!-- CLAUDE SUMMARY -->
     <div class="claude-section">
       <div class="card-title" data-i18n="claude_title">🤖 סיכום חכם עם Claude</div>
+
+      <!-- Anthropic key for direct Claude API — collapsible -->
+      <details class="model-guide-details" style="margin-bottom:12px;">
+        <summary class="mg-toggle" data-i18n="claude_key_toggle">🔑 Anthropic API Key (לסיכום ישיר — אופציונלי)</summary>
+        <div id="anthropicKeySection" style="margin-top:8px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:12px;color:var(--muted);" data-i18n="claude_key_label">🔑 Anthropic API Key (לסיכום ישיר):</span>
+            <span id="anthropicKeySaved" class="hidden" style="font-size:12px;color:var(--success);">✓ <span id="anthropicKeyHint"></span> <span onclick="expandAnthropicKey()" style="color:var(--cobalt);cursor:pointer;" data-i18n="apikey_edit">✎ שנה</span></span>
+          </div>
+          <div id="anthropicKeyForm" style="display:flex;gap:6px;">
+            <input type="password" id="anthropicKey" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;" data-i18n-ph="claude_key_ph" placeholder="sk-ant-..." />
+            <button class="btn-sm success" onclick="saveAnthropicKey()" data-i18n="btn_save">שמור</button>
+          </div>
+        </div>
+      </details>
+
       <textarea class="claude-instructions" id="claudeInstructions" data-i18n-ph="claude_ph" oninput="this.dataset.userEdited='1'" placeholder="הנחיות לסיכום (אופציונלי)...">אנא סכם את ישיבה זו בצורה מסודרת:
 - כותרת הישיבה
 - משתתפים (אם מוזכרים)
 - נושאים עיקריים שנדונו
 - החלטות שהתקבלו
 - משימות להמשך ואחראים</textarea>
-      <button class="btn-claude" onclick="openInClaude()" data-i18n="btn_claude">✨ פתח ב-Claude לסיכום</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <button class="btn-claude" onclick="openInClaude()" data-i18n="btn_claude">✨ פתח ב-Claude לסיכום</button>
+        <button class="btn-claude" onclick="summarizeWithClaude()" data-i18n="btn_claude_direct" style="background:#7c3aed;">✨ סכם עכשיו</button>
+      </div>
       <div class="email-hint" style="margin-top:7px;" data-i18n="claude_hint">מעתיק את התמלול + ההנחיות ופותח Claude — הדבק ושלח</div>
+
+      <!-- Direct Claude API result -->
+      <div id="claudeResultWrap" style="display:none;margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:13px;font-weight:600;color:#7c3aed;" data-i18n="claude_result_title">✨ סיכום Claude</span>
+          <button onclick="copyClaudeResult(this)" class="btn-action" data-i18n="btn_copy">📋 העתק</button>
+        </div>
+        <div id="claudeResultBox" style="background:#faf5ff;border:1.5px solid #e9d5ff;border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;max-height:400px;overflow-y:auto;"></div>
+      </div>
     </div>
   </div>
 
@@ -1334,6 +1372,19 @@
       </div>
     </div>
 
+    <!-- Notion export — collapsible -->
+    <details class="model-guide-details" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+      <summary class="mg-toggle" data-i18n="notion_toggle">📝 Export to Notion (optional)</summary>
+      <div id="notionSection" style="margin-top:8px;">
+        <input type="password" id="notionApiKey" data-i18n-ph="notion_key_ph" placeholder="secret_..."
+          style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;margin-bottom:8px;" />
+        <input type="text" id="notionPageId" data-i18n-ph="notion_page_ph" placeholder="Page ID (32 chars from URL)"
+          style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;margin-bottom:8px;" />
+        <button class="btn-sm cobalt" onclick="saveToNotion()" style="width:100%;" data-i18n="btn_notion_save">📝 Export to Notion</button>
+        <div class="field-hint" style="margin-top:6px;" data-i18n="notion_hint">צור Notion integration ב-notion.so/my-integrations, שתף את הדף עם ה-integration, והדבק את מפתח ה-API ומזהה הדף</div>
+      </div>
+    </details>
+
     <div class="panel-footer">
       <button class="btn-panel-cancel" onclick="closeDrivePanel()" data-i18n="btn_cancel">ביטול</button>
       <button class="btn-panel-save" id="btnPanelSave" onclick="executeDriveSave()" data-i18n="btn_panel_save">💾 שמור כאן</button>
@@ -1363,9 +1414,12 @@ const MODELS = {
 let selectedModel = "whisper-1";
 
 const HISTORY_KEY = "da_transcripts";
+const DRAFT_KEY = "da_draft";
 const DRIVE_FOLDER_KEY = "da_drive_folders"; // stores [{name, path}]
 const MODEL_KEY = "da_model";
 const LANG_KEY = "da_lang";
+const ANTHROPIC_KEY = "da_anthropic_key";
+const NOTION_KEY = "da_notion_key";
 
 /* ===== i18n ===== */
 const LANGS = ["he", "en", "es", "fr"];
@@ -1611,6 +1665,43 @@ const I18N = {
   h_load:          { he: "טען", en: "Load", es: "Cargar", fr: "Charger" },
   h_delete:        { he: "מחק", en: "Delete", es: "Eliminar", fr: "Supprimer" },
   h_meeting:       { he: "ישיבה", en: "Meeting", es: "Reunión", fr: "Réunion" },
+
+  /* Feature 1: Draft auto-save */
+  draft_found:     { he: "📋 נמצא טיוטת תמלול מלפני {m} דקות", en: "📋 Draft transcript found from {m} min ago", es: "📋 Borrador encontrado de hace {m} min", fr: "📋 Brouillon trouvé il y a {m} min" },
+  draft_restore:   { he: "שחזר", en: "Restore", es: "Restaurar", fr: "Restaurer" },
+  draft_discard:   { he: "בטל", en: "Discard", es: "Descartar", fr: "Ignorer" },
+  draft_restored:  { he: "✓ הטיוטה שוחזרה", en: "✓ Draft restored", es: "✓ Borrador restaurado", fr: "✓ Brouillon restauré" },
+
+  /* Feature 2: Chunk progress */
+  prog_chunk_label:{ he: "מתמלל חלק {done} מתוך {total}", en: "Transcribing part {done} of {total}", es: "Transcribiendo parte {done} de {total}", fr: "Transcription partie {done} sur {total}" },
+
+  /* Feature 3: Claude API direct */
+  claude_key_toggle:  { he: "🔑 Anthropic API Key (לסיכום ישיר — אופציונלי)", en: "🔑 Anthropic API Key (for direct summary — optional)", es: "🔑 Clave API de Anthropic (resumen directo — opcional)", fr: "🔑 Clé API Anthropic (résumé direct — facultatif)" },
+  claude_key_label:   { he: "🔑 Anthropic API Key (לסיכום ישיר):", en: "🔑 Anthropic API Key (for direct summary):", es: "🔑 Clave API de Anthropic (resumen directo):", fr: "🔑 Clé API Anthropic (résumé direct) :" },
+  claude_key_ph:      { he: "sk-ant-...", en: "sk-ant-...", es: "sk-ant-...", fr: "sk-ant-..." },
+  btn_claude_direct:  { he: "✨ סכם עכשיו", en: "✨ Summarize now", es: "✨ Resumir ahora", fr: "✨ Résumer maintenant" },
+  claude_result_title:{ he: "✨ סיכום Claude", en: "✨ Claude Summary", es: "✨ Resumen de Claude", fr: "✨ Résumé Claude" },
+  claude_no_key:      { he: "נא להזין Anthropic API Key בסעיף הסיכום", en: "Please enter your Anthropic API Key in the summary section", es: "Introduce tu clave API de Anthropic", fr: "Veuillez saisir votre clé API Anthropic" },
+  claude_working:     { he: "⏳ מסכם...", en: "⏳ Summarizing...", es: "⏳ Resumiendo...", fr: "⏳ Résumé en cours..." },
+  claude_done:        { he: "✓ הסיכום מוכן", en: "✓ Summary ready", es: "✓ Resumen listo", fr: "✓ Résumé prêt" },
+
+  /* Feature 4: PDF export */
+  btn_pdf:         { he: "📄 PDF", en: "📄 PDF", es: "📄 PDF", fr: "📄 PDF" },
+
+  /* Feature 6: Language detection */
+  lang_detected:   { he: "🌐 שפת האודיו שזוהתה: {lang}", en: "🌐 Detected audio language: {lang}", es: "🌐 Idioma detectado: {lang}", fr: "🌐 Langue audio détectée : {lang}" },
+
+  /* Feature 7: Notion export */
+  notion_toggle:   { he: "📝 ייצוא ל-Notion (אופציונלי)", en: "📝 Export to Notion (optional)", es: "📝 Exportar a Notion (opcional)", fr: "📝 Exporter vers Notion (facultatif)" },
+  notion_label:    { he: "📝 Notion", en: "📝 Notion", es: "📝 Notion", fr: "📝 Notion" },
+  notion_key_ph:   { he: "secret_...", en: "secret_...", es: "secret_...", fr: "secret_..." },
+  notion_page_ph:  { he: "מזהה דף (32 תווים מה-URL)", en: "Page ID (32 chars from URL)", es: "ID de página (32 chars de la URL)", fr: "ID de page (32 chars depuis l'URL)" },
+  btn_notion_save: { he: "📝 שמור ב-Notion", en: "📝 Export to Notion", es: "📝 Exportar a Notion", fr: "📝 Exporter vers Notion" },
+  notion_hint:     { he: "צור integration ב-notion.so/my-integrations, שתף את הדף, הדבק מפתח ומזהה דף", en: "Create an integration at notion.so/my-integrations, share the page, paste API key and page ID", es: "Crea una integración en notion.so/my-integrations, comparte la página, pega la clave y el ID", fr: "Créez une intégration sur notion.so/my-integrations, partagez la page, collez la clé et l'ID" },
+  notion_missing:  { he: "נא להזין Notion API Key ומזהה דף", en: "Please enter Notion API Key and Page ID", es: "Introduce la clave API y el ID de página de Notion", fr: "Veuillez saisir la clé API Notion et l'ID de page" },
+  notion_working:  { he: "שולח ל-Notion...", en: "Sending to Notion...", es: "Enviando a Notion...", fr: "Envoi vers Notion..." },
+  notion_done:     { he: "✓ נשמר ב-Notion! פותח...", en: "✓ Saved to Notion! Opening...", es: "✓ Guardado en Notion. Abriendo...", fr: "✓ Enregistré dans Notion ! Ouverture..." },
+  notion_err:      { he: "שגיאת Notion: ", en: "Notion error: ", es: "Error de Notion: ", fr: "Erreur Notion : " },
 };
 
 function t(key) {
@@ -1695,6 +1786,27 @@ window.onload = () => {
     document.getElementById("btnPanelSave").textContent = "⬇️ הורד קובץ";
   }
   setLang(detectLang()); // apply UI language (auto-detect or saved)
+
+  // Restore Anthropic key if saved
+  const savedAnt = localStorage.getItem(ANTHROPIC_KEY);
+  if (savedAnt) { const ai = document.getElementById("anthropicKey"); if(ai) { ai.value = savedAnt; collapseAnthropicKey(savedAnt); } }
+
+  // Restore Notion key if saved
+  const savedNotion = localStorage.getItem(NOTION_KEY);
+  if (savedNotion) { const ni = document.getElementById("notionApiKey"); if(ni) ni.value = savedNotion; }
+
+  // Draft restore check
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (draft && draft.text && draft.ts) {
+      const ageH = (Date.now() - draft.ts) / 36e5;
+      if (ageH < 24) {
+        showDraftRestoreBanner(draft);
+      } else {
+        localStorage.removeItem(DRAFT_KEY);
+      }
+    }
+  } catch(e) { localStorage.removeItem(DRAFT_KEY); }
 };
 
 /* ---- Toast ---- */
@@ -1986,6 +2098,7 @@ async function transcribeSingle(apiKey) {
   );
   setProgress(80, t("prog_processing"));
   audioDuration = data.duration || 0;
+  if (!wantTs && data.language && !window._detectedAudioLang) window._detectedAudioLang = data.language;
   if (wantTs) {
     const lines = (data.segments || []).map(s => "[" + fmtTime(s.start) + "]  " + s.text.trim());
     transcriptText = lines.length ? lines.join("\n") : (data.text || "");
@@ -2085,15 +2198,18 @@ async function sendChunk(job, i, tail, apiKey) {
   fd.append("file", new File([c.blob], c.name, { type: c.type || c.blob.type || "audio/wav" }), c.name);
   fd.append("model", job.model);
   fd.append("language", job.lang);
-  fd.append("response_format", job.wantTs ? "verbose_json" : "text");
+  fd.append("response_format", job.wantTs ? "verbose_json" : "json");
   if (job.wantTs) fd.append("timestamp_granularities[]", "segment");
   const prompt = [tail, job.basePrompt].filter(Boolean).join(" ").trim();
   if (prompt) fd.append("prompt", prompt);
   try {
-    const data = await whisperFetch(fd, apiKey, null, !job.wantTs);
-    return job.wantTs
-      ? { text: data.text || "", segments: data.segments || [], duration: data.duration || 0 }
-      : { text: data, segments: null, duration: 0 };
+    const data = await whisperFetch(fd, apiKey, null, false);
+    if (!job.wantTs) {
+      const detectedLang = data.language || null;
+      if (detectedLang && !window._detectedAudioLang) window._detectedAudioLang = detectedLang;
+      return { text: data.text || "", segments: null, duration: data.duration || 0 };
+    }
+    return { text: data.text || "", segments: data.segments || [], duration: data.duration || 0 };
   } catch (e) {
     return null; // isolated failure — retried on demand
   }
@@ -2106,10 +2222,21 @@ async function processChunks(job, indices, apiKey, fromPct, toPct) {
   const CONCURRENCY = isMobile ? 2 : 3;
   const total = indices.length;
   let done = 0;
-  const tick = () => setProgress(
-    Math.round(fromPct + (done / total) * (toPct - fromPct)),
-    `${t("prog_transcribing")} ${done} / ${total}`
-  );
+  const tick = () => {
+    setProgress(
+      Math.round(fromPct + (done / total) * (toPct - fromPct)),
+      `${t("prog_transcribing")} ${done} / ${total}`
+    );
+    const pct = Math.round((done / total) * 100);
+    const bar = document.getElementById("chunkProgressBar");
+    const pctEl = document.getElementById("chunkProgressPct");
+    const labelEl = document.getElementById("chunkProgressLabel");
+    const wrap = document.getElementById("chunkProgressWrap");
+    if (bar) bar.style.width = pct + "%";
+    if (pctEl) pctEl.textContent = pct + "%";
+    if (labelEl) labelEl.textContent = t("prog_chunk_label").replace("{done}", done).replace("{total}", total);
+    if (wrap && total > 1) wrap.style.display = "";
+  };
 
   if (job.chaining) {
     let tail = "";
@@ -2480,12 +2607,23 @@ function renderResult(failures) {
 function finish(failures) {
   transcriptText = insertPhotoMarkers(transcriptText); // weave in camera photos (if any)
   setProgress(100, t("prog_done"));
-  setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
+  setTimeout(() => {
+    document.getElementById("progressWrap").classList.add("hidden");
+    const cpw = document.getElementById("chunkProgressWrap");
+    if (cpw) { cpw.style.display = "none"; const bar = document.getElementById("chunkProgressBar"); if(bar) bar.style.width = "0%"; }
+  }, 900);
   document.getElementById("runBtn").disabled = false;
   document.getElementById("tabWarning").style.display = "none";
   window._transcribing = false;
 
   renderResult(failures);
+
+  // Feature 6: detected audio language
+  if (window._detectedAudioLang) {
+    const langName = { he: "עברית", en: "English", ar: "Arabic", es: "Español", fr: "Français", de: "Deutsch", ru: "Russian", uk: "Ukrainian" }[window._detectedAudioLang] || window._detectedAudioLang;
+    showToast(t("lang_detected").replace("{lang}", langName), "");
+    window._detectedAudioLang = null;
+  }
 
   // Pre-fill drive panel filename
   const dfn = document.getElementById("driveFileName");
@@ -2495,6 +2633,9 @@ function finish(failures) {
   const words = transcriptText.split(/\s+/).filter(Boolean).length;
   if (currentFile) saveToHistory(currentFile.name, meetingSubject, words, audioDuration);
   setTimeout(() => document.getElementById("resultCard").scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+
+  // Feature 1: save draft
+  saveDraft();
 }
 
 /* ---- Download actions ---- */
@@ -2560,6 +2701,209 @@ function openInClaude() {
   }).catch(() => {
     showToast(t("t_copy_err"), "error");
   });
+}
+
+/* ---- Feature 1: Draft auto-save ---- */
+function saveDraft() {
+  if (!transcriptText) return;
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      text: transcriptText,
+      subject: meetingSubject,
+      participants: participants,
+      instructions: document.getElementById("instructions")?.value || "",
+      ts: Date.now()
+    }));
+  } catch(e) {}
+}
+function showDraftRestoreBanner(draft) {
+  const bar = document.createElement("div");
+  bar.id = "draftBanner";
+  bar.style.cssText = "position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#1e3a5f;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;z-index:200;display:flex;gap:12px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,0.25);max-width:90vw;";
+  const age = Math.round((Date.now() - draft.ts) / 60000);
+  bar.innerHTML = `<span>${t("draft_found").replace("{m}", age)}</span>
+    <button onclick="restoreDraft()" style="background:#3A7BDD;border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;">${t("draft_restore")}</button>
+    <button onclick="discardDraft()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;">${t("draft_discard")}</button>`;
+  document.body.appendChild(bar);
+  window._pendingDraft = draft;
+}
+function restoreDraft() {
+  const draft = window._pendingDraft;
+  if (!draft) return;
+  transcriptText = draft.text;
+  if (draft.subject) {
+    meetingSubject = draft.subject;
+    const si = document.getElementById("meetingSubjectInput");
+    if (si) si.value = draft.subject;
+  }
+  if (draft.participants && draft.participants.length) {
+    participants = draft.participants;
+    if (typeof renderParticipants === "function") renderParticipants();
+  }
+  if (draft.instructions) {
+    const ins = document.getElementById("instructions");
+    if (ins) { ins.value = draft.instructions; ins.dataset.userEdited = "1"; }
+  }
+  document.getElementById("transcriptBox").textContent = transcriptText;
+  document.getElementById("resultCard").style.display = "block";
+  localStorage.removeItem(DRAFT_KEY);
+  document.getElementById("draftBanner")?.remove();
+  showToast(t("draft_restored"), "success");
+}
+function discardDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+  document.getElementById("draftBanner")?.remove();
+}
+
+/* ---- Feature 3: Claude API direct integration ---- */
+function saveAnthropicKey() {
+  const k = document.getElementById("anthropicKey").value.trim();
+  if (!k) return;
+  localStorage.setItem(ANTHROPIC_KEY, k);
+  collapseAnthropicKey(k);
+  showToast(t("t_key_saved"), "success");
+}
+function collapseAnthropicKey(key) {
+  const hint = key.length > 8 ? key.slice(0, 8) + "..." + key.slice(-4) : "•••";
+  const hintEl = document.getElementById("anthropicKeyHint");
+  const savedEl = document.getElementById("anthropicKeySaved");
+  const formEl = document.getElementById("anthropicKeyForm");
+  if (hintEl) hintEl.textContent = hint;
+  if (savedEl) savedEl.classList.remove("hidden");
+  if (formEl) formEl.style.display = "none";
+}
+function expandAnthropicKey() {
+  const savedEl = document.getElementById("anthropicKeySaved");
+  const formEl = document.getElementById("anthropicKeyForm");
+  if (savedEl) savedEl.classList.add("hidden");
+  if (formEl) formEl.style.display = "flex";
+}
+async function summarizeWithClaude() {
+  if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
+  const key = localStorage.getItem(ANTHROPIC_KEY);
+  if (!key) { showToast(t("claude_no_key"), "error"); return; }
+  const instructions = document.getElementById("claudeInstructions")?.value || t("claude_default");
+  const prompt = instructions + "\n\n" + t("claude_prefix") + "\n\n" + transcriptText;
+  const wrap = document.getElementById("claudeResultWrap");
+  const box = document.getElementById("claudeResultBox");
+  if (wrap) wrap.style.display = "";
+  if (box) box.textContent = t("claude_working");
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 2048,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || resp.statusText);
+    if (box) box.textContent = data.content?.[0]?.text || "";
+    showToast(t("claude_done"), "success");
+  } catch (e) {
+    if (box) box.textContent = t("t_error_prefix") + e.message;
+    showToast(t("t_error_prefix") + e.message, "error");
+  }
+}
+function copyClaudeResult(btn) {
+  const text = document.getElementById("claudeResultBox").textContent;
+  navigator.clipboard.writeText(text).then(() => showToast(t("t_copied"), "success"));
+}
+
+/* ---- Feature 4: PDF export ---- */
+function downloadTranscriptPDF() {
+  if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
+  const title = meetingSubject || (currentFile ? currentFile.name.replace(/\.[^.]+$/, "") : t("h_meeting"));
+  const date = new Date().toLocaleDateString(currentLang === "he" ? "he-IL" : "en-US");
+  const dir = currentLang === "he" ? "rtl" : "ltr";
+  const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const participantList = participants.length ? `<div class="meta">${participants.map(esc).join(" · ")}</div>` : "";
+  const bodyText = esc(transcriptText).replace(/\n/g,"<br>");
+  const safeTitle = esc(title);
+  const html = `<!DOCTYPE html><html lang="${currentLang}" dir="${dir}"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${safeTitle}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,Arial,sans-serif;color:#0f172a;background:#fff;padding:32px 40px;max-width:800px;margin:0 auto;font-size:14px;line-height:1.8}
+.header{border-bottom:2px solid #0D1E3A;padding-bottom:16px;margin-bottom:24px}
+.brand{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+h1{font-size:22px;font-weight:700;color:#0D1E3A;margin-bottom:6px}
+.meta{font-size:12px;color:#64748b;margin-bottom:4px}
+.transcript{white-space:pre-wrap;line-height:1.9;font-size:13.5px}
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center}
+.no-print{display:flex;gap:10px;margin-bottom:24px}
+.btn{padding:10px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-print{background:#0D1E3A;color:#fff}
+.btn-close{background:#f1f5f9;color:#0D1E3A}
+@media print{.no-print{display:none}}
+</style></head><body>
+<div class="no-print">
+  <button class="btn btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  <button class="btn btn-close" onclick="window.close()">✕ Close</button>
+</div>
+<div class="header">
+  <div class="brand">in-site · transcript</div>
+  <h1>${safeTitle}</h1>
+  ${participantList}
+  <div class="meta">${date}</div>
+</div>
+<div class="transcript">${bodyText}</div>
+<div class="footer">Generated with in-site &nbsp;·&nbsp; ${date}</div>
+</body></html>`;
+  const win = window.open("", "_blank");
+  if (win) { win.document.write(html); win.document.close(); }
+}
+
+/* ---- Feature 7: Notion export ---- */
+async function saveToNotion() {
+  if (!transcriptText) { showToast(t("t_no_transcript"), "error"); return; }
+  const key = document.getElementById("notionApiKey").value.trim();
+  const pageId = document.getElementById("notionPageId").value.trim().replace(/-/g, "");
+  if (!key || pageId.length < 32) { showToast(t("notion_missing"), "error"); return; }
+  localStorage.setItem(NOTION_KEY, key);
+  showToast(t("notion_working"), "");
+  const title = meetingSubject || (currentFile ? currentFile.name.replace(/\.[^.]+$/, "") : t("h_meeting"));
+  // Split transcript into paragraphs (max 1999 chars each per Notion block limit)
+  const paragraphs = [];
+  let remaining = transcriptText;
+  while (remaining.length > 0) {
+    paragraphs.push(remaining.slice(0, 1999));
+    remaining = remaining.slice(1999);
+  }
+  const children = paragraphs.map(p => ({
+    object: "block", type: "paragraph",
+    paragraph: { rich_text: [{ type: "text", text: { content: p } }] }
+  }));
+  try {
+    const resp = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + key,
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        parent: { page_id: pageId },
+        properties: { title: { title: [{ text: { content: title } }] } },
+        children
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.message || resp.statusText);
+    const url = data.url || "https://notion.so";
+    showToast(t("notion_done"), "success");
+    window.open(url, "_blank");
+  } catch(e) {
+    showToast(t("notion_err") + e.message, "error");
+  }
 }
 
 /* ---- Speaker labelling (uses the same OpenAI key) ---- */
@@ -3310,7 +3654,9 @@ function saveToHistory(fileName, subject, words, dur) {
     dur,
     text: transcriptText,
     date: new Date().toLocaleDateString("he-IL"),
-    ts: Date.now()
+    ts: Date.now(),
+    participantsList: [...participants],
+    instructions: document.getElementById("instructions")?.value || ""
   });
   if (hist.length > 20) hist.pop();
   localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
@@ -3353,7 +3699,16 @@ function loadHistory(i) {
   audioDuration = h.dur || 0;
   if (h.subject) {
     meetingSubject = h.subject;
-    document.getElementById("meetingSubjectInput").value = h.subject;
+    const si = document.getElementById("meetingSubjectInput");
+    if (si) si.value = h.subject;
+  }
+  if (h.participantsList && h.participantsList.length) {
+    participants = h.participantsList;
+    if (typeof renderParticipants === "function") renderParticipants();
+  }
+  if (h.instructions) {
+    const ins = document.getElementById("instructions");
+    if (ins) { ins.value = h.instructions; ins.dataset.userEdited = "1"; }
   }
   document.getElementById("transcriptBox").textContent = transcriptText;
   const rc = document.getElementById("resultCard");
@@ -3361,6 +3716,7 @@ function loadHistory(i) {
   document.getElementById("s1").textContent = (h.words || 0).toLocaleString("he-IL");
   document.getElementById("s2").textContent = fmtTime(audioDuration);
   document.getElementById("s3").textContent = audioDuration ? "$" + (audioDuration / 60 * 0.006).toFixed(2) : "—";
+  showToast(t("t_restored"), "success");
   setTimeout(() => rc.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
 }
 
