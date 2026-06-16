@@ -901,6 +901,76 @@
   .btn-analyze:active:not(:disabled) { transform: scale(0.99); }
   .btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
+  /* ── NEW PROJECT BUTTON ──────────────────── */
+  .mode-tabs-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+  .mode-tabs-row .mode-tabs { flex: 1; margin-bottom: 0; }
+  .btn-new-project {
+    height: 46px; padding: 0 14px; border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); background: #fff; font-size: 12px;
+    font-family: 'Heebo', sans-serif; font-weight: 500; cursor: pointer;
+    color: var(--muted); white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+  }
+  .btn-new-project:hover { background: var(--amber-light); border-color: var(--amber); color: #92400e; }
+
+  /* ── VOICE RECORDING ─────────────────────── */
+  .voice-record-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .btn-voice-rec {
+    height: 34px; padding: 0 13px; border: 1.5px solid #dc2626;
+    border-radius: var(--radius-sm); background: #fff; font-size: 12px;
+    font-family: 'Heebo', sans-serif; font-weight: 500; cursor: pointer;
+    color: #dc2626; display: flex; align-items: center; gap: 5px;
+    transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-voice-rec:hover { background: #fee2e2; }
+  .btn-voice-rec.recording {
+    background: #dc2626; color: #fff;
+    animation: rec-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes rec-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(220,38,38,0.1); }
+  }
+  .voice-status { font-size: 12px; color: var(--muted); flex: 1; }
+  .voice-status.active { color: #dc2626; font-weight: 500; }
+
+  /* ── NEW PROJECT MODAL ───────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(26,39,68,0.55);
+    z-index: 300; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    backdrop-filter: blur(2px); padding: 1.5rem;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .modal-box {
+    background: #fff; border-radius: var(--radius); padding: 1.75rem;
+    width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    transform: scale(0.95); transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal-box { transform: scale(1); }
+  .modal-title { font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+  .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
+  .modal-actions { display: flex; flex-direction: column; gap: 8px; }
+  .btn-modal-save {
+    padding: 13px; background: var(--drive); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+    font-family: 'Heebo', sans-serif; cursor: pointer; transition: background 0.15s; text-align: center;
+  }
+  .btn-modal-save:hover { background: #157a33; }
+  .btn-modal-skip {
+    padding: 13px; background: #fff; color: var(--text); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px;
+    font-family: 'Heebo', sans-serif; cursor: pointer; transition: background 0.15s; text-align: center;
+  }
+  .btn-modal-skip:hover { background: var(--bg); }
+  .btn-modal-cancel {
+    padding: 10px; background: none; color: var(--muted); border: none;
+    border-radius: var(--radius-sm); font-size: 13px;
+    font-family: 'Heebo', sans-serif; cursor: pointer; text-align: center; text-decoration: underline;
+  }
+  .btn-modal-cancel:hover { color: var(--text); }
+
   /* ── RESPONSIVE ──────────────────────────── */
   @media (max-width: 520px) {
     .page { padding: 1.5rem 1rem 4rem; }
@@ -914,6 +984,8 @@
     .format-tabs { gap: 5px; }
     .format-tab { font-size: 12px; padding: 9px 6px; }
     .panel-footer { gap: 8px; }
+    .mode-tabs-row { flex-wrap: wrap; }
+    .btn-new-project { width: 100%; justify-content: center; }
   }
 </style>
 </head>
@@ -931,15 +1003,19 @@
     <img class="page-hero-img" src="assets/hero-meeting.jpg" alt="ישיבת צוות" />
     <div class="page-hero-overlay">
       <div class="page-hero-badge">✦ Powered by OpenAI Whisper &amp; Claude</div>
-      <div class="page-hero-title">🎙️ תמלול ישיבות לעברית</div>
-      <div class="page-hero-sub">העלה הקלטה — קבל <strong>תמלול Word מדויק</strong> תוך דקות<br/>תמיכה בקבצים עד 500MB · MP4 · MP3 · WAV · M4A</div>
+      <div class="page-hero-title">מישיבה לתיעוד — לכל צוות הפיתוח</div>
+      <div class="page-hero-sub">שמע · תמונה · לוח לבן · שקפים — <strong>תוצאות ב-Word תוך דקות</strong><br/>עד 500MB · MP4 · MP3 · WAV · M4A · JPG · PNG</div>
+      <div style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:rgba(5,150,105,0.22);border:1px solid rgba(5,150,105,0.45);color:#6ee7b7;font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;">🔒 ללא שרת — הנתונים נשארים בדפדפן שלך בלבד</div>
     </div>
   </div>
 
-  <!-- MODE TABS -->
-  <div class="mode-tabs">
-    <button class="mode-tab active" data-mode="audio" onclick="switchMode('audio')">🎙️ מצב שמע</button>
-    <button class="mode-tab" data-mode="picture" onclick="switchMode('picture')">🖼️ מצב תמונה</button>
+  <!-- MODE TABS + NEW PROJECT -->
+  <div class="mode-tabs-row">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="audio" onclick="switchMode('audio')">🎙️ מצב שמע</button>
+      <button class="mode-tab" data-mode="picture" onclick="switchMode('picture')">🖼️ מצב תמונה</button>
+    </div>
+    <button class="btn-new-project" onclick="newProject()" title="התחל פרויקט חדש">🔄 חדש</button>
   </div>
 
   <div id="audioMode">
@@ -1018,10 +1094,18 @@
         <span class="chip" onclick="applyChip(this,'ראיון עבודה')">🎤 ראיון עבודה</span>
         <span class="chip" onclick="applyChip(this,'ישיבת הנהלה')">🏛️ ישיבת הנהלה</span>
         <span class="chip" onclick="applyChip(this,'שיחת לקוח')">📞 שיחת לקוח</span>
+        <span class="chip" onclick="applyChip(this,'סקירת אבטחה — דיון על חולשות, דרישות compliance ובדיקות חדירה')">🔐 סקירת אבטחה</span>
+        <span class="chip" onclick="applyChip(this,'ביקורת עיצוב — משוב על wireframes, UX ועיצוב ממשק')">🎨 ביקורת עיצוב</span>
+        <span class="chip" onclick="applyChip(this,'Sprint Planning — תכנון משימות, story points ו-backlog')">🗺️ Sprint Planning</span>
+        <span class="chip" onclick="applyChip(this,'ראיון לקוח — הקשב לצרכים, pain points ותובנות שוק')">🤝 ראיון לקוח</span>
       </div>
       <textarea id="instructions" class="field-input"
         placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira."></textarea>
       <div class="field-hint">לחץ על ניחוש מהיר למעלה, או כתוב הנחיות מותאמות ל-Whisper</div>
+      <div class="voice-record-row">
+        <button class="btn-voice-rec" id="audioVoiceBtn" onclick="toggleVoiceRec('audio')">🎙️ הקלט הוספה</button>
+        <span class="voice-status" id="audioVoiceStatus">הקלט מלל — יתומלל ויצורף לתמלול</span>
+      </div>
     </div>
   </div>
 
@@ -1206,12 +1290,19 @@
           <span class="chip" onclick="applyImgChip(this,'תאר את התמונה בפירוט')">🔍 תיאור כללי</span>
           <span class="chip" onclick="applyImgChip(this,'חלץ את כל הטקסט מהתמונה')">📄 חילוץ טקסט</span>
           <span class="chip" onclick="applyImgChip(this,'סכם את הנושאים העיקריים בשקף המצגת')">📊 סיכום שקף</span>
-          <span class="chip" onclick="applyImgChip(this,'תאר את הלוח הלבן וחלץ את כל הנקודות')">✏️ לוח לבן</span>
+          <span class="chip" onclick="applyImgChip(this,'תאר את הלוח הלבן וחלץ את כל הנקודות — ארגן לפי נושאים')">✏️ לוח לבן</span>
           <span class="chip" onclick="applyImgChip(this,'זהה ותאר את הגרף או הדיאגרמה')">📈 גרף/דיאגרמה</span>
+          <span class="chip" onclick="applyImgChip(this,'זהה ותאר את ה-wireframe או המוקאפ: מבנה הדף, רכיבי UI, flow משתמש')">🎨 Wireframe/UX</span>
+          <span class="chip" onclick="applyImgChip(this,'תאר את דיאגרמת הארכיטקטורה: רכיבים, חיבורים, זרימת מידע, פרוטוקולים')">🏗️ ארכיטקטורה</span>
+          <span class="chip" onclick="applyImgChip(this,'נתח את מפת הדרכים או ה-Roadmap: תעדוף, ציר זמן, מטרות עסקיות')">🗺️ Roadmap</span>
         </div>
         <textarea id="imgPrompt" class="field-input"
           placeholder="לדוגמה: חלץ את כל הטקסט מהשקף ותסכם את הנקודות העיקריות"></textarea>
         <div class="field-hint">השאר ריק לתיאור אוטומטי של התמונה</div>
+        <div class="voice-record-row">
+          <button class="btn-voice-rec" id="imgVoiceBtn" onclick="toggleVoiceRec('image')">🎙️ הקלט הוספה</button>
+          <span class="voice-status" id="imgVoiceStatus">הקלט מלל — יתומלל ויצורף לניתוח</span>
+        </div>
       </div>
     </div>
 
@@ -1234,10 +1325,23 @@
       <div class="result-header">
         <div class="result-title">🔍 תוצאות ניתוח</div>
         <div class="action-row">
+          <button class="btn-drive" onclick="openImageDrivePanel()">📁 שמור</button>
           <button class="btn-action" onclick="copyImageAnalysis(this)">📋 העתק</button>
+          <button class="btn-action" onclick="downloadImageTxt()">💾 TXT</button>
+          <button class="btn-action secondary" onclick="downloadImageWord()">📝 Word</button>
         </div>
       </div>
       <div class="transcript-box" id="imgResultBox" dir="rtl"></div>
+
+      <!-- IMAGE EMAIL / SHARE -->
+      <div class="email-section">
+        <div class="card-title">✉️ שתף ניתוח</div>
+        <div class="email-row" id="imgEmailRow">
+          <input type="email" id="imgEmailTo" placeholder="name@example.com" />
+          <button class="btn-email" onclick="sendImageEmail()">📨 שלח</button>
+        </div>
+        <div class="email-hint" id="imgEmailHint">יפתח את תוכנת המייל שלך עם הניתוח המוכן לשליחה</div>
+      </div>
 
       <div class="claude-section">
         <div class="card-title">🤖 עיבוד נוסף עם Claude</div>
@@ -1257,7 +1361,7 @@
   <div class="drive-panel" id="drivePanel">
     <div class="panel-drag"></div>
     <div class="panel-header">
-      <div class="panel-title">📁 שמור תמלול</div>
+      <div class="panel-title" id="panelTitle">📁 שמור תמלול</div>
       <button class="panel-close" onclick="closeDrivePanel()">✕</button>
     </div>
 
@@ -1304,6 +1408,19 @@
   </div>
 </div>
 
+<!-- NEW PROJECT MODAL -->
+<div class="modal-overlay" id="newProjectModal">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ פרויקט חדש</div>
+    <div class="modal-sub" id="newProjectModalSub">יש תוצאות שלא נשמרו. האם לשמור לפני מעבר לפרויקט חדש?</div>
+    <div class="modal-actions">
+      <button class="btn-modal-save" id="newProjectSaveBtn" onclick="newProjectSaveAndReset()">💾 שמור ואז פרויקט חדש</button>
+      <button class="btn-modal-skip" onclick="newProjectReset()">🔄 המשך בלי שמירה</button>
+      <button class="btn-modal-cancel" onclick="closeNewProjectModal()">ביטול</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div class="toast-wrap" id="toastWrap"></div>
 
@@ -1315,6 +1432,11 @@ let participants = [];
 let meetingSubject = "";
 let driveDirectoryHandle = null;
 let selectedFormat = "word";
+let currentDriveMode = "audio"; // "audio" | "image"
+let voiceMediaRecorder = null;
+let voiceChunks = [];
+let voiceMode = null; // "audio" | "image"
+let newProjectPendingMode = null;
 
 const HISTORY_KEY = "da_transcripts";
 const DRIVE_FOLDER_KEY = "da_drive_folders"; // stores [{name, path}]
@@ -2093,8 +2215,23 @@ async function sendEmail() {
 /* ---- Google Drive Panel ---- */
 function openDrivePanel() {
   if (!transcriptText) { showToast("אין תמלול לשמירה", "error"); return; }
+  currentDriveMode = "audio";
+  document.getElementById("panelTitle").textContent = "📁 שמור תמלול";
   const dfn = document.getElementById("driveFileName");
   dfn.value = combinedStem();
+  dfn.dataset.userEdited = "";
+  dfn.addEventListener("input", () => { dfn.dataset.userEdited = "1"; }, { once: true });
+  renderRecentFolders();
+  document.getElementById("driveOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function openImageDrivePanel() {
+  if (!imageAnalysisText) { showToast("אין ניתוח לשמירה", "error"); return; }
+  currentDriveMode = "image";
+  document.getElementById("panelTitle").textContent = "📁 שמור ניתוח תמונה";
+  const dfn = document.getElementById("driveFileName");
+  dfn.value = imgCombinedStem();
   dfn.dataset.userEdited = "";
   dfn.addEventListener("input", () => { dfn.dataset.userEdited = "1"; }, { once: true });
   renderRecentFolders();
@@ -2171,13 +2308,19 @@ async function writeToFolder(dirHandle, filename, blob) {
 
 async function executeDriveSave() {
   const fmt = selectedFormat;
-  const name = (document.getElementById("driveFileName").value.trim() || combinedStem())
-    .replace(/[\/\\:*?"<>|]/g, "-"); // sanitize filename
+  const fallbackName = currentDriveMode === "image" ? imgCombinedStem() : combinedStem();
+  const name = (document.getElementById("driveFileName").value.trim() || fallbackName)
+    .replace(/[\/\\:*?"<>|]/g, "-");
 
   /* No FS API — fall back to download */
   if (!("showDirectoryPicker" in window)) {
-    if (fmt === "word" || fmt === "both") downloadWord();
-    if (fmt === "txt" || fmt === "both") downloadTxt();
+    if (currentDriveMode === "image") {
+      if (fmt === "word" || fmt === "both") downloadImageWord();
+      if (fmt === "txt" || fmt === "both") downloadImageTxt();
+    } else {
+      if (fmt === "word" || fmt === "both") downloadWord();
+      if (fmt === "txt" || fmt === "both") downloadTxt();
+    }
     closeDrivePanel();
     return;
   }
@@ -2188,12 +2331,22 @@ async function executeDriveSave() {
   }
 
   try {
-    if (fmt === "word" || fmt === "both") {
-      await writeToFolder(driveDirectoryHandle, name + ".doc", buildWordBlob());
-    }
-    if (fmt === "txt" || fmt === "both") {
-      const blob = new Blob([transcriptText], { type: "text/plain;charset=utf-8" });
-      await writeToFolder(driveDirectoryHandle, name + ".txt", blob);
+    if (currentDriveMode === "image") {
+      if (fmt === "word" || fmt === "both") {
+        await writeToFolder(driveDirectoryHandle, name + ".doc", buildImageWordBlob());
+      }
+      if (fmt === "txt" || fmt === "both") {
+        const blob = new Blob([imageAnalysisText], { type: "text/plain;charset=utf-8" });
+        await writeToFolder(driveDirectoryHandle, name + ".txt", blob);
+      }
+    } else {
+      if (fmt === "word" || fmt === "both") {
+        await writeToFolder(driveDirectoryHandle, name + ".doc", buildWordBlob());
+      }
+      if (fmt === "txt" || fmt === "both") {
+        const blob = new Blob([transcriptText], { type: "text/plain;charset=utf-8" });
+        await writeToFolder(driveDirectoryHandle, name + ".txt", blob);
+      }
     }
     showToast("✓ נשמר בהצלחה ל: " + driveDirectoryHandle.name, "success");
     closeDrivePanel();
@@ -2295,6 +2448,10 @@ function combinedStem() {
   const f = stem();
   if (s && currentFile) return s + " — " + f;
   if (s) return s;
+  if (!currentFile && transcriptText) {
+    const auto = transcriptText.replace(/[\r\n]+/g, " ").trim().slice(0, 40).replace(/[\/\\:*?"<>|]/g, "-");
+    if (auto) return auto;
+  }
   return f;
 }
 function showError(msg) { const e = document.getElementById("errorBox"); e.textContent = msg; e.style.display = "block"; }
@@ -2308,6 +2465,166 @@ window.addEventListener("beforeunload", function(e) {
     e.returnValue = "התמלול עדיין פעיל — האם אתם בטוחים שברצונכם לצאת?";
   }
 });
+
+/* ---- Voice Recording ---- */
+async function toggleVoiceRec(mode) {
+  if (voiceMediaRecorder && voiceMediaRecorder.state === "recording") {
+    voiceMediaRecorder.stop();
+    return;
+  }
+  const key = localStorage.getItem("da_api_key");
+  if (!key) { showToast("נא לשמור מפתח OpenAI API", "error"); return; }
+
+  voiceMode = mode;
+  const btnId = mode === "audio" ? "audioVoiceBtn" : "imgVoiceBtn";
+  const statusId = mode === "audio" ? "audioVoiceStatus" : "imgVoiceStatus";
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    voiceChunks = [];
+    voiceMediaRecorder = new MediaRecorder(stream);
+    voiceMediaRecorder.ondataavailable = e => { if (e.data.size > 0) voiceChunks.push(e.data); };
+    voiceMediaRecorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      processVoiceRecording();
+    };
+    voiceMediaRecorder.start();
+
+    const btn = document.getElementById(btnId);
+    const status = document.getElementById(statusId);
+    btn.textContent = "⏹️ עצור הקלטה";
+    btn.classList.add("recording");
+    status.textContent = "🔴 מקליט...";
+    status.classList.add("active");
+    showToast("🎙️ מקליט — לחץ שוב לעצירה");
+  } catch(e) {
+    showToast("שגיאה בגישה למיקרופון", "error");
+  }
+}
+
+async function processVoiceRecording() {
+  const key = localStorage.getItem("da_api_key");
+  const btnId = voiceMode === "audio" ? "audioVoiceBtn" : "imgVoiceBtn";
+  const statusId = voiceMode === "audio" ? "audioVoiceStatus" : "imgVoiceStatus";
+  const btn = document.getElementById(btnId);
+  const status = document.getElementById(statusId);
+
+  btn.textContent = "🎙️ הקלט הוספה";
+  btn.classList.remove("recording");
+  status.textContent = "מתמלל...";
+  status.classList.add("active");
+
+  try {
+    const blob = new Blob(voiceChunks, { type: "audio/webm" });
+    const form = new FormData();
+    form.append("file", blob, "recording.webm");
+    form.append("model", "whisper-1");
+    form.append("language", "he");
+
+    const resp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + key },
+      body: form
+    });
+    if (!resp.ok) throw new Error("שגיאת תמלול " + resp.status);
+    const data = await resp.json();
+    const text = (data.text || "").trim();
+    if (!text) { showToast("לא זוהה מלל בהקלטה", "error"); status.textContent = ""; status.classList.remove("active"); return; }
+
+    if (voiceMode === "audio") {
+      transcriptText = transcriptText
+        ? transcriptText + "\n\n[הוספה קולית]: " + text
+        : "[הוספה קולית]: " + text;
+      document.getElementById("transcriptBox").textContent = transcriptText;
+      if (document.getElementById("resultCard").style.display === "none") {
+        document.getElementById("resultCard").style.display = "block";
+      }
+    } else {
+      imageAnalysisText = imageAnalysisText
+        ? imageAnalysisText + "\n\n[הוספה קולית]: " + text
+        : "[הוספה קולית]: " + text;
+      document.getElementById("imgResultBox").textContent = imageAnalysisText;
+      if (document.getElementById("imgResultCard").style.display === "none") {
+        document.getElementById("imgResultCard").style.display = "block";
+      }
+    }
+    showToast("✓ ההקלטה הוספה לתוצאות", "success");
+    status.textContent = "✓ נוסף";
+    setTimeout(() => { status.textContent = voiceMode === "audio" ? "הקלט מלל — יתומלל ויצורף לתמלול" : "הקלט מלל — יתומלל ויצורף לניתוח"; status.classList.remove("active"); }, 2500);
+  } catch(e) {
+    showToast("שגיאה: " + e.message, "error");
+    status.textContent = "";
+    status.classList.remove("active");
+  }
+}
+
+/* ---- New Project ---- */
+function newProject() {
+  const currentMode = document.querySelector(".mode-tab.active")?.dataset.mode;
+  newProjectPendingMode = currentMode;
+  const hasContent = currentMode === "audio" ? !!transcriptText : !!imageAnalysisText;
+
+  if (hasContent) {
+    document.getElementById("newProjectModalSub").textContent = currentMode === "audio"
+      ? "יש תמלול שעדיין לא נשמר. שמור לפני מעבר לפרויקט חדש?"
+      : "יש ניתוח תמונה שעדיין לא נשמר. שמור לפני מעבר לפרויקט חדש?";
+    document.getElementById("newProjectModal").classList.add("open");
+  } else {
+    doNewProjectReset(currentMode);
+  }
+}
+
+function newProjectSaveAndReset() {
+  closeNewProjectModal();
+  if (newProjectPendingMode === "audio") openDrivePanel();
+  else openImageDrivePanel();
+}
+
+function newProjectReset() {
+  closeNewProjectModal();
+  doNewProjectReset(newProjectPendingMode);
+}
+
+function closeNewProjectModal() {
+  document.getElementById("newProjectModal").classList.remove("open");
+}
+
+function doNewProjectReset(mode) {
+  if (mode === "audio") {
+    currentFile = null; transcriptText = ""; audioDuration = 0; participants = []; meetingSubject = "";
+    document.getElementById("meetingSubjectInput").value = "";
+    document.getElementById("originalFileName").textContent = "לא נבחר קובץ";
+    document.getElementById("filenameCombined").classList.remove("show");
+    document.getElementById("participantTags").innerHTML = "";
+    document.getElementById("instructions").value = "";
+    document.getElementById("fileInput").value = "";
+    const fp = document.getElementById("filePreview");
+    if (fp) fp.classList.add("hidden");
+    const dz = document.getElementById("dropZone");
+    if (dz) dz.classList.remove("hidden");
+    document.getElementById("resultCard").style.display = "none";
+    document.getElementById("progressWrap").classList.add("hidden");
+    document.getElementById("errorBox").style.display = "none";
+    document.getElementById("transcriptBox").textContent = "";
+    document.getElementById("s1").textContent = "—";
+    document.getElementById("s2").textContent = "—";
+    document.getElementById("s3").textContent = "—";
+  } else {
+    currentImage = null; imageAnalysisText = "";
+    document.getElementById("imgPrompt").value = "";
+    document.getElementById("imgResultBox").textContent = "";
+    document.getElementById("imgResultCard").style.display = "none";
+    document.getElementById("imgErrorBox").style.display = "none";
+    document.getElementById("imgProgressWrap").classList.add("hidden");
+    document.getElementById("imgPreview").src = "";
+    document.getElementById("imgDropZone").classList.remove("hidden");
+    document.getElementById("imgPreviewContainer").classList.add("hidden");
+    document.getElementById("analyzeBtn").disabled = true;
+    document.getElementById("imageInput").value = "";
+    document.querySelectorAll("#pictureMode .chip").forEach(c => c.classList.remove("active"));
+  }
+  showToast("✓ מוכן לפרויקט חדש", "success");
+}
 
 /* ---- Picture Mode ---- */
 let currentImage = null;
@@ -2439,6 +2756,77 @@ function openImageInClaude() {
     showToast("הועתק — הדבק ב-Claude", "success");
   });
 }
+
+/* ---- Image Save ---- */
+function imgCombinedStem() {
+  if (currentImage) return currentImage.name.replace(/\.[^.]+$/, "");
+  if (imageAnalysisText) {
+    const auto = imageAnalysisText.replace(/[\r\n]+/g, " ").trim().slice(0, 40).replace(/[\/\\:*?"<>|]/g, "-");
+    if (auto) return auto;
+  }
+  return "image-analysis";
+}
+
+function buildImageWordBlob() {
+  const date = new Date().toLocaleDateString("he-IL");
+  const rows = imageAnalysisText.split("\n").filter(l => l.trim()).map(l =>
+    `<p style="direction:rtl;text-align:right;font-family:David,Arial;font-size:12pt;margin:4pt 0;">${escHtml(l)}</p>`
+  ).join("");
+  const title = escHtml(imgCombinedStem());
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>ניתוח תמונה</title></head>
+<body style="direction:rtl;font-family:David,Arial;">
+<h1 style="direction:rtl;text-align:right;font-size:16pt;font-family:David,Arial;color:#1a2744;">${title}</h1>
+<p style="direction:rtl;text-align:right;font-size:10pt;color:#6b7280;font-family:David,Arial;">תאריך: ${date}</p>
+<hr/>${rows}</body></html>`;
+  return new Blob(["﻿" + html], { type: "application/msword;charset=utf-8" });
+}
+
+function downloadImageTxt() {
+  if (!imageAnalysisText) { showToast("אין ניתוח להורדה", "error"); return; }
+  const url = URL.createObjectURL(new Blob([imageAnalysisText], { type: "text/plain;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = imgCombinedStem() + "_analysis.txt"; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+function downloadImageWord() {
+  if (!imageAnalysisText) { showToast("אין ניתוח להורדה", "error"); return; }
+  const url = URL.createObjectURL(buildImageWordBlob());
+  const a = document.createElement("a");
+  a.href = url; a.download = imgCombinedStem() + "_analysis.doc"; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+/* ---- Image Share / Email ---- */
+async function sendImageEmail() {
+  if (!imageAnalysisText) { showToast("אין ניתוח לשליחה", "error"); return; }
+  const title = "ניתוח תמונה — " + imgCombinedStem();
+  const txtFile = new File([imageAnalysisText], imgCombinedStem() + ".txt", { type: "text/plain" });
+
+  if (navigator.canShare && navigator.canShare({ files: [txtFile] })) {
+    try {
+      await navigator.share({ title, files: [txtFile] });
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") return;
+    }
+  }
+  const email = document.getElementById("imgEmailTo").value.trim();
+  if (!email || !email.includes("@")) { showToast("נא להזין כתובת מייל תקינה", "error"); return; }
+  window.open(`mailto:${email}?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(imageAnalysisText)}`);
+  showToast("✓ פותח תוכנת המייל...", "success");
+}
+
+(function() {
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile && navigator.share) {
+    const row = document.getElementById("imgEmailRow");
+    const hint = document.getElementById("imgEmailHint");
+    if (row) row.style.display = "none";
+    if (hint) hint.textContent = "ישתף קובץ טקסט דרך Gmail, WhatsApp, ואפליקציות אחרות";
+  }
+})();
 </script>
 </body>
 </html>
