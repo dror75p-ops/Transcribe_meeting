@@ -96,52 +96,9 @@
   .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
 
   /* Top-level view tabs */
-  .view-tabs-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; }
-  .view-tabs-row .view-tabs { flex: 1; margin-bottom: 0; }
   .view-tabs { display: flex; gap: 8px; margin-bottom: 1.25rem; }
   .view-tab { flex: 1; padding: 12px 10px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-sm); font-family: 'Heebo', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
   .view-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
-
-  /* New project button */
-  .btn-new-project {
-    height: 46px; padding: 0 16px; border: 1.5px solid #f59e0b;
-    border-radius: 8px; background: #fef3c7; font-size: 13px;
-    font-family: 'Heebo', sans-serif; font-weight: 600; cursor: pointer;
-    color: #92400e; white-space: nowrap; flex-shrink: 0;
-    transition: background 0.15s, box-shadow 0.15s;
-    display: flex; align-items: center; gap: 6px;
-    box-shadow: 0 1px 4px rgba(245,158,11,0.2);
-  }
-  .btn-new-project:hover { background: #fde68a; box-shadow: 0 2px 8px rgba(245,158,11,0.3); }
-
-  /* New project modal */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(13,30,58,0.55);
-    z-index: 300; display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.2s;
-    backdrop-filter: blur(2px); padding: 1.5rem;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: auto; }
-  .modal-box {
-    background: #fff; border-radius: 12px; padding: 1.75rem;
-    width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
-    transform: scale(0.95); transition: transform 0.2s;
-  }
-  .modal-overlay.open .modal-box { transform: scale(1); }
-  .modal-title { font-size: 16px; font-weight: 600; color: #0D1E3A; margin-bottom: 8px; }
-  .modal-sub { font-size: 13px; color: #556070; margin-bottom: 1.5rem; line-height: 1.6; }
-  .modal-actions { display: flex; flex-direction: column; gap: 8px; }
-  .btn-modal-save { padding: 13px; background: #1e8e3e; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer; text-align: center; transition: background 0.15s; }
-  .btn-modal-save:hover { background: #157a33; }
-  .btn-modal-skip { padding: 13px; background: #fff; color: #0D1E3A; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; font-family: 'Heebo', sans-serif; cursor: pointer; text-align: center; transition: background 0.15s; }
-  .btn-modal-skip:hover { background: #F4F7FA; }
-  .btn-modal-cancel { padding: 10px; background: none; color: #556070; border: none; border-radius: 8px; font-size: 13px; font-family: 'Heebo', sans-serif; cursor: pointer; text-align: center; text-decoration: underline; }
-
-  /* Add-part button */
-  .btn-add-part { height: 32px; padding: 0 14px; border: 1.5px dashed #E2E8F0; border-radius: 8px; background: #F4F7FA; font-size: 12px; font-family: 'Heebo', sans-serif; font-weight: 500; cursor: pointer; color: #3A7BDD; display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s; white-space: nowrap; }
-  .btn-add-part:hover { background: #EBF3FD; border-color: #3A7BDD; border-style: solid; }
-
-  @media (max-width: 520px) { .view-tabs-row { flex-wrap: wrap; } .btn-new-project { width: 100%; justify-content: center; } }
 
   /* ── CARD ────────────────────────────────── */
   .card {
@@ -926,7 +883,6 @@
 <div class="page">
   <div class="page-title" data-i18n="page_title">in-site · תמלול וביקורות שטח</div>
   <div class="page-sub" data-i18n="page_sub">תמלול ישיבות + ביקורות שטח חכמות · מופעל על ידי OpenAI</div>
-  <div style="display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;color:#065f46;font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;margin-bottom:1.25rem;">🔒 ללא שרת — הנתונים נשארים בדפדפן שלך בלבד</div>
 
   <!-- API KEY -->
   <div class="card">
@@ -957,13 +913,10 @@
     </div>
   </div>
 
-  <!-- VIEW TABS + NEW PROJECT -->
-  <div class="view-tabs-row">
-    <div class="view-tabs">
-      <button class="view-tab active" id="tabTranscribe" onclick="setView('transcribe')" data-i18n="tab_transcribe">🎙️ תמלול</button>
-      <button class="view-tab" id="tabInspect" onclick="setView('inspect')" data-i18n="tab_inspect">🔍 בדיקת תמונות</button>
-    </div>
-    <button class="btn-new-project" onclick="newProject()" title="פרויקט חדש — מאפס את הנתונים הנוכחיים">🔄 פרויקט חדש</button>
+  <!-- VIEW TABS -->
+  <div class="view-tabs">
+    <button class="view-tab active" id="tabTranscribe" onclick="setView('transcribe')" data-i18n="tab_transcribe">🎙️ תמלול</button>
+    <button class="view-tab" id="tabInspect" onclick="setView('inspect')" data-i18n="tab_inspect">🔍 בדיקת תמונות</button>
   </div>
 
   <!-- PHOTO INSPECTION VIEW -->
@@ -1218,10 +1171,6 @@
         <span class="chip" onclick="applyChip(this,'interview')" data-i18n="chip_interview">🎤 ראיון עבודה</span>
         <span class="chip" onclick="applyChip(this,'exec')" data-i18n="chip_exec">🏛️ ישיבת הנהלה</span>
         <span class="chip" onclick="applyChip(this,'customer')" data-i18n="chip_customer">📞 שיחת לקוח</span>
-        <span class="chip" onclick="applyChip(this,'security','סקירת אבטחה — דיון על חולשות, דרישות compliance ובדיקות חדירה')">🔐 סקירת אבטחה</span>
-        <span class="chip" onclick="applyChip(this,'design','ביקורת עיצוב — משוב על wireframes, UX ועיצוב ממשק')">🎨 ביקורת עיצוב</span>
-        <span class="chip" onclick="applyChip(this,'planning','Sprint Planning — תכנון משימות, story points ו-backlog')">🗺️ Sprint Planning</span>
-        <span class="chip" onclick="applyChip(this,'custinterview','ראיון לקוח — הקשב לצרכים, pain points ותובנות שוק')">🤝 ראיון לקוח</span>
       </div>
       <textarea id="instructions" class="field-input"
         data-i18n-ph="instructions_ph" placeholder="לדוגמה: ישיבת צוות פיתוח — דיון טכני. מונחים: API, backend, sprint, Jira."></textarea>
@@ -1251,7 +1200,7 @@
   <!-- RESULT -->
   <div class="card result-card" id="resultCard" style="margin-top:1.25rem;">
     <div class="result-header">
-      <div class="result-title" data-i18n="result_title">📄 תמלול <span id="partBadge" style="font-size:12px;font-weight:400;color:#556070;"></span></div>
+      <div class="result-title" data-i18n="result_title">📄 תמלול</div>
       <div class="action-row">
         <button class="btn-drive" onclick="openDrivePanel()" data-i18n="btn_drive">📁 שמור ל-Drive</button>
         <button class="btn-action" onclick="labelSpeakers(this)" data-i18n="btn_label_spk">🏷️ זהה דוברים</button>
@@ -1261,11 +1210,6 @@
         <button class="btn-action" onclick="downloadTxt()">💾 TXT</button>
         <button class="btn-action secondary" onclick="downloadWord()">📝 Word</button>
       </div>
-    </div>
-
-    <div style="margin-bottom:10px;">
-      <button class="btn-add-part" id="addPartBtn" onclick="addAudioPart()">➕ הוסף חלק נוסף להקלטה</button>
-      <input type="file" id="addPartInput" accept="video/mp4,audio/*,.mp4,.mp3,.wav,.m4a,.ogg" onchange="onAddPartFileSelect(this.files[0])" style="display:none;" />
     </div>
 
     <!-- Failed-chunk retry banner -->
@@ -1393,19 +1337,6 @@
     <div class="panel-footer">
       <button class="btn-panel-cancel" onclick="closeDrivePanel()" data-i18n="btn_cancel">ביטול</button>
       <button class="btn-panel-save" id="btnPanelSave" onclick="executeDriveSave()" data-i18n="btn_panel_save">💾 שמור כאן</button>
-    </div>
-  </div>
-</div>
-
-<!-- NEW PROJECT MODAL -->
-<div class="modal-overlay" id="newProjectModal">
-  <div class="modal-box">
-    <div class="modal-title">⚠️ פרויקט חדש</div>
-    <div class="modal-sub" id="newProjectModalSub">יש תוצאות שלא נשמרו. לשמור לפני מעבר לפרויקט חדש?</div>
-    <div class="modal-actions">
-      <button class="btn-modal-save" onclick="newProjectSaveAndReset()">💾 שמור ואז פרויקט חדש</button>
-      <button class="btn-modal-skip" onclick="newProjectReset()">🔄 המשך בלי שמירה</button>
-      <button class="btn-modal-cancel" onclick="closeNewProjectModal()">ביטול</button>
     </div>
   </div>
 </div>
@@ -1833,15 +1764,11 @@ const CHIP_PRESETS = {
   exec:      { he: "ישיבת הנהלה בכירה. דיון אסטרטגי, תקציב ויעדים.", en: "Executive meeting. Strategy, budget and goals.", es: "Reunión directiva. Estrategia, presupuesto y objetivos.", fr: "Réunion de direction. Stratégie, budget et objectifs." },
   customer:  { he: "שיחת שירות לקוחות. בירור בעיה, פתרון ומעקב.", en: "Customer support call. Issue, resolution and follow-up.", es: "Llamada de soporte. Problema, solución y seguimiento.", fr: "Appel de support client. Problème, solution et suivi." },
 };
-function applyChip(el, key, directText) {
+function applyChip(el, key) {
   document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
   el.classList.add("active");
-  if (directText) {
-    document.getElementById("instructions").value = directText;
-  } else {
-    const preset = CHIP_PRESETS[key];
-    document.getElementById("instructions").value = preset ? (preset[currentLang] || preset.he) : "";
-  }
+  const preset = CHIP_PRESETS[key];
+  document.getElementById("instructions").value = preset ? (preset[currentLang] || preset.he) : "";
   document.getElementById("instructions").dataset.userEdited = "1";
 }
 
@@ -2552,22 +2479,11 @@ function renderResult(failures) {
 
 function finish(failures) {
   transcriptText = insertPhotoMarkers(transcriptText); // weave in camera photos (if any)
-
-  // Append mode: prepend saved text + part separator
-  if (typeof _appendPartPrefix === "string" && _appendPartPrefix !== null) {
-    transcriptText = _appendPartPrefix + transcriptText;
-    _appendPartPrefix = null;
-  }
-
   setProgress(100, t("prog_done"));
   setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
   document.getElementById("runBtn").disabled = false;
   document.getElementById("tabWarning").style.display = "none";
   window._transcribing = false;
-
-  // Update part badge
-  const badge = document.getElementById("partBadge");
-  if (badge && typeof _partCount !== "undefined") badge.textContent = _partCount > 1 ? `(${_partCount} חלקים)` : "";
 
   renderResult(failures);
 
@@ -3881,115 +3797,6 @@ function saveAnnotation() {
     closeAnnotator();
     showToast(t("t_anno_saved") || "Annotation saved ✏️", "success");
   }, "image/jpeg", 0.92);
-}
-
-/* ── New Project ── */
-let _newProjectPendingView = null;
-
-function newProject() {
-  const view = document.querySelector(".view-tab.active")?.id === "tabInspect" ? "inspect" : "transcribe";
-  _newProjectPendingView = view;
-  const hasContent = view === "transcribe" ? !!transcriptText : !!(typeof inspectPhotos !== "undefined" && inspectPhotos && inspectPhotos.length);
-  if (hasContent) {
-    document.getElementById("newProjectModalSub").textContent = view === "transcribe"
-      ? "יש תמלול שעדיין לא נשמר. לשמור לפני מעבר לפרויקט חדש?"
-      : "יש ניתוח תמונות שעדיין לא נשמר. לשמור לפני מעבר לפרויקט חדש?";
-    document.getElementById("newProjectModal").classList.add("open");
-  } else {
-    doNewProjectReset(view);
-  }
-}
-
-function newProjectSaveAndReset() {
-  closeNewProjectModal();
-  openDrivePanel();
-}
-
-function newProjectReset() {
-  closeNewProjectModal();
-  doNewProjectReset(_newProjectPendingView);
-}
-
-function closeNewProjectModal() {
-  document.getElementById("newProjectModal").classList.remove("open");
-}
-
-function doNewProjectReset(view) {
-  if (view === "transcribe") {
-    if (typeof removeFile === "function") removeFile();
-    transcriptText = "";
-    _partCount = 1; _appendPartPrefix = null;
-    const box = document.getElementById("transcriptBox"); if (box) box.textContent = "";
-    const rc = document.getElementById("resultCard"); if (rc) rc.style.display = "none";
-    const pb = document.getElementById("partBadge"); if (pb) pb.textContent = "";
-    const eb = document.getElementById("errorBox"); if (eb) eb.style.display = "none";
-    const pw = document.getElementById("progressWrap"); if (pw) pw.classList.add("hidden");
-    if (typeof meetingSubject !== "undefined") meetingSubject = "";
-    const ms = document.getElementById("meetingSubjectInput"); if (ms) ms.value = "";
-    if (typeof participants !== "undefined") { participants = []; if (typeof renderParticipants === "function") renderParticipants(); }
-    const ins = document.getElementById("instructions"); if (ins) ins.value = "";
-    document.querySelectorAll("#viewTranscribe .chip").forEach(c => c.classList.remove("active"));
-  } else {
-    if (typeof resetInspect === "function") resetInspect();
-  }
-  showToast("✓ מוכן לפרויקט חדש", "success");
-}
-
-/* ── Add Part 2+ ── */
-let _appendPartPrefix = null;
-let _partCount = 1;
-
-function addAudioPart() {
-  if (!transcriptText) { showToast("תמלל קודם חלק ראשון", "error"); return; }
-  document.getElementById("addPartInput").value = "";
-  document.getElementById("addPartInput").click();
-}
-
-function onAddPartFileSelect(file) {
-  if (!file) return;
-  const apiKey = document.getElementById("apiKey").value.trim();
-  if (!apiKey.startsWith("sk-")) { showToast("נא לשמור מפתח API", "error"); return; }
-
-  _partCount++;
-  const sep = "\n\n" + "─".repeat(28) + ` חלק ${_partCount} ` + "─".repeat(28) + "\n\n";
-  _appendPartPrefix = transcriptText + sep;
-  currentFile = file;
-  showToast(`📂 מתמלל חלק ${_partCount}: ${file.name}`, "");
-
-  document.getElementById("errorBox").style.display = "none";
-  document.getElementById("progressWrap").classList.remove("hidden");
-  document.getElementById("runBtn").disabled = true;
-  document.getElementById("tabWarning").style.display = "block";
-  window._transcribing = true;
-  setProgress(5, `מכין חלק ${_partCount}...`);
-
-  const doWork = async () => {
-    const info = analyzeFileType(currentFile);
-    if (info.needsConversion) {
-      await transcribeWithConversion(apiKey);
-    } else if (info.needsChunking) {
-      setProgress(10, "קובץ גדול — מפצל לחלקים...");
-      await transcribeLarge(apiKey);
-    } else {
-      await transcribeSingle(apiKey);
-    }
-  };
-
-  const onError = (err) => {
-    _appendPartPrefix = null;
-    _partCount--;
-    showError("שגיאה בחלק " + (_partCount + 1) + ": " + err.message);
-    document.getElementById("progressWrap").classList.add("hidden");
-    document.getElementById("runBtn").disabled = false;
-    document.getElementById("tabWarning").style.display = "none";
-    window._transcribing = false;
-  };
-
-  if (navigator.locks) {
-    navigator.locks.request("transcription", () => doWork().catch(onError));
-  } else {
-    doWork().catch(onError);
-  }
 }
 </script>
 

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>in-site — מדריך והסבר</title>
+<meta name="description" content="מדריך in-site — תמלול ישיבות וביקורות שטח עם AI (בדיקת מבנה / מסמכים / נוף / Lean 5S) ישירות בדפדפן." />
+<meta property="og:title" content="in-site — מדריך" />
+<meta property="og:description" content="איך להשתמש ב-in-site: תמלול ישיבות וביקורות שטח עם AI, ב-4 שפות." />
+<meta property="og:type" content="article" />
+<meta property="og:image" content="https://dror75p-ops.github.io/Transcribe_meeting/logo.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0f2040; --cobalt: #0369a1; --cobalt-light: #e0f2fe;
+    --bg: #f1f5f9; --surface: #ffffff; --text: #0f172a; --muted: #64748b;
+    --border: #cbd5e1; --success: #059669; --drive: #1e8e3e;
+    --purple: #7c3aed; --purple-light: #ede9fe;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04);
+  }
+  html { overflow-x: hidden; }
+  body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+  nav { background: var(--navy); padding: 0 1.25rem; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
+  .logo { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .brand-logo { height: 34px; width: auto; border-radius: 6px; flex-shrink: 0; display: block; }
+  .brand-text { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .nav-back { color: #cbd5e1; font-size: 13px; text-decoration: none; background: rgba(255,255,255,0.12); padding: 5px 13px; border-radius: 99px; white-space: nowrap; transition: background 0.15s; }
+  .nav-back:hover { background: rgba(255,255,255,0.22); color: #fff; }
+  .lang-select { background: rgba(255,255,255,0.12); color: #fff; border: none; border-radius: 99px; font-size: 13px; font-family: 'Heebo', sans-serif; padding: 5px 10px; cursor: pointer; outline: none; }
+  .lang-select option { color: #1a2744; background: #fff; }
+
+  .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  .page-title { font-size: 26px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+
+  .card { background: var(--surface); border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--border); box-shadow: var(--shadow-card); margin-bottom: 1.25rem; }
+  .card h2 { font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .card p { font-size: 14px; line-height: 1.8; color: var(--text); margin-bottom: 10px; }
+  .card p:last-child { margin-bottom: 0; }
+  .card a { color: var(--cobalt); text-decoration: none; }
+  .card a:hover { text-decoration: underline; }
+
+  .section-tag { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 2px 9px; border-radius: 99px; margin-bottom: 14px; }
+  .section-tag.transcribe { background: var(--cobalt-light); color: var(--cobalt); }
+  .section-tag.photo { background: var(--purple-light); color: var(--purple); }
+
+  .steps { list-style: none; counter-reset: step; }
+  .steps li { position: relative; padding-block: 0 16px; padding-inline: 44px 0; font-size: 14px; line-height: 1.7; }
+  .steps li:last-child { padding-bottom: 0; }
+  .steps li::before { counter-increment: step; content: counter(step); position: absolute; inset-inline-start: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--cobalt); color: #fff; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .steps li strong { color: var(--navy); }
+  .steps.purple li::before { background: var(--purple); }
+
+  .engine { padding: 12px 0; border-bottom: 1px solid #eef1f8; font-size: 14px; line-height: 1.7; }
+  .engine:last-child { border-bottom: none; }
+  .engine .ename { font-weight: 600; color: var(--cobalt); }
+
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  @media (max-width: 480px) { .mode-grid { grid-template-columns: 1fr; } }
+  .mode-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; background: #fafafa; }
+  .mode-card .mc-title { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 5px; }
+  .mode-card .mc-body { font-size: 13px; line-height: 1.6; color: var(--muted); }
+  .mode-card.lean { border-color: #c4b5fd; background: var(--purple-light); }
+  .mode-card.lean .mc-title { color: var(--purple); }
+
+  .faq dt { font-weight: 600; color: var(--navy); font-size: 14px; margin-top: 14px; }
+  .faq dt:first-child { margin-top: 0; }
+  .faq dd { font-size: 14px; line-height: 1.7; color: var(--text); margin: 4px 0 0; }
+
+  ul.bul { list-style: none; }
+  ul.bul li { font-size: 14px; line-height: 1.8; padding-inline-start: 20px; position: relative; }
+  ul.bul li::before { content: "•"; color: var(--cobalt); position: absolute; inset-inline-start: 0; font-weight: 700; }
+
+  .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; color: #92400e; line-height: 1.7; margin-top: 10px; }
+  .note.purple { background: var(--purple-light); border-color: #c4b5fd; color: #4c1d95; }
+
+  .cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  .cta { display: inline-flex; align-items: center; gap: 6px; padding: 11px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer; border: none; text-decoration: none; }
+  .cta.primary { background: var(--navy); color: #fff; }
+  .cta.primary:hover { background: #253360; }
+
+  .fb-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 10px; text-align: center; }
+  .fb-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .btn-fb { padding: 11px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); }
+  .btn-fb.like { background: var(--success); color: #fff; border-color: var(--success); }
+  .btn-fb.like:hover { background: #047857; }
+  .btn-fb.dislike:hover { background: var(--bg); }
+  .fb-box { margin-top: 12px; }
+  .fb-box.hidden { display: none; }
+  .fb-box textarea { width: 100%; min-height: 80px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: 'Heebo', sans-serif; resize: vertical; outline: none; }
+  .btn-fb.send { width: 100%; margin-top: 8px; background: var(--cobalt); color: #fff; border-color: var(--cobalt); }
+  .btn-fb.send:hover { background: #1d4ed8; }
+  .donate-line { text-align: center; font-size: 13px; color: var(--muted); margin-top: 1rem; line-height: 1.7; }
+
+  .toast-wrap { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+  .toast { background: var(--navy); color: #fff; padding: 10px 22px; border-radius: 18px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s; max-width: min(92vw, 440px); text-align: center; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: #dc2626; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><img src="logo.jpg" class="brand-logo" alt="in-site" /><span class="brand-text">in-site</span></div>
+  <div class="nav-right">
+    <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+      <option value="he">🇮🇱 עברית</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="fr">🇫🇷 Français</option>
+    </select>
+    <a class="nav-back" href="index.html" data-i18n="nav_back">→ חזרה לאפליקציה</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-title" data-i18n="h_title">📖 איך זה עובד</div>
+  <div class="page-sub" data-i18n="h_sub">מדריך ל-in-site — תמלול ישיבות וביקורות שטח חכמות, ישירות בדפדפן.</div>
+
+  <!-- WHAT IS -->
+  <div class="card">
+    <h2 data-i18n="h_what_title">🔍 מה זה in-site?</h2>
+    <div data-i18n-html="h_what_body">
+      <p>כלי חינמי לתמלול ישיבות וניתוח תמונות — ישירות בדפדפן, בלי להתקין כלום. שתי יכולות עיקריות: <strong>תמלול אודיו/וידאו</strong> (Whisper / GPT-4o) ו<strong>ניתוח תמונות</strong> (GPT-4o Vision) — כולל בדיקת מבנה, מסמכים, נוף וניתוח Lean 5S.</p>
+      <p>הכל רץ בדפדפן שלך מול OpenAI — אין שרת שאוסף את הנתונים שלך.</p>
+    </div>
+  </div>
+
+  <!-- ─── TRANSCRIPTION ─────────────────────────── -->
+  <div class="card">
+    <div class="section-tag transcribe" data-i18n="tag_transcribe">🎙️ תמלול</div>
+    <h2 data-i18n="h_start_title">🚀 איך מתחילים — תמלול</h2>
+    <ol class="steps" data-i18n-html="h_start_body">
+      <li><strong>מפתח OpenAI API</strong> — הדבק פעם אחת (נשמר רק בדפדפן). אין מפתח? צור ב-<a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li>
+      <li><strong>לשונית 🎙️ תמלול</strong> — בחר בראש הדף (ברירת מחדל).</li>
+      <li><strong>בחר מנוע</strong> — Whisper (ברירת מחדל) או GPT-4o.</li>
+      <li><strong>העלה קובץ או הקלט</strong> — גרור אודיו/וידאו, או לחץ "הקלט ישיבה עכשיו".</li>
+      <li><strong>פרטי הישיבה (אופציונלי)</strong> — נושא, משתתפים, הנחיות. ואז "התחל תמלול".</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div class="section-tag transcribe" data-i18n="tag_transcribe">🎙️ תמלול</div>
+    <h2 data-i18n="h_engines_title">🧠 מנועי התמלול</h2>
+    <div data-i18n-html="h_engines_body">
+      <div class="engine"><span class="ename">Whisper</span> — מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. לישיבות ארוכות. ברירת המחדל.</div>
+      <div class="engine"><span class="ename">GPT-4o mini</span> — דיוק גבוה יותר במחיר נמוך, <strong>ללא חותמות זמן</strong>.</div>
+      <div class="engine"><span class="ename">GPT-4o</span> — הדיוק הגבוה ביותר (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-tag transcribe" data-i18n="tag_transcribe">🎙️ תמלול</div>
+    <h2 data-i18n="h_rec_title">🎙️ הקלטה בתוך האפליקציה</h2>
+    <p data-i18n="h_rec_p">אפשר להקליט ישירות מהמיקרופון — עם טיימר וביפ כל 10 דקות. בסיום, ההקלטה עוברת אוטומטית לתמלול.</p>
+    <div class="note" data-i18n-html="h_rec_note">⚠️ <strong>חשוב:</strong> בדפדפן בנייד, אם המסך נכבה או עוברים לאפליקציה אחרת — ההקלטה עלולה להיעצר. השאירו את המסך דולק. <strong>לישיבות ארוכות</strong> — הקליטו באפליקציית הטלפון ואז העלו.</div>
+  </div>
+
+  <div class="card">
+    <div class="section-tag transcribe" data-i18n="tag_transcribe">🎙️ תמלול</div>
+    <h2 data-i18n="h_result_title">📄 תוצאה, ייצוא ושיתוף</h2>
+    <ul class="bul" data-i18n-html="h_result_body">
+      <li><strong>ייצוא:</strong> Word, TXT, או שמירה לתיקייה (כולל Google Drive).</li>
+      <li><strong>שיתוף:</strong> מייל, וואטסאפ או Gmail.</li>
+      <li><strong>זיהוי דוברים:</strong> "🏷️ זהה דוברים" — מסדר לפי דובר.</li>
+      <li><strong>היסטוריה:</strong> 20 התמלולים האחרונים נשמרים בדפדפן.</li>
+    </ul>
+  </div>
+
+  <!-- ─── PHOTO ANALYSIS ────────────────────────── -->
+  <div class="card">
+    <div class="section-tag photo" data-i18n="tag_photo">🔍 ניתוח תמונות</div>
+    <h2 data-i18n="h_photo_title">🖼️ ניתוח תמונות — איך זה עובד</h2>
+    <div data-i18n-html="h_photo_body">
+      <p>לחץ על הלשונית <strong>🔍 בדיקת תמונות</strong> בראש הדף — עובד לגמרי עצמאי, בלי צורך בהקלטה.</p>
+    </div>
+    <ol class="steps purple" style="margin-top:14px;" data-i18n-html="h_photo_steps">
+      <li><strong>בחר סוג ניתוח</strong> — לחץ על צ'יפ: 🏠 בדיקת מבנה · 📄 מסמכים · 🏞️ נוף · 🏭 Lean 5S.</li>
+      <li><strong>הוסף תמונות</strong> — "📷 צלם" (מצלמה) או "🖼️ העלה" (גלריה). אפשר כמה תמונות.</li>
+      <li><strong>לחץ "🔍 נתח תמונות"</strong> — הכפתור נדלק אחרי שמצרפים לפחות תמונה אחת.</li>
+      <li><strong>קרא את הדוח</strong> — ממצאים, ציונים (Lean 5S), המלצות. אפשר להעתיק או לשלוח ל-Claude.</li>
+    </ol>
+    <div class="note purple" style="margin-top:14px;" data-i18n-html="h_photo_note">💡 <strong>עלות:</strong> כל תמונה מנותחת עם GPT-4o Vision — ~$0.01 לתמונה. האפליקציה מציגה אישור עלות לפני השליחה.</div>
+  </div>
+
+  <div class="card">
+    <div class="section-tag photo" data-i18n="tag_photo">🔍 ניתוח תמונות</div>
+    <h2 data-i18n="h_modes_title">🔍 מצבי הניתוח</h2>
+    <div class="mode-grid" data-i18n-html="h_modes_grid">
+      <div class="mode-card">
+        <div class="mc-title">🏠 בדיקת מבנה</div>
+        <div class="mc-body">מזהה ליקויים, סיכוני בטיחות ומצב רכיבים — פנים וחוץ. מדרג: קריטי / מהותי / קל / תקין, עם המלצות.</div>
+      </div>
+      <div class="mode-card">
+        <div class="mc-title">📄 מסמכים / מצגות</div>
+        <div class="mc-body">חולץ טקסט (OCR), מתאר גרפים וטבלאות, ומסכם נקודות מפתח — לשקפים, לוחות לבן ומסמכים.</div>
+      </div>
+      <div class="mode-card">
+        <div class="mc-title">🏞️ נוף וטבע</div>
+        <div class="mc-body">מזהה סוג הנוף, צמחים, בעלי חיים ומאפיינים גאולוגיים — עם תיאור סצנה מפורט.</div>
+      </div>
+      <div class="mode-card lean">
+        <div class="mc-title">🏭 Lean 5S</div>
+        <div class="mc-body">ביקורת סביבת עבודה לפי 5 עקרונות Lean. ציון 1–5 לכל עקרון + ממצאים עם עדיפות ופעולות מתקנות.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PRIVACY & COST ────────────────────────── -->
+  <div class="card">
+    <h2 data-i18n="h_privacy_title">🔒 פרטיות ואבטחה</h2>
+    <ul class="bul" data-i18n-html="h_privacy_body">
+      <li>מפתח ה-API וההיסטוריה נשמרים <strong>רק בדפדפן שלך</strong> — לא בשום שרת.</li>
+      <li>קבצי אודיו ותמונות נשלחים ל-OpenAI לצורך העיבוד בלבד, ישירות מהדפדפן.</li>
+      <li>אפשר למחוק את ההיסטוריה בכל רגע.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2 data-i18n="h_cost_title">💰 עלות</h2>
+    <p data-i18n="h_cost_p">הכלי חינמי. חיובים דרך חשבון ה-OpenAI שלך: תמלול — סנטים בודדים לדקה; ניתוח תמונות — ~$0.01 לתמונה. האפליקציה מציגה הערכת עלות לפני כל פעולה.</p>
+  </div>
+
+  <!-- ─── FAQ ──────────────────────────────────── -->
+  <div class="card">
+    <h2 data-i18n="h_faq_title">❓ שאלות נפוצות</h2>
+    <dl class="faq" data-i18n-html="h_faq_body">
+      <dt>אילו פורמטי אודיו נתמכים?</dt>
+      <dd>MP4, MP3, WAV, M4A, OGG ועוד. קבצים גדולים מפוצלים אוטומטית; וידאו מומר ל-WAV.</dd>
+      <dt>אילו פורמטי תמונה נתמכים?</dt>
+      <dd>JPG, PNG, GIF, WEBP — עד 20MB לתמונה.</dd>
+      <dt>כמה תמונות אפשר לנתח בבת אחת?</dt>
+      <dd>כמה שרוצים — כל תמונה מנותחת בנפרד ומרוכז לדוח אחד.</dd>
+      <dt>Lean 5S — מה זה?</dt>
+      <dd>מתודולוגיית ייעול מקום עבודה (OPEX): Sort, Set in Order, Shine, Standardize, Sustain. הניתוח מדרג כל עקרון 1–5 ומציע פעולות מתקנות.</dd>
+      <dt>האפליקציה עובדת בשפות אחרות?</dt>
+      <dd>כן — עברית, English, Español, Français. שפת הממשק משפיעה גם על שפת הניתוח.</dd>
+      <dt>המידע שלי בטוח?</dt>
+      <dd>הכל נשאר בדפדפן; רק אודיו/תמונות נשלחים ל-OpenAI לעיבוד.</dd>
+    </dl>
+  </div>
+
+  <!-- ─── FEEDBACK ─────────────────────────────── -->
+  <div class="card">
+    <div class="fb-title" data-i18n="fb_title">💬 יש לך דקה? נשמח למשוב</div>
+    <div class="fb-row">
+      <button class="btn-fb like" onclick="shareApp()" data-i18n="fb_like">👍 אהבתי — שתף</button>
+      <button class="btn-fb dislike" onclick="toggleFeedback()" data-i18n="fb_dislike">👎 יש מה לשפר</button>
+    </div>
+    <div id="feedbackBox" class="fb-box hidden">
+      <textarea id="feedbackText" data-i18n-ph="fb_ph" placeholder="מה אפשר לשפר?"></textarea>
+      <button class="btn-fb send" onclick="sendFeedback()" data-i18n="fb_send">📨 שלח משוב</button>
+    </div>
+    <div class="donate-line" data-i18n="h_donate_line">הכלי עזר לך? אפשר לתמוך 💚 — מתוך האפליקציה, בתחתית הדף.</div>
+    <div class="cta-row" style="justify-content:center;margin-top:1rem;">
+      <a class="cta primary" href="index.html" data-i18n="back_to_app">→ חזרה לאפליקציה</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+  const FEEDBACK_EMAIL = "dror75p@gmail.com";
+  const LANG_KEY = "da_lang";
+  const LANGS = ["he", "en", "es", "fr"];
+  let currentLang = "he";
+
+  const I18N = {
+    nav_back:    { he: "→ חזרה לאפליקציה", en: "→ Back to the app", es: "→ Volver a la app", fr: "→ Retour à l'appli" },
+    back_to_app: { he: "→ חזרה לאפליקציה", en: "→ Back to the app", es: "→ Volver a la app", fr: "→ Retour à l'appli" },
+    h_title:  { he: "📖 איך זה עובד", en: "📖 How it works", es: "📖 Cómo funciona", fr: "📖 Comment ça marche" },
+    h_sub:    { he: "מדריך ל-in-site — תמלול ישיבות וביקורות שטח חכמות, ישירות בדפדפן.", en: "Guide to in-site — meeting transcription & AI-powered field inspections, right in your browser.", es: "Guía de in-site — transcripción de reuniones e inspecciones de campo con IA, en tu navegador.", fr: "Guide in-site — transcription de réunions et inspections terrain par IA, dans votre navigateur." },
+
+    tag_transcribe: { he: "🎙️ תמלול", en: "🎙️ Transcription", es: "🎙️ Transcripción", fr: "🎙️ Transcription" },
+    tag_photo:      { he: "🔍 ניתוח תמונות", en: "🔍 Photo analysis", es: "🔍 Análisis de fotos", fr: "🔍 Analyse de photos" },
+
+    h_what_title: { he: "🔍 מה זה in-site?", en: "🔍 What is in-site?", es: "🔍 ¿Qué es in-site?", fr: "🔍 Qu'est-ce que in-site ?" },
+    h_what_body: {
+      he: "<p>כלי חינמי לתמלול ישיבות וניתוח תמונות — ישירות בדפדפן, בלי להתקין כלום. שתי יכולות עיקריות: <strong>תמלול אודיו/וידאו</strong> (Whisper / GPT-4o) ו<strong>ניתוח תמונות</strong> (GPT-4o Vision) — בדיקת מבנה, מסמכים, נוף וניתוח Lean 5S.</p><p>הכל רץ בדפדפן שלך מול OpenAI — אין שרת שאוסף את הנתונים שלך.</p>",
+      en: "<p>A free tool for meeting transcription and photo analysis — right in your browser, nothing to install. Two main capabilities: <strong>audio/video transcription</strong> (Whisper / GPT-4o) and <strong>photo analysis</strong> (GPT-4o Vision) — building inspection, documents, nature and Lean 5S.</p><p>Everything runs in your browser against OpenAI — no server collects your data.</p>",
+      es: "<p>Una herramienta gratuita para transcribir reuniones y analizar fotos — en tu navegador, sin instalar nada. Dos capacidades: <strong>transcripción de audio/vídeo</strong> (Whisper / GPT-4o) y <strong>análisis de fotos</strong> (GPT-4o Vision) — edificios, documentos, naturaleza y Lean 5S.</p><p>Todo se ejecuta en tu navegador con OpenAI — ningún servidor guarda tus datos.</p>",
+      fr: "<p>Un outil gratuit pour transcrire des réunions et analyser des photos — dans le navigateur, sans rien installer. Deux capacités : <strong>transcription audio/vidéo</strong> (Whisper / GPT-4o) et <strong>analyse de photos</strong> (GPT-4o Vision) — bâtiment, documents, nature et Lean 5S.</p><p>Tout s'exécute dans votre navigateur avec OpenAI — aucun serveur ne collecte vos données.</p>",
+    },
+
+    h_start_title: { he: "🚀 איך מתחילים — תמלול", en: "🚀 Getting started — transcription", es: "🚀 Empezar — transcripción", fr: "🚀 Pour commencer — transcription" },
+    h_start_body: {
+      he: '<li><strong>מפתח OpenAI API</strong> — הדבק פעם אחת (נשמר רק בדפדפן). אין מפתח? צור ב-<a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li><li><strong>לשונית 🎙️ תמלול</strong> — בחר בראש הדף (ברירת מחדל).</li><li><strong>בחר מנוע</strong> — Whisper (ברירת מחדל) או GPT-4o.</li><li><strong>העלה קובץ או הקלט</strong> — גרור אודיו/וידאו, או לחץ "הקלט ישיבה עכשיו".</li><li><strong>פרטי הישיבה (אופציונלי)</strong> — נושא, משתתפים, הנחיות. ואז "התחל תמלול".</li>',
+      en: '<li><strong>OpenAI API key</strong> — paste once (stored only in your browser). No key? Create one at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li><li><strong>🎙️ Transcription tab</strong> — select it at the top (default).</li><li><strong>Choose an engine</strong> — Whisper (default) or GPT-4o.</li><li><strong>Upload or record</strong> — drag an audio/video file, or click "Record a meeting now".</li><li><strong>Meeting details (optional)</strong> — subject, participants and instructions improve accuracy. Then "Start transcription".</li>',
+      es: '<li><strong>Clave OpenAI</strong> — pega una vez (solo en el navegador). Sin clave: créala en <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li><li><strong>Pestaña 🎙️ Transcripción</strong> — selecciónala arriba (predeterminada).</li><li><strong>Elige motor</strong> — Whisper (predeterminado) o GPT-4o.</li><li><strong>Sube o graba</strong> — arrastra un archivo o pulsa "Grabar una reunión".</li><li><strong>Detalles (opcional)</strong> — asunto, participantes, instrucciones. Luego "Iniciar transcripción".</li>',
+      fr: '<li><strong>Clé OpenAI</strong> — collez une fois (stockée uniquement dans le navigateur). Pas de clé ? Créez-en une sur <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li><li><strong>Onglet 🎙️ Transcription</strong> — sélectionnez-le en haut (par défaut).</li><li><strong>Choisissez un moteur</strong> — Whisper (par défaut) ou GPT-4o.</li><li><strong>Téléversez ou enregistrez</strong> — glissez un fichier ou cliquez "Enregistrer une réunion".</li><li><strong>Détails (facultatif)</strong> — sujet, participants, instructions. Puis "Démarrer la transcription".</li>',
+    },
+
+    h_engines_title: { he: "🧠 מנועי התמלול", en: "🧠 Transcription engines", es: "🧠 Motores de transcripción", fr: "🧠 Moteurs de transcription" },
+    h_engines_body: {
+      he: '<div class="engine"><span class="ename">Whisper</span> — מהיר וזול, <strong>עם חותמות זמן [mm:ss]</strong>. לישיבות ארוכות. ברירת המחדל.</div><div class="engine"><span class="ename">GPT-4o mini</span> — דיוק גבוה יותר במחיר נמוך, <strong>ללא חותמות זמן</strong>.</div><div class="engine"><span class="ename">GPT-4o</span> — הדיוק הגבוה ביותר (מבטא, מונחים, שמות), <strong>ללא חותמות זמן</strong>. לאודיו קשה.</div>',
+      en: '<div class="engine"><span class="ename">Whisper</span> — fast and cheap, <strong>with [mm:ss] timestamps</strong>. Best for long meetings. Default.</div><div class="engine"><span class="ename">GPT-4o mini</span> — higher accuracy at low cost, <strong>no timestamps</strong>.</div><div class="engine"><span class="ename">GPT-4o</span> — highest accuracy (accent, terms, names), <strong>no timestamps</strong>. For hard audio.</div>',
+      es: '<div class="engine"><span class="ename">Whisper</span> — rápido y económico, <strong>con marcas de tiempo [mm:ss]</strong>. Para reuniones largas. Predeterminado.</div><div class="engine"><span class="ename">GPT-4o mini</span> — mayor precisión a bajo coste, <strong>sin marcas de tiempo</strong>.</div><div class="engine"><span class="ename">GPT-4o</span> — máxima precisión (acento, términos, nombres), <strong>sin marcas de tiempo</strong>. Para audio difícil.</div>',
+      fr: '<div class="engine"><span class="ename">Whisper</span> — rapide et économique, <strong>avec horodatage [mm:ss]</strong>. Pour les longues réunions. Par défaut.</div><div class="engine"><span class="ename">GPT-4o mini</span> — meilleure précision à bas coût, <strong>sans horodatage</strong>.</div><div class="engine"><span class="ename">GPT-4o</span> — précision maximale (accent, termes, noms), <strong>sans horodatage</strong>. Pour audio difficile.</div>',
+    },
+
+    h_rec_title: { he: "🎙️ הקלטה בתוך האפליקציה", en: "🎙️ Recording in the app", es: "🎙️ Grabar en la app", fr: "🎙️ Enregistrer dans l'appli" },
+    h_rec_p: { he: "אפשר להקליט ישירות מהמיקרופון — עם טיימר וביפ כל 10 דקות. בסיום, ההקלטה עוברת אוטומטית לתמלול.", en: "Record straight from the mic — with a timer and a beep every 10 minutes. When you stop, the recording flows automatically into transcription.", es: "Graba desde el micrófono — con temporizador y pitido cada 10 minutos. Al parar, pasa automáticamente a transcripción.", fr: "Enregistrez depuis le micro — avec minuteur et bip toutes les 10 minutes. À l'arrêt, passe automatiquement en transcription." },
+    h_rec_note: {
+      he: "⚠️ <strong>חשוב:</strong> בנייד, אם המסך נכבה או עוברים לאפליקציה אחרת — ההקלטה עלולה להיעצר. השאירו את המסך דולק. <strong>לישיבות ארוכות</strong> — הקליטו באפליקציית הטלפון ואז העלו.",
+      en: "⚠️ <strong>Important:</strong> on mobile, if the screen turns off or you switch apps, recording may stop. Keep the screen on. <strong>For long meetings</strong>, record with your phone's app and upload the file.",
+      es: "⚠️ <strong>Importante:</strong> en móvil, si la pantalla se apaga o cambias de app, la grabación puede detenerse. Mantén la pantalla encendida. <strong>Reuniones largas</strong>: graba con la app del teléfono y sube el archivo.",
+      fr: "⚠️ <strong>Important :</strong> sur mobile, si l'écran s'éteint ou que vous changez d'appli, l'enregistrement peut s'arrêter. Gardez l'écran allumé. <strong>Longues réunions</strong> : enregistrez avec l'appli téléphone et téléversez.",
+    },
+
+    h_result_title: { he: "📄 תוצאה, ייצוא ושיתוף", en: "📄 Result, export & share", es: "📄 Resultado, exportar y compartir", fr: "📄 Résultat, export & partage" },
+    h_result_body: {
+      he: '<li><strong>ייצוא:</strong> Word, TXT, או שמירה לתיקייה (כולל Google Drive).</li><li><strong>שיתוף:</strong> מייל, וואטסאפ או Gmail.</li><li><strong>זיהוי דוברים:</strong> "🏷️ זהה דוברים" — מסדר לפי דובר.</li><li><strong>היסטוריה:</strong> 20 התמלולים האחרונים נשמרים בדפדפן.</li>',
+      en: '<li><strong>Export:</strong> Word, TXT, or save to a folder (incl. Google Drive).</li><li><strong>Share:</strong> email, WhatsApp or Gmail.</li><li><strong>Speaker labels:</strong> "🏷️ Label speakers" organises by speaker.</li><li><strong>History:</strong> last 20 transcripts kept in your browser.</li>',
+      es: '<li><strong>Exportar:</strong> Word, TXT o carpeta (incl. Google Drive).</li><li><strong>Compartir:</strong> correo, WhatsApp o Gmail.</li><li><strong>Hablantes:</strong> "🏷️ Identificar hablantes" organiza por hablante.</li><li><strong>Historial:</strong> últimas 20 transcripciones guardadas.</li>',
+      fr: '<li><strong>Export :</strong> Word, TXT ou dossier (dont Google Drive).</li><li><strong>Partage :</strong> e-mail, WhatsApp ou Gmail.</li><li><strong>Intervenants :</strong> "🏷️ Identifier les intervenants" organise par intervenant.</li><li><strong>Historique :</strong> 20 dernières transcriptions conservées.</li>',
+    },
+
+    h_photo_title: { he: "🖼️ ניתוח תמונות — איך זה עובד", en: "🖼️ Photo analysis — how it works", es: "🖼️ Análisis de fotos — cómo funciona", fr: "🖼️ Analyse de photos — comment ça marche" },
+    h_photo_body: {
+      he: "<p>לחץ על הלשונית <strong>🔍 בדיקת תמונות</strong> בראש הדף — עובד לגמרי עצמאי, בלי צורך בהקלטה.</p>",
+      en: "<p>Tap the <strong>🔍 Photo inspection</strong> tab at the top — works completely standalone, no recording needed.</p>",
+      es: "<p>Toca la pestaña <strong>🔍 Inspección de fotos</strong> arriba — funciona de forma completamente independiente, sin necesidad de grabación.</p>",
+      fr: "<p>Appuyez sur l'onglet <strong>🔍 Inspection photo</strong> en haut — fonctionne de façon totalement autonome, sans enregistrement.</p>",
+    },
+    h_photo_steps: {
+      he: "<li><strong>בחר סוג ניתוח</strong> — לחץ על צ'יפ: 🏠 בדיקת מבנה · 📄 מסמכים · 🏞️ נוף · 🏭 Lean 5S.</li><li><strong>הוסף תמונות</strong> — \"📷 צלם\" (מצלמה) או \"🖼️ העלה\" (גלריה). אפשר כמה תמונות.</li><li><strong>לחץ \"🔍 נתח תמונות\"</strong> — הכפתור נדלק אחרי שמצרפים לפחות תמונה אחת.</li><li><strong>קרא את הדוח</strong> — ממצאים, ציונים (Lean 5S), המלצות. אפשר להעתיק או לשלוח ל-Claude.</li>",
+      en: "<li><strong>Choose analysis type</strong> — tap a chip: 🏠 Building · 📄 Documents · 🏞️ Nature · 🏭 Lean 5S.</li><li><strong>Add photos</strong> — \"📷 Take\" (camera) or \"🖼️ Upload\" (gallery). Multiple photos allowed.</li><li><strong>Tap \"🔍 Analyze photos\"</strong> — button activates once at least one photo is added.</li><li><strong>Read the report</strong> — findings, scores (Lean 5S), recommendations. Copy or send to Claude.</li>",
+      es: "<li><strong>Elige tipo</strong> — toca un chip: 🏠 Edificio · 📄 Documentos · 🏞️ Naturaleza · 🏭 Lean 5S.</li><li><strong>Añade fotos</strong> — \"📷 Fotografiar\" (cámara) o \"🖼️ Subir\" (galería). Se admiten varias.</li><li><strong>Pulsa \"🔍 Analizar fotos\"</strong> — se activa al añadir al menos una foto.</li><li><strong>Lee el informe</strong> — hallazgos, puntuaciones (Lean 5S), recomendaciones. Copia o envía a Claude.</li>",
+      fr: "<li><strong>Choisissez le type</strong> — appuyez sur une puce : 🏠 Bâtiment · 📄 Documents · 🏞️ Nature · 🏭 Lean 5S.</li><li><strong>Ajoutez des photos</strong> — \"📷 Photographier\" (appareil) ou \"🖼️ Téléverser\" (galerie). Plusieurs photos possibles.</li><li><strong>Appuyez \"🔍 Analyser les photos\"</strong> — s'active dès qu'une photo est ajoutée.</li><li><strong>Lisez le rapport</strong> — constats, scores (Lean 5S), recommandations. Copiez ou envoyez à Claude.</li>",
+    },
+    h_photo_note: {
+      he: "💡 <strong>עלות:</strong> כל תמונה מנותחת עם GPT-4o Vision — ~$0.01 לתמונה. האפליקציה מציגה אישור לפני השליחה.",
+      en: "💡 <strong>Cost:</strong> each photo is analysed with GPT-4o Vision — ~$0.01 per photo. The app shows a cost confirmation before sending.",
+      es: "💡 <strong>Coste:</strong> cada foto se analiza con GPT-4o Vision — ~$0.01 por foto. La app muestra confirmación antes de enviar.",
+      fr: "💡 <strong>Coût :</strong> chaque photo est analysée avec GPT-4o Vision — ~0,01 $ par photo. L'appli affiche une confirmation avant l'envoi.",
+    },
+
+    h_modes_title: { he: "🔍 מצבי הניתוח", en: "🔍 Analysis modes", es: "🔍 Modos de análisis", fr: "🔍 Modes d'analyse" },
+    h_modes_grid: {
+      he: '<div class="mode-card"><div class="mc-title">🏠 בדיקת מבנה</div><div class="mc-body">מזהה ליקויים, סיכוני בטיחות ומצב רכיבים — פנים וחוץ. מדרג: קריטי / מהותי / קל / תקין, עם המלצות לטיפול.</div></div><div class="mode-card"><div class="mc-title">📄 מסמכים / מצגות</div><div class="mc-body">חולץ טקסט (OCR), מתאר גרפים וטבלאות, ומסכם נקודות מפתח — לשקפים, לוחות לבן ומסמכים.</div></div><div class="mode-card"><div class="mc-title">🏞️ נוף וטבע</div><div class="mc-body">מזהה סוג הנוף, צמחים, בעלי חיים ומאפיינים גאולוגיים — עם תיאור סצנה מפורט.</div></div><div class="mode-card lean"><div class="mc-title">🏭 Lean 5S</div><div class="mc-body">ביקורת סביבת עבודה: ציון 1–5 לכל עקרון (Sort · Set · Shine · Standardize · Sustain) + ממצאים עם עדיפות ופעולות מתקנות.</div></div>',
+      en: '<div class="mode-card"><div class="mc-title">🏠 Building inspection</div><div class="mc-body">Identifies defects, safety risks and component conditions — interior & exterior. Rated: critical / major / minor / OK, with remediation advice.</div></div><div class="mode-card"><div class="mc-title">📄 Documents / slides</div><div class="mc-body">Extracts text (OCR), describes charts and tables, summarises key points — slides, whiteboards, documents, screens.</div></div><div class="mode-card"><div class="mc-title">🏞️ Landscape & nature</div><div class="mc-body">Identifies landscape type, plants, animals and geological features — with a detailed scene description.</div></div><div class="mode-card lean"><div class="mc-title">🏭 Lean 5S</div><div class="mc-body">Workplace audit: score 1–5 per pillar (Sort · Set · Shine · Standardize · Sustain) + prioritised findings and corrective actions.</div></div>',
+      es: '<div class="mode-card"><div class="mc-title">🏠 Inspección de edificio</div><div class="mc-body">Identifica defectos, riesgos y estado de componentes — interior y exterior. Clasificado: crítico / mayor / menor / correcto, con recomendaciones.</div></div><div class="mode-card"><div class="mc-title">📄 Documentos / diapositivas</div><div class="mc-body">Extrae texto (OCR), describe gráficos y tablas, resume puntos clave — diapositivas, pizarras, documentos, pantallas.</div></div><div class="mode-card"><div class="mc-title">🏞️ Paisaje y naturaleza</div><div class="mc-body">Identifica tipo de paisaje, plantas, animales y elementos geológicos — con descripción detallada de la escena.</div></div><div class="mode-card lean"><div class="mc-title">🏭 Lean 5S</div><div class="mc-body">Auditoría del lugar de trabajo: puntuación 1–5 por pilar (Sort · Set · Shine · Standardize · Sustain) + hallazgos y acciones correctoras.</div></div>',
+      fr: '<div class="mode-card"><div class="mc-title">🏠 Inspection bâtiment</div><div class="mc-body">Identifie défauts, risques et état des composants — intérieur et extérieur. Classés : critique / majeur / mineur / correct, avec préconisations.</div></div><div class="mode-card"><div class="mc-title">📄 Documents / diapos</div><div class="mc-body">Extrait le texte (OCR), décrit graphiques et tableaux, résume les points clés — diapos, tableaux blancs, documents, écrans.</div></div><div class="mode-card"><div class="mc-title">🏞️ Paysage & nature</div><div class="mc-body">Identifie le type de paysage, plantes, animaux et éléments géologiques — avec une description détaillée.</div></div><div class="mode-card lean"><div class="mc-title">🏭 Lean 5S</div><div class="mc-body">Audit du lieu de travail : score 1–5 par pilier (Sort · Set · Shine · Standardize · Sustain) + constats prioritaires et actions correctives.</div></div>',
+    },
+
+    h_privacy_title: { he: "🔒 פרטיות ואבטחה", en: "🔒 Privacy & security", es: "🔒 Privacidad y seguridad", fr: "🔒 Confidentialité & sécurité" },
+    h_privacy_body: {
+      he: '<li>מפתח ה-API וההיסטוריה נשמרים <strong>רק בדפדפן שלך</strong> — לא בשום שרת.</li><li>קבצי אודיו ותמונות נשלחים ל-OpenAI לצורך העיבוד בלבד.</li><li>אפשר למחוק את ההיסטוריה בכל רגע.</li>',
+      en: '<li>Your API key and history are stored <strong>only in your browser</strong> — on no server.</li><li>Audio files and photos are sent to OpenAI for processing only.</li><li>You can clear the history at any time.</li>',
+      es: '<li>Tu clave e historial se guardan <strong>solo en tu navegador</strong> — en ningún servidor.</li><li>Los archivos de audio y fotos se envían a OpenAI solo para procesarlos.</li><li>Puedes borrar el historial cuando quieras.</li>',
+      fr: '<li>Votre clé et votre historique sont stockés <strong>uniquement dans votre navigateur</strong> — sur aucun serveur.</li><li>Les fichiers audio et photos sont envoyés à OpenAI uniquement pour traitement.</li><li>Vous pouvez effacer l\'historique à tout moment.</li>',
+    },
+
+    h_cost_title: { he: "💰 עלות", en: "💰 Cost", es: "💰 Coste", fr: "💰 Coût" },
+    h_cost_p: {
+      he: "הכלי חינמי. חיובים דרך חשבון ה-OpenAI שלך: תמלול — סנטים בודדים לדקה; ניתוח תמונות — ~$0.01 לתמונה. האפליקציה מציגה הערכת עלות לפני כל פעולה.",
+      en: "The tool is free. Charges go to your OpenAI account: transcription — a few cents per minute; photo analysis — ~$0.01 per photo. The app shows an estimated cost before each operation.",
+      es: "La herramienta es gratuita. Cargos en tu cuenta OpenAI: transcripción — pocos céntimos por minuto; análisis de fotos — ~$0.01 por foto. La app muestra el coste estimado antes de cada operación.",
+      fr: "L'outil est gratuit. Frais sur votre compte OpenAI : transcription — quelques centimes par minute ; analyse de photos — ~0,01 $ par photo. L'appli affiche un coût estimé avant chaque opération.",
+    },
+
+    h_faq_title: { he: "❓ שאלות נפוצות", en: "❓ FAQ", es: "❓ Preguntas frecuentes", fr: "❓ FAQ" },
+    h_faq_body: {
+      he: '<dt>אילו פורמטי אודיו נתמכים?</dt><dd>MP4, MP3, WAV, M4A, OGG ועוד. קבצים גדולים מפוצלים אוטומטית; וידאו מומר ל-WAV.</dd><dt>אילו פורמטי תמונה נתמכים?</dt><dd>JPG, PNG, GIF, WEBP — עד 20MB לתמונה.</dd><dt>כמה תמונות אפשר לנתח בבת אחת?</dt><dd>כמה שרוצים — כל תמונה מנותחת בנפרד ומרוכז לדוח אחד.</dd><dt>Lean 5S — מה זה?</dt><dd>מתודולוגיית ייעול מקום עבודה (OPEX): Sort, Set in Order, Shine, Standardize, Sustain. הניתוח מדרג כל עקרון 1–5 ומציע פעולות מתקנות.</dd><dt>האפליקציה עובדת בשפות אחרות?</dt><dd>כן — עברית, English, Español, Français. שפת הממשק משפיעה גם על שפת הניתוח.</dd><dt>המידע שלי בטוח?</dt><dd>הכל נשאר בדפדפן; רק אודיו/תמונות נשלחים ל-OpenAI לעיבוד.</dd>',
+      en: '<dt>Which audio formats are supported?</dt><dd>MP4, MP3, WAV, M4A, OGG and more. Large files split automatically; video converts to WAV.</dd><dt>Which image formats are supported?</dt><dd>JPG, PNG, GIF, WEBP — up to 20 MB per image.</dd><dt>How many photos can I analyse at once?</dt><dd>As many as you like — each is analysed separately and merged into one report.</dd><dt>What is Lean 5S?</dt><dd>A workplace optimisation methodology (OPEX): Sort, Set in Order, Shine, Standardize, Sustain. The analysis scores each pillar 1–5 and suggests corrective actions.</dd><dt>Does it work in other languages?</dt><dd>Yes — Hebrew, English, Español, Français. The UI language also drives the analysis language.</dd><dt>Is my data safe?</dt><dd>Everything stays in your browser; only audio/photos are sent to OpenAI for processing.</dd>',
+      es: '<dt>¿Qué formatos de audio admite?</dt><dd>MP4, MP3, WAV, M4A, OGG y más. Los archivos grandes se dividen automáticamente; el vídeo se convierte a WAV.</dd><dt>¿Qué formatos de imagen admite?</dt><dd>JPG, PNG, GIF, WEBP — hasta 20 MB por imagen.</dd><dt>¿Cuántas fotos puedo analizar a la vez?</dt><dd>Las que quieras — cada una se analiza por separado y se consolida en un informe.</dd><dt>¿Qué es Lean 5S?</dt><dd>Metodología de optimización del lugar de trabajo (OPEX): Sort, Set in Order, Shine, Standardize, Sustain. Puntúa cada pilar del 1 al 5 y sugiere acciones correctoras.</dd><dt>¿Funciona en otros idiomas?</dt><dd>Sí — hebreo, English, Español, Français. El idioma de la interfaz también determina el del análisis.</dd><dt>¿Mis datos están seguros?</dt><dd>Todo permanece en el navegador; solo el audio/fotos se envían a OpenAI.</dd>',
+      fr: '<dt>Quels formats audio sont pris en charge ?</dt><dd>MP4, MP3, WAV, M4A, OGG et plus. Les gros fichiers sont découpés automatiquement ; la vidéo est convertie en WAV.</dd><dt>Quels formats d\'image sont pris en charge ?</dt><dd>JPG, PNG, GIF, WEBP — jusqu\'à 20 Mo par image.</dd><dt>Combien de photos puis-je analyser à la fois ?</dt><dd>Autant que vous voulez — chacune est analysée séparément et fusionnée en un rapport.</dd><dt>Qu\'est-ce que le Lean 5S ?</dt><dd>Une méthodologie d\'optimisation du lieu de travail (OPEX) : Sort, Set in Order, Shine, Standardize, Sustain. Score 1–5 par pilier + actions correctives.</dd><dt>Fonctionne-t-il dans d\'autres langues ?</dt><dd>Oui — hébreu, English, Español, Français. La langue de l\'interface détermine aussi celle de l\'analyse.</dd><dt>Mes données sont-elles en sécurité ?</dt><dd>Tout reste dans le navigateur ; seul l\'audio/les photos sont envoyés à OpenAI.</dd>',
+    },
+
+    fb_title:   { he: "💬 יש לך דקה? נשמח למשוב", en: "💬 Got a minute? We'd love feedback", es: "💬 ¿Un minuto? Tu opinión cuenta", fr: "💬 Une minute ? Votre avis compte" },
+    fb_like:    { he: "👍 אהבתי — שתף", en: "👍 I like it — share", es: "👍 Me gusta — compartir", fr: "👍 J'aime — partager" },
+    fb_dislike: { he: "👎 יש מה לשפר", en: "👎 Could be better", es: "👎 Se puede mejorar", fr: "👎 À améliorer" },
+    fb_ph:      { he: "מה אפשר לשפר?", en: "What could be better?", es: "¿Qué se puede mejorar?", fr: "Qu'améliorer ?" },
+    fb_send:    { he: "📨 שלח משוב", en: "📨 Send feedback", es: "📨 Enviar opinión", fr: "📨 Envoyer l'avis" },
+    h_donate_line: { he: "הכלי עזר לך? אפשר לתמוך 💚 — מתוך האפליקציה, בתחתית הדף.", en: "Did it help? You can donate 💚 — from the app, at the bottom of the page.", es: "¿Te ayudó? Puedes donar 💚 — desde la app, al final de la página.", fr: "Ça vous a aidé ? Vous pouvez faire un don 💚 — depuis l'appli, en bas de page." },
+    t_fb_empty:    { he: "נא לכתוב משוב קצר", en: "Please write a short note", es: "Escribe una nota breve", fr: "Écrivez un court message" },
+    t_link_copied: { he: "✓ הקישור הועתק", en: "✓ Link copied", es: "✓ Enlace copiado", fr: "✓ Lien copié" },
+    t_mail_opening:{ he: "✓ פותח את המייל…", en: "✓ Opening your mail app…", es: "✓ Abriendo el correo…", fr: "✓ Ouverture de la messagerie…" },
+  };
+
+  function t(k) { const e = I18N[k]; return e ? (e[currentLang] || e.he || k) : k; }
+  function detectLang() {
+    const s = localStorage.getItem(LANG_KEY);
+    if (s && LANGS.includes(s)) return s;
+    const n = (navigator.language || "he").slice(0, 2).toLowerCase();
+    return LANGS.includes(n) ? n : "he";
+  }
+  function setLang(lang) {
+    if (!LANGS.includes(lang)) lang = "he";
+    currentLang = lang;
+    localStorage.setItem(LANG_KEY, lang);
+    document.documentElement.lang = lang;
+    document.documentElement.dir = (lang === "he") ? "rtl" : "ltr";
+    const sel = document.getElementById("langSelect"); if (sel) sel.value = lang;
+    document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+    document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  }
+  function showToast(msg, type) {
+    const wrap = document.getElementById("toastWrap");
+    const el = document.createElement("div");
+    el.className = "toast" + (type ? " " + type : "");
+    el.textContent = msg; wrap.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("show")));
+    setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 250); }, 2600);
+  }
+  async function shareApp() {
+    const url = location.origin + location.pathname.replace(/help\.html$/, "index.html");
+    const data = { title: "in-site", text: "Free meeting transcription & photo analysis 🎙️🔍", url };
+    try {
+      if (navigator.share) { await navigator.share(data); }
+      else { await navigator.clipboard.writeText(url); showToast(t("t_link_copied"), "success"); }
+    } catch (e) {
+      if (e.name !== "AbortError") { try { await navigator.clipboard.writeText(url); showToast(t("t_link_copied"), "success"); } catch (_) {} }
+    }
+  }
+  function toggleFeedback() {
+    const box = document.getElementById("feedbackBox");
+    box.classList.toggle("hidden");
+    if (!box.classList.contains("hidden")) document.getElementById("feedbackText").focus();
+  }
+  function sendFeedback() {
+    const txt = document.getElementById("feedbackText").value.trim();
+    if (!txt) { showToast(t("t_fb_empty"), "error"); return; }
+    window.open(`mailto:${encodeURIComponent(FEEDBACK_EMAIL)}?subject=${encodeURIComponent("in-site feedback")}&body=${encodeURIComponent(txt)}`);
+    showToast(t("t_mail_opening"), "success");
+  }
+  setLang(detectLang());
+</script>
+</body>
+</html>

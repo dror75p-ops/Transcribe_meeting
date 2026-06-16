@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>in-site — Card Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Preview page background only — not part of the card */
+    body {
+      margin: 0;
+      padding: 48px 20px;
+      background: #eef2f7;
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+    }
+
+    /*
+    =====================================================================
+    EMBED INSTRUCTIONS
+    Copy the <style> block below AND the <div class="da-tool-card"> block
+    into your website's HTML / Custom-Code embed widget.
+    =====================================================================
+    */
+
+    .da-tool-card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 36px 32px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05),
+                  0 12px 36px rgba(15, 23, 42, 0.09);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      box-sizing: border-box;
+    }
+
+    /* Icon tile — light blue square with a clean blue line icon */
+    .da-icon {
+      width: 56px;
+      height: 56px;
+      background: #e8f1ff;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .da-icon svg { width: 28px; height: 28px; display: block; }
+
+    /* FREE TOOL badge — light blue pill */
+    .da-badge {
+      display: inline-block;
+      background: #e8f1ff;
+      color: #2563eb;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+
+    /* Title */
+    .da-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+      margin: 0 0 14px;
+    }
+
+    /* Description */
+    .da-body {
+      font-size: 16px;
+      color: #5b6677;
+      line-height: 1.65;
+      margin: 0 0 20px;
+    }
+
+    /* Feature chips — light blue pills with check */
+    .da-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .da-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #eff5ff;
+      color: #2563eb;
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+    }
+    .da-chip svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    /* CTA — solid blue button matching "Subscribe Free →" */
+    .da-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 16px 24px;
+      border-radius: 14px;
+      text-decoration: none;
+      box-sizing: border-box;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.22);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .da-cta svg { width: 19px; height: 19px; }
+    .da-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(37, 99, 235, 0.30);
+      color: #ffffff;
+    }
+
+    /* Footer note */
+    .da-footer {
+      text-align: center;
+      font-size: 12.5px;
+      color: #94a3b8;
+      margin: 14px 0 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- =================  COPY FROM HERE  ================= -->
+
+<div class="da-tool-card">
+
+  <div class="da-icon">
+    <!-- camera line icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+      <circle cx="12" cy="13" r="3.2"/>
+    </svg>
+  </div>
+
+  <div class="da-badge">Free Tool</div>
+
+  <h3 class="da-title">AI Property Inspector</h3>
+
+  <p class="da-body">
+    Snap or upload site photos and get instant AI findings on defects, safety risks, and maintenance issues — then export a print-ready inspection report. Also handles document analysis, Lean&nbsp;5S audits, and meeting transcription.
+  </p>
+
+  <div class="da-chips">
+    <span class="da-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Defect &amp; safety detection
+    </span>
+    <span class="da-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Annotate photos
+    </span>
+    <span class="da-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Print-ready reports
+    </span>
+  </div>
+
+  <a class="da-cta" href="https://dror75p-ops.github.io/Transcribe_meeting/" target="_blank" rel="noopener noreferrer">
+    Open the tool
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"/>
+      <polyline points="12 5 19 12 12 19"/>
+    </svg>
+  </a>
+
+  <p class="da-footer">Free · Uses your own OpenAI API key · No data stored</p>
+
+</div>
+
+<!-- =================  COPY UP TO HERE  ================= -->
+
+</body>
+</html>
