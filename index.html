@@ -1428,6 +1428,14 @@
       </div>
     </div>
 
+    <!-- Save photos alongside transcript -->
+    <div id="savePhotosToggleWrap" style="display:none;margin-bottom:14px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);">
+        <input type="checkbox" id="savePhotosWithTranscript" checked style="width:16px;height:16px;accent-color:var(--cobalt);" />
+        <span id="savePhotosToggleLabel" data-i18n="save_photos_with">📷 שמור גם את התמונות מההקלטה</span>
+      </label>
+    </div>
+
     <!-- Notion export — collapsible -->
     <details class="model-guide-details" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
       <summary class="mg-toggle" data-i18n="notion_toggle">📝 Export to Notion (optional)</summary>
@@ -1637,6 +1645,8 @@ const I18N = {
   fs_fallback:     { he: "<strong>הדפדפן שלך אינו תומך בשמירה ישירה לתיקייה.</strong><br/>הורד את הקובץ ואז גרור אותו לתיקיית Google Drive שלך.", en: "<strong>Your browser doesn't support saving directly to a folder.</strong><br/>Download the file, then drag it into your Google Drive folder.", es: "<strong>Tu navegador no admite guardar directamente en una carpeta.</strong><br/>Descarga el archivo y arrástralo a tu carpeta de Google Drive.", fr: "<strong>Votre navigateur ne permet pas l'enregistrement direct dans un dossier.</strong><br/>Téléchargez le fichier puis glissez-le dans votre dossier Google Drive." },
   btn_cancel:      { he: "ביטול", en: "Cancel", es: "Cancelar", fr: "Annuler" },
   btn_panel_save:  { he: "💾 שמור כאן", en: "💾 Save here", es: "💾 Guardar aquí", fr: "💾 Enregistrer ici" },
+  save_photos_with:{ he: "📷 שמור גם את {n} התמונות מההקלטה", en: "📷 Also save {n} photo(s) from the session", es: "📷 Guardar también {n} foto(s) de la sesión", fr: "📷 Enregistrer aussi {n} photo(s) de la session" },
+  photos_saved_suffix: { he: "תמונות", en: "photos", es: "fotos", fr: "photos" },
   btn_download:    { he: "⬇️ הורד קובץ", en: "⬇️ Download file", es: "⬇️ Descargar archivo", fr: "⬇️ Télécharger le fichier" },
 
   /* dynamic (JS) strings */
@@ -3608,6 +3618,13 @@ function openDrivePanel() {
   dfn.value = combinedStem();
   dfn.dataset.userEdited = "";
   dfn.addEventListener("input", () => { dfn.dataset.userEdited = "1"; }, { once: true });
+  // Show photos checkbox only if session photos exist
+  const photosWrap = document.getElementById("savePhotosToggleWrap");
+  if (photosWrap) {
+    photosWrap.style.display = recPhotos.length ? "" : "none";
+    const lbl = document.getElementById("savePhotosToggleLabel");
+    if (lbl) lbl.textContent = t("save_photos_with").replace("{n}", recPhotos.length);
+  }
   renderRecentFolders();
   document.getElementById("driveOverlay").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -3697,10 +3714,18 @@ async function executeDriveSave() {
   const fmt = selectedFormat;
   const name = (document.getElementById("driveFileName").value.trim() || combinedStem())
     .replace(/[\/\\:*?"<>|]/g, "-"); // sanitize filename
+  const withPhotos = document.getElementById("savePhotosWithTranscript")?.checked && recPhotos.length > 0;
 
   const downloadSelected = () => {
     if (fmt === "word" || fmt === "both") downloadWord();
     if (fmt === "txt" || fmt === "both") downloadTxt();
+    if (withPhotos) recPhotos.forEach((p, i) => {
+      const ext = p.blob.type.includes("png") ? "png" : "jpg";
+      const a = document.createElement("a");
+      a.href = p.url;
+      a.download = `${name}_photo_${String(i + 1).padStart(2, "0")}.${ext}`;
+      a.click();
+    });
   };
 
   /* No FS API — just download */
@@ -3731,7 +3756,14 @@ async function executeDriveSave() {
       const blob = new Blob([transcriptText], { type: "text/plain;charset=utf-8" });
       await writeToFolder(driveDirectoryHandle, name + ".txt", blob);
     }
-    showToast(t("t_saved_to") + driveDirectoryHandle.name, "success");
+    if (withPhotos) {
+      for (let i = 0; i < recPhotos.length; i++) {
+        const ext = recPhotos[i].blob.type.includes("png") ? "png" : "jpg";
+        await writeToFolder(driveDirectoryHandle, `${name}_photo_${String(i + 1).padStart(2, "0")}.${ext}`, recPhotos[i].blob);
+      }
+    }
+    const photoMsg = withPhotos ? ` + ${recPhotos.length} ${t("photos_saved_suffix")}` : "";
+    showToast(t("t_saved_to") + driveDirectoryHandle.name + photoMsg, "success");
     closeDrivePanel();
   } catch (e) {
     // Any write failure (incl. Android's stale-state InvalidStateError on
