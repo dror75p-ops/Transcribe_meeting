@@ -901,6 +901,16 @@
   .btn-analyze:active:not(:disabled) { transform: scale(0.99); }
   .btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
+  /* ── ADD PART BUTTON ────────────────────── */
+  .btn-add-part {
+    height: 32px; padding: 0 14px; border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm); background: #f9fafb; font-size: 12px;
+    font-family: 'Heebo', sans-serif; font-weight: 500; cursor: pointer;
+    color: var(--cobalt); display: inline-flex; align-items: center; gap: 5px;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-add-part:hover { background: var(--cobalt-light); border-color: var(--cobalt); border-style: solid; }
+
   /* ── NEW PROJECT BUTTON ──────────────────── */
   .mode-tabs-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
   .mode-tabs-row .mode-tabs { flex: 1; margin-bottom: 0; }
@@ -1139,6 +1149,7 @@
       </div>
     </div>
     <input type="file" id="fileInput" accept="video/mp4,audio/*,.mp4,.mp3,.wav,.m4a,.ogg" onchange="onFileSelect(this.files[0])" />
+    <input type="file" id="addPartInput" accept="video/mp4,audio/*,.mp4,.mp3,.wav,.m4a,.ogg" onchange="onAddPartFileSelect(this.files[0])" />
 
     <div class="file-preview hidden" id="filePreview">
       <div class="file-icon">🎬</div>
@@ -1187,13 +1198,16 @@
     </div>
     <div style="padding:1.5rem;">
     <div class="result-header">
-      <div class="result-title">📄 תמלול</div>
+      <div class="result-title">📄 תמלול <span id="partBadge" style="font-size:12px;font-weight:400;color:var(--muted);"></span></div>
       <div class="action-row">
         <button class="btn-drive" onclick="openDrivePanel()">📁 שמור ל-Drive</button>
         <button class="btn-action" onclick="copyText(this)">📋 העתק</button>
         <button class="btn-action" onclick="downloadTxt()">💾 TXT</button>
         <button class="btn-action secondary" onclick="downloadWord()">📝 Word</button>
       </div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <button class="btn-add-part" id="addPartBtn" onclick="addAudioPart()">➕ הוסף חלק נוסף להקלטה</button>
     </div>
     <div class="transcript-box" id="transcriptBox" dir="rtl"></div>
     <div class="stats">
@@ -1437,6 +1451,8 @@ let voiceMediaRecorder = null;
 let voiceChunks = [];
 let voiceMode = null; // "audio" | "image"
 let newProjectPendingMode = null;
+let _appendPartPrefix = null; // used when adding part 2+
+let _partCount = 1;
 
 const HISTORY_KEY = "da_transcripts";
 const DRIVE_FOLDER_KEY = "da_drive_folders"; // stores [{name, path}]
@@ -2095,12 +2111,23 @@ function pcmToWav(pcmBytes, sampleRate) {
 function finish() {
   setProgress(100, "✓ הושלם!");
   setTimeout(() => document.getElementById("progressWrap").classList.add("hidden"), 900);
+
+  // Append mode: prepend saved text + separator
+  if (_appendPartPrefix !== null) {
+    transcriptText = _appendPartPrefix + transcriptText;
+    _appendPartPrefix = null;
+  }
+
   document.getElementById("transcriptBox").textContent = transcriptText;
   const rc = document.getElementById("resultCard");
   rc.style.display = "block";
   document.getElementById("runBtn").disabled = false;
   document.getElementById("tabWarning").style.display = "none";
   window._transcribing = false;
+
+  // Update part badge
+  const badge = document.getElementById("partBadge");
+  if (badge) badge.textContent = _partCount > 1 ? `(${_partCount} חלקים)` : "";
 
   const words = transcriptText.split(/\s+/).filter(Boolean).length;
   document.getElementById("s1").textContent = words.toLocaleString("he-IL");
@@ -2466,6 +2493,62 @@ window.addEventListener("beforeunload", function(e) {
   }
 });
 
+/* ---- Add Part 2+ ---- */
+function addAudioPart() {
+  if (!transcriptText) { showToast("תמלל קודם חלק ראשון", "error"); return; }
+  document.getElementById("addPartInput").value = "";
+  document.getElementById("addPartInput").click();
+}
+
+function onAddPartFileSelect(file) {
+  if (!file) return;
+  const apiKey = document.getElementById("apiKey").value.trim();
+  if (!apiKey.startsWith("sk-")) { showToast("נא לשמור מפתח API", "error"); return; }
+
+  _partCount++;
+  const sep = "\n\n" + "─".repeat(30) + ` חלק ${_partCount} ` + "─".repeat(30) + "\n\n";
+  _appendPartPrefix = transcriptText + sep;
+
+  // Swap in the new file and run full pipeline
+  currentFile = file;
+  showToast(`📂 מתמלל חלק ${_partCount}: ${file.name}`, "");
+
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("progressWrap").classList.remove("hidden");
+  document.getElementById("runBtn").disabled = true;
+  document.getElementById("tabWarning").style.display = "block";
+  window._transcribing = true;
+  setProgress(5, `מכין חלק ${_partCount}...`);
+
+  const doWork = async () => {
+    const info = analyzeFileType(currentFile);
+    if (info.needsConversion) {
+      await transcribeWithConversion(apiKey);
+    } else if (info.needsChunking) {
+      setProgress(10, "קובץ גדול — מפצל לחלקים...");
+      await transcribeLarge(apiKey);
+    } else {
+      await transcribeSingle(apiKey);
+    }
+  };
+
+  const onError = (err) => {
+    _appendPartPrefix = null; // rollback
+    _partCount--;
+    showError("שגיאה בחלק " + _partCount + ": " + err.message);
+    document.getElementById("progressWrap").classList.add("hidden");
+    document.getElementById("runBtn").disabled = false;
+    document.getElementById("tabWarning").style.display = "none";
+    window._transcribing = false;
+  };
+
+  if (navigator.locks) {
+    navigator.locks.request("transcription", () => doWork().catch(onError));
+  } else {
+    doWork().catch(onError);
+  }
+}
+
 /* ---- Voice Recording ---- */
 async function toggleVoiceRec(mode) {
   if (voiceMediaRecorder && voiceMediaRecorder.state === "recording") {
@@ -2592,6 +2675,8 @@ function closeNewProjectModal() {
 function doNewProjectReset(mode) {
   if (mode === "audio") {
     currentFile = null; transcriptText = ""; audioDuration = 0; participants = []; meetingSubject = "";
+    _partCount = 1; _appendPartPrefix = null;
+    const badge = document.getElementById("partBadge"); if (badge) badge.textContent = "";
     document.getElementById("meetingSubjectInput").value = "";
     document.getElementById("originalFileName").textContent = "לא נבחר קובץ";
     document.getElementById("filenameCombined").classList.remove("show");
