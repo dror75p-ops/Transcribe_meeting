@@ -27,8 +27,9 @@ function extractConst(name) {
 }
 
 const src = [
-  extractConst("CONTAINER_FORMATS"),
+  extractConst("WHISPER_NATIVE"),
   extractConst("SLICE_SAFE"),
+  "const MAX_UPLOAD_MB = 24;",
   extractFn("analyzeFileType"),
   extractFn("recExtForMime"),
 ].join("\n");
@@ -63,10 +64,19 @@ test("large wav stays on the byte-slice path (rebuilt into valid chunks)", () =>
   assert.equal(r.needsConversion, false);
 });
 
-test("containers always convert regardless of size", () => {
-  assert.equal(analyzeFileType(f("clip.mp4", 5)).needsConversion, true);
+// Whisper decodes mp4/m4a/ogg/flac server-side, so a small one needs no
+// converter at all — requiring the ffmpeg CDN for them was the "Failed to
+// fetch" bug. Only a large one, which has to be split, needs decoding.
+test("small containers upload directly — no converter", () => {
+  assert.equal(analyzeFileType(f("clip.mp4", 5)).needsConversion, false);
+  assert.equal(analyzeFileType(f("voice.m4a", 8)).needsConversion, false);
+  assert.equal(analyzeFileType(f("a.ogg", 2)).needsConversion, false);
+  assert.equal(analyzeFileType(f("a.flac", 12)).needsConversion, false);
+});
+
+test("large containers convert — they cannot be byte-sliced", () => {
   assert.equal(analyzeFileType(f("voice.m4a", 100)).needsConversion, true);
-  assert.equal(analyzeFileType(f("a.ogg", 2)).needsConversion, true);
+  assert.equal(analyzeFileType(f("clip.mp4", 60)).needsConversion, true);
 });
 
 test("iOS recording (mp4) converts via the container path", () => {
