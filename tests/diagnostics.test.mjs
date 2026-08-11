@@ -107,7 +107,8 @@ test("the report always records device and link context", async () => {
 test("the report is explicitly terminated so a partial copy is recognisable", async () => {
   const r = await diagnose({});
   assert.match(r.report, /END OF REPORT/, "a finished run must be marked");
-  assert.match(r.report, /running — wait/, "a run in progress must say so");
+  assert.match(r.report, /STATUS: ✅ COMPLETE/, "a finished run must say so up top");
+  assert.ok(!/STILL RUNNING/.test(r.report), "the running marker must be cleared when done");
 });
 
 test("every early exit still terminates the report", async () => {

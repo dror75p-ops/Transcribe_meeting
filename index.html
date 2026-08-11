@@ -2478,7 +2478,12 @@ let _diagDone = false;
 
 function diagFinish(btn) {
   _diagDone = true;
+  // Rewrite the header too: a report copied by selecting text may never include
+  // the final line, so the status has to be visible from the first lines.
+  _diagLines[1] = "STATUS: ✅ COMPLETE";
   diagLog("\n=== END OF REPORT ===");
+  const out = document.getElementById("diagOut");
+  out.textContent = _diagLines.join("\n");
   btn.disabled = false;
 }
 
@@ -2490,7 +2495,7 @@ async function runDiagnostics() {
   document.getElementById("diagCopyWrap").style.display = "block";
 
   diagLog("=== DIAGNOSTICS " + new Date().toLocaleString("he-IL") + " ===");
-  diagLog("(running — wait for END OF REPORT before copying)");
+  diagLog("STATUS: ⏳ STILL RUNNING — wait for COMPLETE before copying");
 
   diagLog("\n[1] device");
   diagLog(`  UA: ${navigator.userAgent}`);
