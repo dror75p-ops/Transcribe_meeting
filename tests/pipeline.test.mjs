@@ -186,3 +186,50 @@ test("an oversized file is refused with actionable advice", async () => {
   const r = await drive(fakeFile("huge.m4a", 400 * 1048576));
   assert.match(r.error, /גדול מדי|too large/i);
 });
+
+/* ---- Upload envelope ----
+   The recorder produces files named in Hebrew and typed video/webm. Those
+   values were previously forwarded straight into the multipart part. */
+
+test("a recorder file is sent under an ASCII name and an audio/* type", async () => {
+  const names = [];
+  const types = [];
+  const onFetch = async (rec) => {
+    if (rec.url.includes(MODELS)) return { ok: true, status: 200, json: async () => ({}), headers: { get: () => null } };
+    for (const v of rec.body.getAll("file")) { names.push(v.name); types.push(v.type); }
+    return { ok: true, status: 200, json: async () => ({ text: "x", duration: 1 }), text: async () => "x" };
+  };
+  const { ctx, getEl } = loadApp({ onFetch });
+  getEl("apiKey").value = "sk-test";
+  const f = new File([new Uint8Array(2 * 1048576)], "הקלטה_28.7.2026.webm", { type: "video/webm" });
+  ctx.currentFile = f;
+  ctx.onFileSelect(f);
+  await ctx.startTranscription();
+  await new Promise((r) => setTimeout(r, 300));
+
+  assert.equal(names.length, 1);
+  assert.ok(/^[\x20-\x7e]+$/.test(names[0]), `name must be ASCII, got "${names[0]}"`);
+  assert.ok(names[0].endsWith(".webm"), "extension must be preserved");
+  assert.ok(types[0].startsWith("audio/"), `type must be audio/*, got "${types[0]}"`);
+});
+
+test("an unreadable file is reported plainly, not as a fetch failure", async () => {
+  const onFetch = async (rec) => {
+    if (rec.url.includes(MODELS)) return { ok: true, status: 200, json: async () => ({}), headers: { get: () => null } };
+    throw new Error("should never upload an unreadable file");
+  };
+  const { ctx, getEl } = loadApp({ onFetch });
+  getEl("apiKey").value = "sk-test";
+  const f = new File([new Uint8Array(1024)], "gone.webm", { type: "video/webm" });
+  f.arrayBuffer = async () => { const e = new Error("The requested file could not be read"); e.name = "NotReadableError"; throw e; };
+  ctx.currentFile = f;
+  ctx.onFileSelect(f);
+  let error = null;
+  ctx.showError = (m) => { error = m; };
+  await ctx.startTranscription();
+  await new Promise((r) => setTimeout(r, 300));
+
+  assert.ok(error, "an error should be shown");
+  assert.ok(!/failed to fetch/i.test(error), `must not blame the network, got "${error}"`);
+  assert.match(error, /לא ניתן לקרוא|could not be read/i);
+});

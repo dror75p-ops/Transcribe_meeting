@@ -1778,6 +1778,7 @@ const I18N = {
   prog_preparing:  { he: "מכין חלקים לשליחה...", en: "Preparing parts...", es: "Preparando partes...", fr: "Préparation des parties..." },
   err_part_too_big: { he: "חלק מהקובץ גדול מדי לשליחה (מעל 25MB). נסו שוב — הקובץ יפוצל לחלקים קטנים יותר.", en: "One part exceeds the 25MB upload limit. Try again — the file will be split into smaller parts.", es: "Una parte supera el límite de 25MB. Inténtalo de nuevo: el archivo se dividirá en partes más pequeñas.", fr: "Une partie dépasse la limite de 25 Mo. Réessayez — le fichier sera découpé en parties plus petites." },
   err_key_rejected: { he: "מפתח ה-API נדחה (401). בדקו שהמפתח תקין, פעיל, ושיש בחשבון יתרה.", en: "The API key was rejected (401). Check that it is valid, active and funded.", es: "La clave de API fue rechazada (401). Comprueba que sea válida, activa y con saldo.", fr: "La clé API a été rejetée (401). Vérifiez qu'elle est valide, active et créditée." },
+  err_file_unreadable: { he: "לא ניתן לקרוא את הקובץ. ייתכן שהוא נמחק, הועבר, או נבחר משירות ענן. בחרו אותו מחדש ונסו שוב.", en: "The file could not be read. It may have been deleted, moved, or picked from a cloud provider. Select it again and retry.", es: "No se pudo leer el archivo. Puede que se haya eliminado, movido o seleccionado desde la nube. Vuelve a seleccionarlo.", fr: "Le fichier n'a pas pu être lu. Il a peut-être été supprimé, déplacé ou choisi depuis un service cloud. Sélectionnez-le à nouveau." },
   prog_compressing: { he: "מכווץ אודיו לשליחה (16kHz מונו)...", en: "Compressing audio for upload (16kHz mono)...", es: "Comprimiendo el audio para subirlo (16kHz mono)...", fr: "Compression de l'audio pour l'envoi (16 kHz mono)..." },
   prog_checking_conn: { he: "בודק חיבור ל-OpenAI...", en: "Checking connection to OpenAI...", es: "Comprobando la conexión con OpenAI...", fr: "Vérification de la connexion à OpenAI..." },
   err_too_big:     { he: "הקובץ גדול מדי. פצל אותו לחלקים קטנים יותר לפני ההעלאה.", en: "The file is too large. Split it into smaller parts before uploading.", es: "El archivo es demasiado grande. Divídelo antes de subirlo.", fr: "Le fichier est trop volumineux. Divisez-le avant de le téléverser." },
@@ -2224,11 +2225,45 @@ async function startTranscription() {
   }
 }
 
+/* The recorder names its output with Hebrew text ("הקלטה_28.7.2026.webm") and
+   MediaRecorder reports it as video/webm even for audio-only capture. Sending
+   the File object as-is puts both of those into the multipart part. Neither is
+   ours to rely on: use a plain ASCII name and an audio/* type, keeping only the
+   extension, which is all Whisper actually needs to pick a demuxer. */
+function safeUploadName(file) {
+  const ext = (file.name.split(".").pop() || "webm").toLowerCase().replace(/[^a-z0-9]/g, "");
+  return "audio." + (ext || "webm");
+}
+
+function uploadTypeFor(file) {
+  const t = (file.type || "").toLowerCase();
+  if (t.startsWith("video/")) return "audio/" + t.slice(6).split(";")[0];
+  if (t) return t.split(";")[0];
+  return "audio/" + safeUploadName(file).split(".").pop();
+}
+
+/* Read the bytes up front rather than letting fetch() pull them lazily while
+   the request is in flight. A file handle that has gone stale (picked from a
+   cloud provider, moved, or revoked) then fails here with a clear message
+   instead of surfacing as an opaque "Failed to fetch" mid-upload. */
+async function fileToUploadBlob(file) {
+  let buf;
+  try {
+    buf = await file.arrayBuffer();
+  } catch (e) {
+    throw new Error(t("err_file_unreadable"));
+  }
+  if (!buf || buf.byteLength === 0) throw new Error(t("err_file_unreadable"));
+  return new Blob([buf], { type: uploadTypeFor(file) });
+}
+
 async function transcribeSingle(apiKey) {
   setProgress(30, t("prog_sending"));
   const wantTs = !!(MODELS[selectedModel] && MODELS[selectedModel].timestamps);
   const fd = new FormData();
-  fd.append("file", currentFile, currentFile.name);
+  const upName = safeUploadName(currentFile);
+  const upBlob = await fileToUploadBlob(currentFile);
+  fd.append("file", new File([upBlob], upName, { type: upBlob.type }), upName);
   fd.append("model", selectedModel);
   fd.append("language", transcribeLang);
   fd.append("response_format", wantTs ? "verbose_json" : "json");
@@ -2431,11 +2466,14 @@ async function runDiagnostics() {
   diagLog("\n[2] file");
   if (currentFile) {
     const info = analyzeFileType(currentFile);
-    diagLog(`  ${currentFile.name}  ${info.sizeMB.toFixed(1)}MB  type="${currentFile.type || "(none)"}"`);
+    diagLog(`  name: ${currentFile.name}`);
+    diagLog(`  ${info.sizeMB.toFixed(1)}MB  type="${currentFile.type || "(none)"}"  ascii-name=${/^[\x20-\x7e]*$/.test(currentFile.name)}`);
     diagLog(`  route: ${info.needsConversion ? "convert+compress" : info.needsChunking ? "split locally" : "direct upload"}`);
+    diagLog(`  will send as: ${safeUploadName(currentFile)}  type=${uploadTypeFor(currentFile)}`);
   } else {
     diagLog("  (no file selected — select one for an upload-time estimate)");
   }
+  diagLog(`  model: ${selectedModel}   lang: ${transcribeLang}`);
 
   const apiKey = document.getElementById("apiKey").value.trim();
   if (!apiKey.startsWith("sk-")) {
@@ -2492,6 +2530,70 @@ async function runDiagnostics() {
     const est = toSend / mbPerSec / 60;
     diagLog(`  ~${toSend.toFixed(1)}MB to send → ≈ ${est.toFixed(1)} min of uploading`);
     if (est > 10) diagLog("  ⚠ that is long enough to be fragile on a mobile link");
+  }
+
+  // The synthetic probes above upload a Blob built in memory. The real path
+  // uploads the user's own File. That difference is the last untested variable,
+  // so exercise it directly and separate its three parts: reading the bytes,
+  // sending them under a safe name, and sending the File exactly as the browser
+  // handed it over (original non-ASCII name and video/* type included).
+  if (currentFile && !analyzeFileType(currentFile).needsChunking &&
+      !analyzeFileType(currentFile).needsConversion) {
+    diagLog("\n[7] your actual file");
+
+    let bytes = null;
+    const t0 = Date.now();
+    try {
+      bytes = await currentFile.arrayBuffer();
+      diagLog(`  a) read ${(bytes.byteLength / 1048576).toFixed(2)}MB from disk in ${((Date.now() - t0) / 1000).toFixed(1)}s ✓`);
+    } catch (e) {
+      diagLog(`  a) ✗ CANNOT READ THE FILE — ${e.name}: ${e.message}`);
+      diagLog("\n=> The file handle is stale or unreadable, so the upload never had");
+      diagLog("   any bytes to send. Re-select the file (or re-record) and retry.");
+      btn.disabled = false;
+      return;
+    }
+    if (!bytes.byteLength) {
+      diagLog("  a) ✗ the file reads as 0 bytes");
+      btn.disabled = false;
+      return;
+    }
+
+    const send = async (label, blob, name) => {
+      const fd = new FormData();
+      fd.append("file", new File([blob], name, { type: blob.type }), name);
+      fd.append("model", "whisper-1");
+      fd.append("response_format", "text");
+      const r = await timedFetch("https://api.openai.com/v1/audio/transcriptions", {
+        method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
+      }, 180000);
+      if (!r.ok) {
+        diagLog(`  ${label} ✗ ${r.aborted ? "TIMED OUT" : "NETWORK FAIL"} — ${r.err.name}: ${r.err.message}`);
+        return false;
+      }
+      diagLog(`  ${label} ${r.res.ok ? "✓" : "✗"} HTTP ${r.res.status} in ${(r.ms / 1000).toFixed(1)}s`);
+      if (!r.res.ok) diagLog(`     ${(await r.res.text().catch(() => "")).slice(0, 300)}`);
+      return r.res.ok;
+    };
+
+    const safeOk = await send("b) safe name + audio type —",
+      new Blob([bytes], { type: uploadTypeFor(currentFile) }), safeUploadName(currentFile));
+    const rawOk = await send("c) original name + type —", currentFile, currentFile.name);
+
+    if (safeOk && !rawOk) {
+      diagLog("\n=> Found it: the bytes are fine, but the file's own name/type breaks");
+      diagLog("   the upload. The app now sends a sanitised name and audio/* type,");
+      diagLog("   so transcription should work.");
+    } else if (!safeOk && !rawOk) {
+      diagLog("\n=> Your file fails to upload while synthetic audio of the same size");
+      diagLog("   succeeds. Send this report — the difference is in the file itself.");
+    } else if (safeOk && rawOk) {
+      diagLog("\n=> Your actual file uploads fine both ways.");
+      diagLog("   The failure is not in the upload. Run a transcription and copy");
+      diagLog("   the error text.");
+    }
+    btn.disabled = false;
+    return;
   }
 
   diagLog("\n=> All network probes passed.");
