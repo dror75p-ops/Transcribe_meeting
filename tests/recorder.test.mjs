@@ -92,4 +92,25 @@ test("recExtForMime maps recorder mimes correctly", () => {
   assert.equal(recExtForMime(""), "webm"); // safe default
 });
 
+
+// ── recording bitrate ────────────────────────────────────────
+// Chrome's MediaRecorder default (~128kbps) made short meetings into multi-MB
+// uploads. Speech only needs a fraction of that.
+const bits = html.match(/const REC_BITS_PER_SEC = (\d+);/);
+test("the recorder pins a speech-appropriate bitrate", () => {
+  assert.ok(bits, "REC_BITS_PER_SEC not found");
+  const bps = Number(bits[1]);
+  assert.ok(bps >= 16000 && bps <= 64000, `expected speech-grade bitrate, got ${bps}`);
+});
+
+test("an hour of recording stays well under the direct-upload limit", () => {
+  const mbPerHour = (Number(bits[1]) / 8) * 3600 / 1048576;
+  assert.ok(mbPerHour < 24,
+    `an hour would be ${mbPerHour.toFixed(1)}MB, above the ${24}MB direct-upload limit`);
+});
+
+test("the bitrate is actually passed to MediaRecorder", () => {
+  assert.match(html, /audioBitsPerSecond:\s*REC_BITS_PER_SEC/);
+});
+
 console.log(`\n${passed} recorder tests passed.`);

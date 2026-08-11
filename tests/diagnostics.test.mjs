@@ -103,3 +103,16 @@ test("the report always records device and link context", async () => {
   assert.match(r.report, /UA:/);
   assert.match(r.report, /online:/);
 });
+
+test("the report is explicitly terminated so a partial copy is recognisable", async () => {
+  const r = await diagnose({});
+  assert.match(r.report, /END OF REPORT/, "a finished run must be marked");
+  assert.match(r.report, /running — wait/, "a run in progress must say so");
+});
+
+test("every early exit still terminates the report", async () => {
+  for (const opts of [{ reach: "network" }, { reach: "401" }, { upload: "403" }, { upload: "ok", bigUpload: "network" }]) {
+    const r = await diagnose(opts);
+    assert.match(r.report, /END OF REPORT/, `unterminated for ${JSON.stringify(opts)}`);
+  }
+});
