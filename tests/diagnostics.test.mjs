@@ -116,3 +116,73 @@ test("every early exit still terminates the report", async () => {
     assert.match(r.report, /END OF REPORT/, `unterminated for ${JSON.stringify(opts)}`);
   }
 });
+
+/* ---- Probe [7]: the user's real file ---- */
+
+async function diagnoseFile(file, { slicesReach = true, fullOk = true } = {}) {
+  const sent = [];
+  const onFetch = async (rec) => {
+    if (rec.url.includes(MODELS)) return { ok: true, status: 200, text: async () => "{}", headers: { get: () => null } };
+    let bytes = 0, name = "", type = "";
+    for (const v of rec.body.getAll("file")) { bytes += v.size || 0; name = v.name; type = v.type; }
+    sent.push({ bytes, name, type });
+    const isProbeAudio = name === "probe.wav";
+    if (!isProbeAudio && bytes < file.size && !slicesReach) throw new TypeError("Failed to fetch");
+    if (!isProbeAudio && bytes >= file.size && !fullOk) throw new TypeError("Failed to fetch");
+    return { ok: true, status: 200, text: async () => "", headers: { get: () => null } };
+  };
+  const { ctx, getEl } = loadApp({ onFetch });
+  getEl("apiKey").value = "sk-test";
+  ctx.currentFile = file; ctx.onFileSelect(file);
+  await ctx.runDiagnostics();
+  return { report: getEl("diagOut").textContent, sent };
+}
+
+const recFile = () => new File([new Uint8Array(7 * 1048576)], "הקלטה_28.7.2026.webm", { type: "video/webm" });
+
+test("envelope probes send only a slice, not the whole recording", async () => {
+  const { sent } = await diagnoseFile(recFile());
+  const real = sent.filter((s) => s.name !== "probe.wav");
+  assert.ok(real.length >= 2, "should test both envelopes");
+  assert.ok(real[0].bytes <= 1048576, `b) should send a slice, sent ${real[0].bytes}`);
+  assert.ok(real[1].bytes <= 1048576, `c) should send a slice, sent ${real[1].bytes}`);
+});
+
+test("the two envelope probes differ only in name and type", async () => {
+  const { sent } = await diagnoseFile(recFile());
+  const real = sent.filter((s) => s.name !== "probe.wav");
+  assert.equal(real[0].bytes, real[1].bytes, "same bytes, so any difference is the envelope");
+  assert.ok(/^[\x20-\x7e]+$/.test(real[0].name), "b) uses the sanitised ASCII name");
+  assert.equal(real[1].name, "הקלטה_28.7.2026.webm", "c) uses the original name");
+});
+
+test("a full file that stalls after slices succeed is called out as a stalling upload", async () => {
+  const r = await diagnoseFile(recFile(), { fullOk: false });
+  assert.match(r.report, /whole file does not/i);
+  assert.match(r.report, /stalling upload/i);
+  assert.match(r.report, /END OF REPORT/);
+});
+
+test("a file that uploads and transcribes end to end is reported as working", async () => {
+  const r = await diagnoseFile(recFile());
+  assert.match(r.report, /uploads and transcribes successfully/i);
+  assert.match(r.report, /END OF REPORT/);
+});
+
+test("the original envelope failing while the safe one works is named as the cause", async () => {
+  const sent = [];
+  const onFetch = async (rec) => {
+    if (rec.url.includes(MODELS)) return { ok: true, status: 200, text: async () => "{}", headers: { get: () => null } };
+    let name = "", bytes = 0;
+    for (const v of rec.body.getAll("file")) { name = v.name; bytes += v.size || 0; }
+    sent.push(name);
+    if (!/^[\x20-\x7e]+$/.test(name)) throw new TypeError("Failed to fetch");
+    return { ok: true, status: 200, text: async () => "", headers: { get: () => null } };
+  };
+  const { ctx, getEl } = loadApp({ onFetch });
+  getEl("apiKey").value = "sk-test";
+  const f = recFile();
+  ctx.currentFile = f; ctx.onFileSelect(f);
+  await ctx.runDiagnostics();
+  assert.match(getEl("diagOut").textContent, /Found it/i);
+});
