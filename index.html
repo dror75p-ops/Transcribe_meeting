@@ -2395,6 +2395,27 @@ function diagLog(line) {
   out.scrollTop = out.scrollHeight;
 }
 
+function diagReplaceLast(line) {
+  _diagLines[_diagLines.length - 1] = line;
+  const out = document.getElementById("diagOut");
+  out.textContent = _diagLines.join("\n");
+  out.scrollTop = out.scrollHeight;
+}
+
+/* Show a ticking elapsed time while a request is in flight. Without it a probe
+   that is merely slow is indistinguishable from one that has hung. */
+async function tickWhile(label, fn) {
+  diagLog(`${label} 0s...`);
+  const t0 = Date.now();
+  const id = setInterval(
+    () => diagReplaceLast(`${label} ${Math.round((Date.now() - t0) / 1000)}s...`), 1000);
+  try {
+    return await fn();
+  } finally {
+    clearInterval(id);
+  }
+}
+
 function copyDiag() {
   if (!_diagDone) {
     if (!confirm("הבדיקה עדיין רצה — להעתיק דוח חלקי בכל זאת?")) return;
@@ -2574,38 +2595,70 @@ async function runDiagnostics() {
       return;
     }
 
-    const send = async (label, blob, name) => {
+    /* Any HTTP reply means the body reached OpenAI, which is what these probes
+       are asking. A 400 ("could not decode") counts as a successful upload —
+       expected when we deliberately send a truncated slice. */
+    const send = async (label, blob, name, timeoutMs) => {
       const fd = new FormData();
       fd.append("file", new File([blob], name, { type: blob.type }), name);
       fd.append("model", "whisper-1");
       fd.append("response_format", "text");
-      const r = await timedFetch("https://api.openai.com/v1/audio/transcriptions", {
-        method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
-      }, 180000);
+      const r = await tickWhile(`  ${label}`, () =>
+        timedFetch("https://api.openai.com/v1/audio/transcriptions", {
+          method: "POST", headers: { Authorization: "Bearer " + apiKey }, body: fd
+        }, timeoutMs));
       if (!r.ok) {
-        diagLog(`  ${label} ✗ ${r.aborted ? "TIMED OUT" : "NETWORK FAIL"} — ${r.err.name}: ${r.err.message}`);
-        return false;
+        diagReplaceLast(`  ${label} ✗ ${r.aborted ? "TIMED OUT" : "NETWORK FAIL"} after ${(r.ms / 1000).toFixed(1)}s — ${r.err.name}: ${r.err.message}`);
+        return { reached: false, ok: false };
       }
-      diagLog(`  ${label} ${r.res.ok ? "✓" : "✗"} HTTP ${r.res.status} in ${(r.ms / 1000).toFixed(1)}s`);
-      if (!r.res.ok) diagLog(`     ${(await r.res.text().catch(() => "")).slice(0, 300)}`);
-      return r.res.ok;
+      diagReplaceLast(`  ${label} → HTTP ${r.res.status} in ${(r.ms / 1000).toFixed(1)}s (upload reached the server ✓)`);
+      if (!r.res.ok) diagLog(`     ${(await r.res.text().catch(() => "")).slice(0, 200)}`);
+      return { reached: true, ok: r.res.ok };
     };
 
-    const safeOk = await send("b) safe name + audio type —",
-      new Blob([bytes], { type: uploadTypeFor(currentFile) }), safeUploadName(currentFile));
-    const rawOk = await send("c) original name + type —", currentFile, currentFile.name);
+    // Slice first: a small piece exercises the upload envelope without paying
+    // for — or waiting on — a transcription of the whole recording.
+    const SLICE = Math.min(bytes.byteLength, 1048576);
+    const slice = bytes.slice(0, SLICE);
+    diagLog(`  (b and c send the first ${(SLICE / 1048576).toFixed(1)}MB only — testing the upload, not transcription)`);
 
-    if (safeOk && !rawOk) {
-      diagLog("\n=> Found it: the bytes are fine, but the file's own name/type breaks");
-      diagLog("   the upload. The app now sends a sanitised name and audio/* type,");
-      diagLog("   so transcription should work.");
-    } else if (!safeOk && !rawOk) {
-      diagLog("\n=> Your file fails to upload while synthetic audio of the same size");
-      diagLog("   succeeds. Send this report — the difference is in the file itself.");
-    } else if (safeOk && rawOk) {
-      diagLog("\n=> Your actual file uploads fine both ways.");
-      diagLog("   The failure is not in the upload. Run a transcription and copy");
-      diagLog("   the error text.");
+    const safe = await send("b) safe name + audio type —",
+      new Blob([slice], { type: uploadTypeFor(currentFile) }), safeUploadName(currentFile), 120000);
+    const raw = await send("c) original name + type —",
+      new Blob([slice], { type: currentFile.type }), currentFile.name, 120000);
+
+    if (safe.reached && !raw.reached) {
+      diagLog("\n=> Found it: the same bytes upload fine under a sanitised name and");
+      diagLog("   audio/* type, but fail under the file's own name/type. The app now");
+      diagLog("   sends the sanitised form, so transcription should work.");
+      diagFinish(btn);
+      return;
+    }
+    if (!safe.reached && !raw.reached) {
+      diagLog("\n=> Your file's bytes fail to upload while synthetic audio of similar");
+      diagLog("   size succeeds. Send this report.");
+      diagFinish(btn);
+      return;
+    }
+
+    // Both envelopes reach the server, so the last question is the full file —
+    // which really does transcribe, and really can take a minute or more.
+    const mins = (bytes.byteLength * 8 / 128000 / 60);
+    diagLog(`\n  d) full file — this transcribes roughly ${mins.toFixed(0)} min of audio`);
+    diagLog("     and can legitimately take a minute or two. Wait for END OF REPORT.");
+    const full = await send("d) full upload —",
+      new Blob([bytes], { type: uploadTypeFor(currentFile) }), safeUploadName(currentFile), 900000);
+
+    if (full.ok) {
+      diagLog("\n=> Your actual file uploads and transcribes successfully.");
+      diagLog("   The pipeline works for this file — transcription should now succeed.");
+    } else if (full.reached) {
+      diagLog("\n=> The upload reached OpenAI but was rejected. The message above is");
+      diagLog("   the real reason — it is not a network failure.");
+    } else {
+      diagLog("\n=> Small slices of this file upload fine, but the whole file does not.");
+      diagLog("   That is a stalling upload on this connection. Record at the new");
+      diagLog("   lower bitrate, or use Wi-Fi, to cut the size.");
     }
     diagFinish(btn);
     return;
