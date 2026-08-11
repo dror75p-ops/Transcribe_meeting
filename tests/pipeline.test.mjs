@@ -166,13 +166,13 @@ test("a rejected key is reported as a key problem, not a network problem", async
 });
 
 test("network failures during upload are retried before giving up", async () => {
-  const r = await drive(fakeFile("m.mp3", 8 * 1048576), { fail: "whisper-network", settleMs: 15000 });
+  const r = await drive(fakeFile("m.mp3", 8 * 1048576), { fail: "whisper-network", settleMs: 20000, ffmpegAvailable: false });
   assert.ok(r.uploads.length >= 3, `expected retries, saw ${r.uploads.length} attempts`);
   assert.match(r.error, /OpenAI/);
 });
 
 test("Safari network failures during upload are retried too", async () => {
-  const r = await drive(fakeFile("m.mp3", 8 * 1048576), { fail: "whisper-safari", settleMs: 15000 });
+  const r = await drive(fakeFile("m.mp3", 8 * 1048576), { fail: "whisper-safari", settleMs: 20000, ffmpegAvailable: false });
   assert.ok(r.uploads.length >= 3, `expected retries, saw ${r.uploads.length} attempts`);
 });
 
@@ -232,4 +232,59 @@ test("an unreadable file is reported plainly, not as a fetch failure", async () 
   assert.ok(error, "an error should be shown");
   assert.ok(!/failed to fetch/i.test(error), `must not blame the network, got "${error}"`);
   assert.match(error, /לא ניתן לקרוא|could not be read/i);
+});
+
+/* ---- Last-resort compressed retry ----
+   A direct upload the connection will not carry is retried via compress+split
+   rather than simply failing. */
+
+async function driveWithDirectUploadFailure(file, opts = {}) {
+  const { ffmpegCodecs = ["pcm_s16le", "libmp3lame"], ffmpegAvailable = true } = opts;
+  const uploads = [];
+  let directAttempts = 0;
+  const onFetch = async (rec) => {
+    if (rec.url.includes(MODELS)) return { ok: true, status: 200, json: async () => ({}), headers: { get: () => null } };
+    if (rec.url.includes(CDN)) return {
+      ok: true, status: 200, headers: { get: () => "100" },
+      body: { getReader() { let d = false; return { read: async () => (d ? { done: true } : (d = true, { done: false, value: new Uint8Array(100) })) }; } }
+    };
+    let bytes = 0, name = "";
+    for (const v of rec.body.getAll("file")) { bytes += v.size || 0; name = v.name; }
+    // The single whole-file upload fails; compressed parts go through.
+    if (name === "audio.webm") { directAttempts++; throw new TypeError("Failed to fetch"); }
+    uploads.push({ bytes, name });
+    return { ok: true, status: 200, json: async () => ({ text: "טקסט", duration: 30 }), text: async () => "טקסט" };
+  };
+  const { ctx, getEl } = loadApp({ onFetch, ffmpegCodecs, ffmpegAvailable });
+  getEl("apiKey").value = "sk-test";
+  getEl("instructions").value = "";
+  ctx.currentFile = file; ctx.onFileSelect(file);
+  let error = null;
+  ctx.showError = (m) => { error = m; };
+  await ctx.startTranscription();
+  await new Promise((r) => setTimeout(r, 20000));
+  return { uploads, directAttempts, error, transcript: ctx.transcriptText };
+}
+
+const bigRec = () => new File([new Uint8Array(7 * 1048576)], "הקלטה.webm", { type: "audio/webm;codecs=opus" });
+
+test("a stalling direct upload falls back to compress+split and succeeds", async () => {
+  const r = await driveWithDirectUploadFailure(bigRec());
+  assert.ok(r.directAttempts >= 3, `direct upload should retry first, saw ${r.directAttempts}`);
+  assert.ok(r.uploads.length > 0, "should fall back to compressed parts");
+  assert.ok(r.uploads.every((u) => u.name.endsWith(".mp3")), "fallback parts should be compressed mp3");
+  assert.equal(r.error, null, `should recover, got "${r.error}"`);
+});
+
+test("without a converter available the network error is still reported honestly", async () => {
+  const r = await driveWithDirectUploadFailure(bigRec(), { ffmpegAvailable: false });
+  assert.ok(r.error, "must not silently swallow the failure");
+  assert.match(r.error, /OpenAI/);
+});
+
+test("a tiny file does not trigger the compressed retry — size is not its problem", async () => {
+  const tiny = new File([new Uint8Array(100 * 1024)], "הקלטה.webm", { type: "audio/webm;codecs=opus" });
+  const r = await driveWithDirectUploadFailure(tiny);
+  assert.equal(r.uploads.length, 0, "should not bother compressing a 0.1MB file");
+  assert.ok(r.error, "should report the network failure");
 });

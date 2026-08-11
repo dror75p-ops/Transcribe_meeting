@@ -1779,6 +1779,7 @@ const I18N = {
   err_part_too_big: { he: "חלק מהקובץ גדול מדי לשליחה (מעל 25MB). נסו שוב — הקובץ יפוצל לחלקים קטנים יותר.", en: "One part exceeds the 25MB upload limit. Try again — the file will be split into smaller parts.", es: "Una parte supera el límite de 25MB. Inténtalo de nuevo: el archivo se dividirá en partes más pequeñas.", fr: "Une partie dépasse la limite de 25 Mo. Réessayez — le fichier sera découpé en parties plus petites." },
   err_key_rejected: { he: "מפתח ה-API נדחה (401). בדקו שהמפתח תקין, פעיל, ושיש בחשבון יתרה.", en: "The API key was rejected (401). Check that it is valid, active and funded.", es: "La clave de API fue rechazada (401). Comprueba que sea válida, activa y con saldo.", fr: "La clé API a été rejetée (401). Vérifiez qu'elle est valide, active et créditée." },
   err_file_unreadable: { he: "לא ניתן לקרוא את הקובץ. ייתכן שהוא נמחק, הועבר, או נבחר משירות ענן. בחרו אותו מחדש ונסו שוב.", en: "The file could not be read. It may have been deleted, moved, or picked from a cloud provider. Select it again and retry.", es: "No se pudo leer el archivo. Puede que se haya eliminado, movido o seleccionado desde la nube. Vuelve a seleccionarlo.", fr: "Le fichier n'a pas pu être lu. Il a peut-être été supprimé, déplacé ou choisi depuis un service cloud. Sélectionnez-le à nouveau." },
+  prog_retry_compressed: { he: "ההעלאה נכשלה — מכווץ את הקובץ ומנסה שוב...", en: "Upload failed — compressing the file and retrying...", es: "La subida falló: comprimiendo el archivo y reintentando...", fr: "Échec de l'envoi — compression du fichier et nouvelle tentative..." },
   prog_compressing: { he: "מכווץ אודיו לשליחה (16kHz מונו)...", en: "Compressing audio for upload (16kHz mono)...", es: "Comprimiendo el audio para subirlo (16kHz mono)...", fr: "Compression de l'audio pour l'envoi (16 kHz mono)..." },
   prog_checking_conn: { he: "בודק חיבור ל-OpenAI...", en: "Checking connection to OpenAI...", es: "Comprobando la conexión con OpenAI...", fr: "Vérification de la connexion à OpenAI..." },
   err_too_big:     { he: "הקובץ גדול מדי. פצל אותו לחלקים קטנים יותר לפני ההעלאה.", en: "The file is too large. Split it into smaller parts before uploading.", es: "El archivo es demasiado grande. Divídelo antes de subirlo.", fr: "Le fichier est trop volumineux. Divisez-le avant de le téléverser." },
@@ -2206,7 +2207,18 @@ async function startTranscription() {
       setProgress(10, t("prog_large_split"));
       await transcribeLarge(apiKey);
     } else {
-      await transcribeSingle(apiKey);
+      // The preflight already proved the API is reachable, so a network failure
+      // here means this connection would not carry this particular upload.
+      // Compressing to ~32kbps and splitting shrinks it by roughly an order of
+      // magnitude, which usually does get through. Only worth attempting for a
+      // file big enough for size to plausibly be the cause.
+      try {
+        await transcribeSingle(apiKey);
+      } catch (e) {
+        if (!e.isNetwork || info.sizeMB < 1 || typeof FFmpegWASM === "undefined") throw e;
+        setProgress(10, t("prog_retry_compressed"));
+        await transcribeWithConversion(apiKey);
+      }
     }
   };
 
@@ -2353,7 +2365,11 @@ async function whisperFetch(fd, apiKey, onAttempt, asText = false) {
       await new Promise(r => setTimeout(r, backoff));
     }
   }
-  if (isNetworkError(lastErr)) throw new Error(NETWORK_HELP);
+  if (isNetworkError(lastErr)) {
+    const e = new Error(NETWORK_HELP);
+    e.isNetwork = true;              // lets the caller retry by another route
+    throw e;
+  }
   throw lastErr;
 }
 
@@ -2373,7 +2389,11 @@ async function preflightCheck(apiKey) {
     // transcribe, so anything else falls through and lets the real call decide.
     if (res.status === 401) throw new Error(t("err_key_rejected"));
   } catch (err) {
-    if (isNetworkError(err)) throw new Error(NETWORK_HELP);
+    if (isNetworkError(err)) {
+      const e = new Error(NETWORK_HELP);
+      e.isNetwork = true;
+      throw e;
+    }
     throw err;
   } finally {
     clearTimeout(timer);
