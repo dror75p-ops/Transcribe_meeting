@@ -2396,6 +2396,9 @@ function diagLog(line) {
 }
 
 function copyDiag() {
+  if (!_diagDone) {
+    if (!confirm("הבדיקה עדיין רצה — להעתיק דוח חלקי בכל זאת?")) return;
+  }
   navigator.clipboard.writeText(_diagLines.join("\n"))
     .then(() => alert("התוצאות הועתקו"))
     .catch(() => alert("ההעתקה נכשלה — צלמו מסך"));
@@ -2448,13 +2451,25 @@ async function probeUpload(apiKey, seconds, label) {
   return { ok: r.res.ok, mb, ms: r.ms };
 }
 
+/* A report copied mid-run looks identical to one that stopped at a failure, so
+   mark the end explicitly and keep a running flag while probes are in flight. */
+let _diagDone = false;
+
+function diagFinish(btn) {
+  _diagDone = true;
+  diagLog("\n=== END OF REPORT ===");
+  btn.disabled = false;
+}
+
 async function runDiagnostics() {
   const btn = document.getElementById("diagBtn");
   btn.disabled = true;
   _diagLines = [];
+  _diagDone = false;
   document.getElementById("diagCopyWrap").style.display = "block";
 
   diagLog("=== DIAGNOSTICS " + new Date().toLocaleString("he-IL") + " ===");
+  diagLog("(running — wait for END OF REPORT before copying)");
 
   diagLog("\n[1] device");
   diagLog(`  UA: ${navigator.userAgent}`);
@@ -2478,7 +2493,7 @@ async function runDiagnostics() {
   const apiKey = document.getElementById("apiKey").value.trim();
   if (!apiKey.startsWith("sk-")) {
     diagLog("\n✗ no API key entered — cannot test the API. Enter the key and run again.");
-    btn.disabled = false;
+    diagFinish(btn);
     return;
   }
 
@@ -2491,13 +2506,13 @@ async function runDiagnostics() {
     diagLog("\n=> OpenAI is unreachable from this device/network.");
     diagLog("   Not a file-size problem. Likely an ad blocker, VPN, DNS, or");
     diagLog("   network filter. Try mobile data instead of Wi-Fi (or vice versa).");
-    btn.disabled = false;
+    diagFinish(btn);
     return;
   }
   diagLog(`  ✓ HTTP ${reach.res.status} in ${(reach.ms / 1000).toFixed(1)}s`);
   if (reach.res.status === 401) {
     diagLog("\n=> The API key was rejected (401). Check the key is active and funded.");
-    btn.disabled = false;
+    diagFinish(btn);
     return;
   }
 
@@ -2507,7 +2522,7 @@ async function runDiagnostics() {
     diagLog("\n=> Reaching OpenAI works, but even a tiny upload fails.");
     diagLog("   Points at the transcription endpoint or the key's permissions,");
     diagLog("   not at your file size.");
-    btn.disabled = false;
+    diagFinish(btn);
     return;
   }
 
@@ -2518,7 +2533,7 @@ async function runDiagnostics() {
     diagLog("\n=> Small uploads work, larger ones do not.");
     diagLog("   This is the size/connection problem: the upload stalls before it");
     diagLog("   finishes. Use a stronger connection, or a shorter/compressed file.");
-    btn.disabled = false;
+    diagFinish(btn);
     return;
   }
 
@@ -2550,12 +2565,12 @@ async function runDiagnostics() {
       diagLog(`  a) ✗ CANNOT READ THE FILE — ${e.name}: ${e.message}`);
       diagLog("\n=> The file handle is stale or unreadable, so the upload never had");
       diagLog("   any bytes to send. Re-select the file (or re-record) and retry.");
-      btn.disabled = false;
+      diagFinish(btn);
       return;
     }
     if (!bytes.byteLength) {
       diagLog("  a) ✗ the file reads as 0 bytes");
-      btn.disabled = false;
+      diagFinish(btn);
       return;
     }
 
@@ -2592,13 +2607,13 @@ async function runDiagnostics() {
       diagLog("   The failure is not in the upload. Run a transcription and copy");
       diagLog("   the error text.");
     }
-    btn.disabled = false;
+    diagFinish(btn);
     return;
   }
 
   diagLog("\n=> All network probes passed.");
   diagLog("   If transcription still fails, run it and copy the error shown.");
-  btn.disabled = false;
+  diagFinish(btn);
 }
 
 function findSilenceSplit(pcmData, targetByte) {
@@ -4376,6 +4391,10 @@ function stopKeepAlive() {
   try { if (recKeepAlive) recKeepAlive.pause(); } catch (e) {}
 }
 
+/* Speech-grade Opus. Low enough to keep uploads small on a phone, high enough
+   that transcription accuracy is unaffected. */
+const REC_BITS_PER_SEC = 32000;
+
 function pickRecorderMime() {
   const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
   if (typeof MediaRecorder === "undefined" || !MediaRecorder.isTypeSupported) return "";
@@ -4406,10 +4425,21 @@ async function startRecording() {
     return;
   }
   recMime = pickRecorderMime();
+  // Chrome defaults MediaRecorder to roughly 128kbps, which turned a short
+  // meeting into a 6.9MB upload. Opus at 32kbps mono is well beyond what
+  // speech recognition needs — Whisper resamples to 16kHz anyway — and it cuts
+  // the file, and so the upload, by about 4x. That matters most on the mobile
+  // links where uploads stall.
+  const recOpts = { audioBitsPerSecond: REC_BITS_PER_SEC };
+  if (recMime) recOpts.mimeType = recMime;
   try {
-    mediaRecorder = recMime ? new MediaRecorder(stream, { mimeType: recMime }) : new MediaRecorder(stream);
+    mediaRecorder = new MediaRecorder(stream, recOpts);
   } catch (e) {
-    mediaRecorder = new MediaRecorder(stream);
+    try {
+      mediaRecorder = recMime ? new MediaRecorder(stream, { mimeType: recMime }) : new MediaRecorder(stream);
+    } catch (e2) {
+      mediaRecorder = new MediaRecorder(stream);
+    }
   }
   recStream = stream;
   recChunks = [];
